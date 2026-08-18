@@ -646,7 +646,9 @@
       "recipient_required": "Add a recipient to send",
       "body_required": "Write a message or attach a file",
       "attachments_uploading": "Attachments are still uploading — sending as soon as they finish",
-      "attachment_upload_failed": "Not sent — an attachment failed to upload. Remove it and try again."
+      "attachment_upload_failed": "Not sent — an attachment failed to upload. Remove it and try again.",
+      "invalid_recipient": "Not a valid email address",
+      "invalid_recipients": "Not sent — {addresses} is not a valid email address. Fix it and try again."
     },
     "upload_progress": "Uploading {uploaded} / {total}",
     "upload_cancel": "Cancel upload",

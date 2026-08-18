@@ -646,7 +646,9 @@
       "recipient_required": "Adăugați un destinatar căruia să îi trimiteți mesajul",
       "body_required": "Scrieți un mesaj sau atașați un fișier",
       "attachments_uploading": "Atașamentele încă se încarcă — se va trimite imediat ce se termină",
-      "attachment_upload_failed": "Netrimis - încărcarea unui atașament a eșuat. Eliminați-l și încercați din nou."
+      "attachment_upload_failed": "Netrimis - încărcarea unui atașament a eșuat. Eliminați-l și încercați din nou.",
+      "invalid_recipient": "Adresă de e-mail nevalidă",
+      "invalid_recipients": "Nu a fost trimis — {addresses} nu este o adresă de e-mail validă. Corectați-o și încercați din nou."
     },
     "upload_progress": "Încărcare {uploaded} / {total}",
     "upload_cancel": "Anulează încărcarea",

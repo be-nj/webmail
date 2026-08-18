@@ -646,7 +646,9 @@
       "recipient_required": "Adj meg egy címzettet a küldéshez",
       "body_required": "Írj üzenetet vagy csatolj fájlt",
       "attachments_uploading": "A mellékletek még feltöltés alatt vannak – küldés a feltöltés befejezése után",
-      "attachment_upload_failed": "Nincs elküldve - egy melléklet feltöltése nem sikerült. Távolítsa el, és próbálja újra."
+      "attachment_upload_failed": "Nincs elküldve - egy melléklet feltöltése nem sikerült. Távolítsa el, és próbálja újra.",
+      "invalid_recipient": "Nem érvényes e-mail-cím",
+      "invalid_recipients": "Nem lett elküldve — {addresses} nem érvényes e-mail-cím. Javítsa ki, és próbálja újra."
     },
     "upload_progress": "Feltöltés {uploaded} / {total}",
     "upload_cancel": "Feltöltés megszakítása",

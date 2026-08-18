@@ -2044,6 +2044,35 @@ export function EmailComposer({
       return;
     }
 
+    // Nothing between the recipient input and Email/set used to check that a
+    // recipient is an address, so a chip holding arbitrary text produced a To
+    // header the relay could not parse: RCPT TO succeeded, DATA was rejected,
+    // and every recipient bounced with an error naming addresses that were
+    // fine (#795). Chips can still arrive malformed - from a paste, a
+    // hand-edited chip, or an older draft - so check again here.
+    const invalidRecipients = [
+      { field: 'to' as const, addresses: toAddresses },
+      { field: 'cc' as const, addresses: ccAddresses },
+      { field: 'bcc' as const, addresses: bccAddresses },
+    ].flatMap(({ field, addresses }) =>
+      addresses
+        .filter((r) => !isValidEmail(r.email))
+        .map((r) => ({ field, label: formatRecipient(r.name, r.email) }))
+    );
+
+    if (invalidRecipients.length > 0) {
+      toast.error(t('validation.invalid_recipients', {
+        addresses: invalidRecipients.map((r) => r.label).join(', '),
+      }));
+      const firstField = invalidRecipients[0].field;
+      if (firstField === 'to') setValidationErrors({ to: true });
+      setShakeField(firstField);
+      setTimeout(() => setShakeField(null), 400);
+      const ref = firstField === 'to' ? toInputRef : firstField === 'cc' ? ccInputRef : bccInputRef;
+      ref.current?.focus();
+      return;
+    }
+
     // Empty subject confirmation (#684)
     if (!skipSubjectCheck && emptySubjectWarningEnabled && !subject.trim()) {
       setEmptySubjectDontAskAgain(false);
@@ -2795,7 +2824,7 @@ export function EmailComposer({
 
           {/* Cc field */}
           {showCc && (
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/50 relative">
+            <div className={cn("flex items-center gap-2 px-4 py-2.5 border-b border-border/50 relative", shakeField === 'cc' && "animate-shake")}>
               <span className="text-sm text-muted-foreground w-12 md:w-16 shrink-0">{t('cc_label')}</span>
               <RecipientChipInput
                 chips={cc}
@@ -2824,7 +2853,7 @@ export function EmailComposer({
 
           {/* Bcc field */}
           {showBcc && (
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/50 relative">
+            <div className={cn("flex items-center gap-2 px-4 py-2.5 border-b border-border/50 relative", shakeField === 'bcc' && "animate-shake")}>
               <span className="text-sm text-muted-foreground w-12 md:w-16 shrink-0">{t('bcc_label')}</span>
               <RecipientChipInput
                 chips={bcc}
@@ -3447,6 +3476,9 @@ function RecipientChipInput({
   const [editingChip, setEditingChip] = useState<{ index: number; editType: 'email' | 'name' } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
+  // Text the user tried to commit that is not an address; kept in the input
+  // and flagged instead of turned into a chip.
+  const [rejectedInput, setRejectedInput] = useState<string | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   // Gap (0..chips.length) a dragged chip would drop into; drives the insertion
   // caret and positional drop for reordering (#593). null when not dragging.
@@ -3503,15 +3535,30 @@ function RecipientChipInput({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newInputText = e.target.value;
+    if (rejectedInput !== null) setRejectedInput(null);
     onInputChange(newInputText);
     onAutocomplete(newInputText, field);
   };
 
-  const commitCurrentInput = () => {
-    if (inputText.trim()) {
-      onChipsChange([...chips, parseRecipient(inputText)]);
-      onInputChange('');
+  // Committing only accepts text that is actually an address (or an RFC 5322
+  // group). Anything else stays in the input, flagged, instead of becoming a
+  // chip: `parseRecipient` falls through to `{ email: <whatever was typed> }`,
+  // and nothing downstream re-checked it, so a chip holding arbitrary text
+  // went out as a mailbox the receiving server cannot parse - the message is
+  // accepted at RCPT TO and only bounces at DATA, naming recipients that are
+  // perfectly deliverable (#795).
+  const commitCurrentInput = (): boolean => {
+    const trimmed = inputText.trim();
+    if (!trimmed) return true;
+    const parsed = parseRecipient(trimmed);
+    if (!parsed.group && !isValidEmail(parsed.email)) {
+      setRejectedInput(trimmed);
+      return false;
     }
+    onChipsChange([...chips, parsed]);
+    onInputChange('');
+    setRejectedInput(null);
+    return true;
   };
 
   // Pasting a list of addresses (comma/semicolon/whitespace separated) splits
@@ -3547,11 +3594,14 @@ function RecipientChipInput({
       (e.key === ' ' && isValidEmail(trimmedInput));
     if (commitOnKey) {
       if (e.key !== 'Tab') e.preventDefault();
-      commitCurrentInput();
+      // A rejected entry stays in the field so the user can fix it. Tab still
+      // moves on - trapping focus over a typo would be worse than leaving the
+      // text behind, and the send path checks it again.
+      const committed = commitCurrentInput();
       if (e.key === 'Tab' && onTab) {
         e.preventDefault();
         setTimeout(() => onTab(), 0);
-      } else {
+      } else if (committed) {
         setTimeout(() => inputRef.current?.focus(), 0);
       }
       return;
@@ -3689,12 +3739,17 @@ function RecipientChipInput({
     warning: "bg-warning/15 text-secondary-foreground hover:bg-warning/30 !border-warning",
   };
 
+  const showInvalid = validationError || rejectedInput !== null;
+  const invalidMessage = rejectedInput !== null
+    ? t('validation.invalid_recipient')
+    : validationMessage;
+
   return (
     <div className="flex-1 relative min-w-0">
       <div
         className={cn(
           "flex flex-wrap items-center gap-1 min-h-[32px] cursor-text",
-          validationError && "ring-2 ring-red-500 dark:ring-red-400 rounded",
+          showInvalid && "ring-2 ring-red-500 dark:ring-red-400 rounded",
           isDragOver && "ring-2 ring-primary/50 rounded bg-accent/20"
         )}
         onClick={() => inputRef.current?.focus()}
@@ -3841,7 +3896,7 @@ function RecipientChipInput({
             aria-autocomplete="list"
             aria-controls={activeAutoField === field ? `autocomplete-${field}` : undefined}
             aria-activedescendant={activeAutoField === field && autoSelectedIndex >= 0 ? `autocomplete-option-${autoSelectedIndex}` : undefined}
-            aria-invalid={validationError || undefined}
+            aria-invalid={showInvalid || undefined}
             data-bwignore="true"
             data-1p-ignore
             data-op-ignore
@@ -3850,8 +3905,8 @@ function RecipientChipInput({
           />
         )}
       </div>
-      {validationError && validationMessage && (
-        <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{validationMessage}</p>
+      {showInvalid && invalidMessage && (
+        <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{invalidMessage}</p>
       )}
       {activeAutoField === field &&
         (autocompleteResults.length > 0 || (canSearchServer && serverSearchQuery.length > 0)) && (

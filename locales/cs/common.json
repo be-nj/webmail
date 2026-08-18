@@ -643,7 +643,9 @@
       "recipient_required": "Chcete-li zprávu odeslat, přidejte příjemce",
       "body_required": "Napište zprávu nebo připojte soubor",
       "attachments_uploading": "Přílohy se stále nahrávají – odeslání proběhne po dokončení",
-      "attachment_upload_failed": "Neodesláno - přílohu se nepodařilo nahrát. Odeberte ji a zkuste to znovu."
+      "attachment_upload_failed": "Neodesláno - přílohu se nepodařilo nahrát. Odeberte ji a zkuste to znovu.",
+      "invalid_recipient": "Neplatná e-mailová adresa",
+      "invalid_recipients": "Neodesláno — {addresses} není platná e-mailová adresa. Opravte ji a zkuste to znovu."
     },
     "upload_progress": "Nahrávání {uploaded} / {total}",
     "upload_cancel": "Zrušit nahrávání",

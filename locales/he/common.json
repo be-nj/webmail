@@ -595,7 +595,9 @@
       "recipient_required": "הוסף נמען לשליחה",
       "body_required": "כתוב הודעה או צרף קובץ",
       "attachments_uploading": "קבצים מצורפים עדיין בהעלאה - ההודעה תישלח מיד בסיום",
-      "attachment_upload_failed": "לא נשלח - העלאת קובץ מצורף נכשלה. הסירו אותו ונסו שוב."
+      "attachment_upload_failed": "לא נשלח - העלאת קובץ מצורף נכשלה. הסירו אותו ונסו שוב.",
+      "invalid_recipient": "כתובת אימייל לא תקינה",
+      "invalid_recipients": "לא נשלח — {addresses} אינה כתובת אימייל תקינה. תקן אותה ונסה שוב."
     },
     "upload_progress": "מעלה את{uploaded}/{total}",
     "upload_cancel": "בטל העלאה",

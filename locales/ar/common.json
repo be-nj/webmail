@@ -646,7 +646,9 @@
       "recipient_required": "أضف مستلمًا للإرسال",
       "body_required": "اكتب رسالة أو أرفق ملفًا",
       "attachments_uploading": "المرفقات لا تزال قيد الرفع — سيتم الإرسال فور انتهائها",
-      "attachment_upload_failed": "لم يتم الإرسال — فشل رفع أحد المرفقات. أزله وحاول مرة أخرى."
+      "attachment_upload_failed": "لم يتم الإرسال — فشل رفع أحد المرفقات. أزله وحاول مرة أخرى.",
+      "invalid_recipient": "عنوان بريد إلكتروني غير صالح",
+      "invalid_recipients": "لم يتم الإرسال — {addresses} ليس عنوان بريد إلكتروني صالحًا. صححه وحاول مرة أخرى."
     },
     "upload_progress": "جارٍ الرفع {uploaded} / {total}",
     "upload_cancel": "إلغاء الرفع",

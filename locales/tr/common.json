@@ -646,7 +646,9 @@
       "recipient_required": "Göndermek için bir alıcı ekleyin",
       "body_required": "Bir ileti yazın veya dosya ekleyin",
       "attachments_uploading": "Ekler hâlâ yükleniyor — yükleme bitince gönderilecek",
-      "attachment_upload_failed": "Gönderilmedi - bir ek yüklenemedi. Eki kaldırıp tekrar deneyin."
+      "attachment_upload_failed": "Gönderilmedi - bir ek yüklenemedi. Eki kaldırıp tekrar deneyin.",
+      "invalid_recipient": "Geçerli bir e-posta adresi değil",
+      "invalid_recipients": "Gönderilmedi — {addresses} geçerli bir e-posta adresi değil. Düzeltip yeniden deneyin."
     },
     "upload_progress": "{uploaded} / {total} yükleniyor",
     "upload_cancel": "Yüklemeyi iptal et",

@@ -643,7 +643,9 @@
       "recipient_required": "Empfänger hinzufügen zum Senden",
       "body_required": "Nachricht schreiben oder Datei anhängen",
       "attachments_uploading": "Anhänge werden noch hochgeladen – wird gesendet, sobald sie fertig sind",
-      "attachment_upload_failed": "Nicht gesendet - ein Anhang konnte nicht hochgeladen werden. Entfernen Sie ihn und versuchen Sie es erneut."
+      "attachment_upload_failed": "Nicht gesendet - ein Anhang konnte nicht hochgeladen werden. Entfernen Sie ihn und versuchen Sie es erneut.",
+      "invalid_recipient": "Keine gültige E-Mail-Adresse",
+      "invalid_recipients": "Nicht gesendet — {addresses} ist keine gültige E-Mail-Adresse. Bitte korrigieren und erneut senden."
     },
     "upload_progress": "Hochladen {uploaded} / {total}",
     "upload_cancel": "Hochladen abbrechen",

@@ -643,7 +643,9 @@
       "recipient_required": "Ajoutez un destinataire pour envoyer",
       "body_required": "Rédigez un message ou joignez un fichier",
       "attachments_uploading": "Les pièces jointes sont en cours d'envoi — le message partira une fois terminé",
-      "attachment_upload_failed": "Non envoyé - le téléversement d'une pièce jointe a échoué. Supprimez-la et réessayez."
+      "attachment_upload_failed": "Non envoyé - le téléversement d'une pièce jointe a échoué. Supprimez-la et réessayez.",
+      "invalid_recipient": "Adresse e-mail non valide",
+      "invalid_recipients": "Non envoyé — {addresses} n'est pas une adresse e-mail valide. Corrigez-la et réessayez."
     },
     "upload_progress": "Envoi {uploaded} / {total}",
     "upload_cancel": "Annuler l'envoi",

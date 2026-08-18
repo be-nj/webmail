@@ -646,7 +646,9 @@
       "recipient_required": "Afegiu un destinatari per enviar",
       "body_required": "Escriviu un missatge o adjunteu un fitxer",
       "attachments_uploading": "Els fitxers adjunts encara s'estan pujant — s'enviarà en acabar",
-      "attachment_upload_failed": "No s'ha enviat — no s'ha pogut pujar un fitxer adjunt. Elimineu-lo i torneu-ho a provar."
+      "attachment_upload_failed": "No s'ha enviat — no s'ha pogut pujar un fitxer adjunt. Elimineu-lo i torneu-ho a provar.",
+      "invalid_recipient": "No és una adreça de correu vàlida",
+      "invalid_recipients": "No s'ha enviat — {addresses} no és una adreça de correu vàlida. Corregeix-la i torna-ho a provar."
     },
     "upload_progress": "Pujant {uploaded} / {total}",
     "upload_cancel": "Cancel·la la pujada",

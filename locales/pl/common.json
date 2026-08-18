@@ -643,7 +643,9 @@
       "recipient_required": "Dodaj odbiorcę, aby wysłać",
       "body_required": "Napisz wiadomość lub załącz plik",
       "attachments_uploading": "Załączniki wciąż się przesyłają — wiadomość zostanie wysłana po zakończeniu",
-      "attachment_upload_failed": "Nie wysłano - nie udało się przesłać załącznika. Usuń go i spróbuj ponownie."
+      "attachment_upload_failed": "Nie wysłano - nie udało się przesłać załącznika. Usuń go i spróbuj ponownie.",
+      "invalid_recipient": "To nie jest prawidłowy adres e-mail",
+      "invalid_recipients": "Nie wysłano — {addresses} nie jest prawidłowym adresem e-mail. Popraw go i spróbuj ponownie."
     },
     "upload_progress": "Przesyłanie {uploaded} / {total}",
     "upload_cancel": "Anuluj przesyłanie",
