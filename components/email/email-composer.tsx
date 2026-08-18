@@ -134,6 +134,7 @@ import {
   parseRecipient,
   parseRecipientList,
   formatRecipientList,
+  withPersistableInput,
   expandRecipients,
   splitPastedRecipients,
   invalidRecipientAddresses,
@@ -2659,9 +2660,9 @@ export function EmailComposer({
     if (!client || !composerClient) return null;
     const versionAtStart = changeVersionRef.current;
 
-    const toAddresses = expandRecipients(withInput(to, toInput)).map(r => formatRecipient(r.name, r.email));
-    const ccAddresses = expandRecipients(withInput(cc, ccInput)).map(r => formatRecipient(r.name, r.email));
-    const bccAddresses = expandRecipients(withInput(bcc, bccInput)).map(r => formatRecipient(r.name, r.email));
+    const toAddresses = expandRecipients(withPersistableInput(to, toInput)).map(r => formatRecipient(r.name, r.email));
+    const ccAddresses = expandRecipients(withPersistableInput(cc, ccInput)).map(r => formatRecipient(r.name, r.email));
+    const bccAddresses = expandRecipients(withPersistableInput(bcc, bccInput)).map(r => formatRecipient(r.name, r.email));
 
     if (!toAddresses.length && !subject && !(plainTextMode ? body.trim() : htmlToPlainText(body).trim())) {
       return null;
