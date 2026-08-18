@@ -90,6 +90,7 @@ import {
   parseRecipient,
   parseRecipientList,
   formatRecipientList,
+  withPersistableInput,
   expandRecipients,
   splitPastedRecipients,
   defaultSuggestionIndex,
@@ -2034,9 +2035,9 @@ export function EmailComposer({
     if (!client || !composerClient) return null;
     const versionAtStart = changeVersionRef.current;
 
-    const toAddresses = expandRecipients(withInput(to, toInput)).map(r => formatRecipient(r.name, r.email));
-    const ccAddresses = expandRecipients(withInput(cc, ccInput)).map(r => formatRecipient(r.name, r.email));
-    const bccAddresses = expandRecipients(withInput(bcc, bccInput)).map(r => formatRecipient(r.name, r.email));
+    const toAddresses = expandRecipients(withPersistableInput(to, toInput)).map(r => formatRecipient(r.name, r.email));
+    const ccAddresses = expandRecipients(withPersistableInput(cc, ccInput)).map(r => formatRecipient(r.name, r.email));
+    const bccAddresses = expandRecipients(withPersistableInput(bcc, bccInput)).map(r => formatRecipient(r.name, r.email));
 
     if (!toAddresses.length && !subject && !(plainTextMode ? body.trim() : htmlToPlainText(body).trim())) {
       return null;
@@ -2258,9 +2259,9 @@ export function EmailComposer({
       saveTimeoutRef.current = null;
       // Plugin observers (AI assist, grammar, …) get a debounced snapshot here.
       emailHooks.onDraftChange.emit({
-        to: withInput(to, toInput).map(r => formatRecipient(r.name, r.email)),
-        cc: withInput(cc, ccInput).map(r => formatRecipient(r.name, r.email)),
-        bcc: withInput(bcc, bccInput).map(r => formatRecipient(r.name, r.email)),
+        to: withPersistableInput(to, toInput).map(r => formatRecipient(r.name, r.email)),
+        cc: withPersistableInput(cc, ccInput).map(r => formatRecipient(r.name, r.email)),
+        bcc: withPersistableInput(bcc, bccInput).map(r => formatRecipient(r.name, r.email)),
         subject,
         htmlBody: plainTextMode ? '' : body,
         textBody: plainTextMode ? body : htmlToPlainText(body),
