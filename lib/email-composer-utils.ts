@@ -1,9 +1,9 @@
 import { isValidEmail } from "@/lib/validation";
-import { splitMailbox } from "@/lib/rfc5322-mailbox";
+import { sanitizeDisplayName, splitMailbox } from "@/lib/rfc5322-mailbox";
 import { htmlToPlainText } from "@/lib/html-to-text";
 import { emailHooks } from "@/lib/plugin-hooks";
 import { Ellipsis, Lock, TriangleAlert } from "lucide-react";
-import type { Email } from "@/lib/jmap/types";
+import type { Email, EmailAddress } from "@/lib/jmap/types";
 
 const HTML_ESCAPE_MAP = {
   "&": "&amp;",
@@ -386,12 +386,45 @@ export function parseRecipient(s: string): Recipient {
   if (angleMatch) {
     return { name: unquoteName(angleMatch[1]), email: angleMatch[2].trim() };
   }
+  // A mailbox that lost its closing bracket (`Jane <jane@x.com`) still carries
+  // a usable address - it is what an autosave catches when it snapshots the
+  // recipient input mid-typing. Recover the name/addr-spec pair instead of
+  // keeping the whole string as a bogus address that no server can route
+  // (#672). splitMailbox keeps the last angle run only, so everything ahead of
+  // it becomes the display name: skip the recovery when that prefix carries an
+  // address of its own (`a@x.com <b@y.com`), which would silently swallow it.
+  const lastOpenAngle = trimmed.lastIndexOf('<');
+  if (lastOpenAngle !== -1 && !carriesAddress(trimmed.slice(0, lastOpenAngle))) {
+    const mailbox = splitMailbox(trimmed);
+    if (isValidEmail(mailbox.email)) return mailbox;
+  }
   return { email: trimmed };
 }
 
 /** Parses a serialized comma-separated recipient string into an array. */
 export function parseRecipientList(value: string): Recipient[] {
   return splitRecipients(value).map(parseRecipient);
+}
+
+/**
+ * Folds not-yet-committed recipient text into the chip list, but only when it
+ * actually carries an address.
+ *
+ * Used by everything that persists recipients to the server draft. The
+ * composer autosaves on a debounce, so it regularly snapshots the input
+ * mid-typing: a half-typed address, or the stray `>` left in the field when
+ * the autocomplete committed the chip one keystroke earlier. Persisted as a
+ * structured JMAP recipient, such a fragment comes back as a broken chip the
+ * next time the draft is opened - a bare `>`, or an address that lost its
+ * closing bracket. The send path keeps folding in whatever is typed, so an
+ * address the user never committed still goes out.
+ */
+export function withPersistableInput(chips: Recipient[], input: string): Recipient[] {
+  const trimmed = input.trim();
+  if (!trimmed) return chips;
+  const parsed = parseRecipient(trimmed);
+  if (parsed.group) return [...chips, parsed];
+  return isValidEmail(parsed.email) ? [...chips, parsed] : chips;
 }
 
 /**
@@ -414,6 +447,21 @@ export function formatRecipientEntry(r: Recipient): string {
 /** Serializes a recipient array into a comma-separated string. */
 export function formatRecipientList(recipients: Recipient[]): string {
   return recipients.map(formatRecipientEntry).join(', ');
+}
+
+/**
+ * Serializes a stored draft's JMAP recipients into the composer's string form,
+ * display names included. Mapping to the bare address - what the draft re-open
+ * path used to do - dropped the name every time, so a draft saved twice lost
+ * its names for good. The name is sanitized because a stored one that repeats
+ * the address would otherwise round-trip into a doubled, invalid mailbox
+ * (#672).
+ */
+export function formatDraftRecipients(addresses: EmailAddress[] | undefined | null): string {
+  return (addresses ?? [])
+    .filter((a) => a.email)
+    .map((a) => formatRecipient(sanitizeDisplayName(a.name), a.email))
+    .join(', ');
 }
 
 /**
