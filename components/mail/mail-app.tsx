@@ -93,7 +93,7 @@ import { AppTopBannerSlot } from "@/components/plugins/app-top-banner-slot";
 import { useThemeStore } from "@/stores/theme-store";
 import { consumePendingMailto, subscribeToPendingMailto } from "@/lib/protocol-handlers/session";
 import { INTERNAL_MAILTO_EVENT, type ParsedMailto } from "@/lib/protocol-handlers/mailto";
-import { plainTextToComposerBody, getQuoteBodies } from "@/lib/email-composer-utils";
+import { plainTextToComposerBody, getQuoteBodies, formatDraftRecipients } from "@/lib/email-composer-utils";
 import { appLifecycleHooks, uiHooks, routerHooks, toastHooks, emailHooks } from "@/lib/plugin-hooks";
 import { emailToReadView } from "@/lib/plugin-projection";
 import { buildQuoteHeader } from "@/lib/quote-header";
@@ -1855,9 +1855,11 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     // even if it was already open (e.g. right-clicking a draft while composing).
     setComposerSessionId(id => id + 1);
     setPendingDraft({
-      to: draft.to?.map(a => a.email).filter(Boolean).join(', ') || '',
-      cc: draft.cc?.map(a => a.email).filter(Boolean).join(', ') || '',
-      bcc: draft.bcc?.map(a => a.email).filter(Boolean).join(', ') || '',
+      // Display names included: mapping to the bare address dropped them on
+      // every re-open, so a draft saved twice lost the names for good.
+      to: formatDraftRecipients(draft.to),
+      cc: formatDraftRecipients(draft.cc),
+      bcc: formatDraftRecipients(draft.bcc),
       subject: draft.subject || '',
       body: htmlBody || bodyText,
       showCc: (draft.cc?.length || 0) > 0,

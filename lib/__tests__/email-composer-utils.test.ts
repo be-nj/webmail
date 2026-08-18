@@ -10,6 +10,8 @@ import {
   formatRecipient,
   parseRecipient,
   parseRecipientList,
+  withPersistableInput,
+  formatDraftRecipients,
   formatRecipientList,
   splitPastedRecipients,
   waitForPendingUploads,
@@ -359,6 +361,29 @@ describe("formatRecipient / parseRecipient", () => {
       email: "john@doo.org",
     });
   });
+
+  it("recovers a mailbox whose closing bracket is missing (#672)", () => {
+    expect(parseRecipient("Jane Doe <jane@doo.org")).toEqual({
+      name: "Jane Doe",
+      email: "jane@doo.org",
+    });
+  });
+
+  it("recovers an address with a stray opening bracket", () => {
+    expect(parseRecipient("<jane@doo.org")).toEqual({ email: "jane@doo.org" });
+  });
+
+  it("leaves a fragment that carries no address alone", () => {
+    expect(parseRecipient(">")).toEqual({ email: ">" });
+    expect(parseRecipient("Jane")).toEqual({ email: "Jane" });
+  });
+
+  it("round-trips an unbalanced mailbox into a well-formed one", () => {
+    const recovered = parseRecipient("Jane Doe <jane@doo.org");
+    expect(formatRecipient(recovered.name, recovered.email)).toBe(
+      "Jane Doe <jane@doo.org>"
+    );
+  });
 });
 
 describe("parseRecipientList / formatRecipientList", () => {
@@ -465,6 +490,80 @@ describe("splitPastedRecipients", () => {
     const { valid, invalid } = splitPastedRecipients("Ann <a@x.com Bob <b@y.com");
     expect(valid).toEqual([{ email: "a@x.com" }, { email: "b@y.com" }]);
     expect(invalid).toEqual(["Ann", "Bob"]);
+  });
+});
+
+describe("formatDraftRecipients", () => {
+  it("keeps the display name a stored draft carries", () => {
+    expect(
+      formatDraftRecipients([
+        { name: "Jane Doe", email: "jane@x.com" },
+        { email: "bob@x.com" },
+      ])
+    ).toBe("Jane Doe <jane@x.com>, bob@x.com");
+  });
+
+  it("round-trips back into the same recipients", () => {
+    const serialized = formatDraftRecipients([
+      { name: "Doo, John", email: "john@doo.org" },
+    ]);
+    expect(parseRecipientList(serialized)).toEqual([
+      { name: "Doo, John", email: "john@doo.org" },
+    ]);
+  });
+
+  it("does not double a name that already repeats the address (#672)", () => {
+    expect(
+      formatDraftRecipients([
+        { name: "Jane <jane@x.com>", email: "jane@x.com" },
+      ])
+    ).toBe("Jane <jane@x.com>");
+  });
+
+  it("skips entries without an address and handles a missing list", () => {
+    expect(formatDraftRecipients([{ name: "Jane", email: "" }])).toBe("");
+    expect(formatDraftRecipients(undefined)).toBe("");
+  });
+});
+
+describe("withPersistableInput", () => {
+  const chips = [{ email: "committed@x.com" }];
+
+  it("keeps a complete typed address", () => {
+    expect(withPersistableInput(chips, "jane@x.com")).toEqual([
+      { email: "committed@x.com" },
+      { email: "jane@x.com" },
+    ]);
+  });
+
+  it("keeps a mailbox caught before its closing bracket was typed", () => {
+    expect(withPersistableInput(chips, "Jane Doe <jane@x.com")).toEqual([
+      { email: "committed@x.com" },
+      { name: "Jane Doe", email: "jane@x.com" },
+    ]);
+  });
+
+  it("drops the stray `>` left behind by an autocomplete pick", () => {
+    expect(withPersistableInput(chips, ">")).toEqual(chips);
+  });
+
+  it("drops a fragment that is not an address yet", () => {
+    expect(withPersistableInput(chips, "Jane D")).toEqual(chips);
+    expect(withPersistableInput(chips, "jane@")).toEqual(chips);
+  });
+
+  it("keeps a group entry", () => {
+    const folded = withPersistableInput(chips, "Team: a@x.com, b@x.com;");
+    expect(folded).toHaveLength(2);
+    expect(folded[1].group?.members).toEqual([
+      { email: "a@x.com" },
+      { email: "b@x.com" },
+    ]);
+  });
+
+  it("is a no-op for empty or whitespace-only input", () => {
+    expect(withPersistableInput(chips, "")).toBe(chips);
+    expect(withPersistableInput(chips, "   ")).toBe(chips);
   });
 });
 
