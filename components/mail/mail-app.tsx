@@ -124,7 +124,7 @@ import { consumePendingMailto, subscribeToPendingMailto } from "@/lib/protocol-h
 import { INTERNAL_MAILTO_EVENT, type ParsedMailto } from "@/lib/protocol-handlers/mailto";
 import { PLUGIN_REPLY_EVENT, type PluginReplyRequest } from "@/lib/plugin-sandbox/host-api-compose";
 import { mailtoComposerDraft } from "./mailto-draft";
-import { getQuoteBodies } from "@/lib/email-composer-utils";
+import { getQuoteBodies, formatDraftRecipients } from "@/lib/email-composer-utils";
 import { emailHooks } from "@/lib/plugin-hooks";
 import { afterRequestDispatch } from "@/lib/after-request-dispatch";
 import { useStableHandlers } from "@/hooks/use-stable-handlers";
@@ -2342,9 +2342,11 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     // even if it was already open (e.g. right-clicking a draft while composing).
     setComposerSessionId(id => id + 1);
     setPendingDraft({
-      to: draft.to?.map(a => a.email).filter(Boolean).join(', ') || '',
-      cc: draft.cc?.map(a => a.email).filter(Boolean).join(', ') || '',
-      bcc: draft.bcc?.map(a => a.email).filter(Boolean).join(', ') || '',
+      // Display names included: mapping to the bare address dropped them on
+      // every re-open, so a draft saved twice lost the names for good.
+      to: formatDraftRecipients(draft.to),
+      cc: formatDraftRecipients(draft.cc),
+      bcc: formatDraftRecipients(draft.bcc),
       // Drafts saved before #1189 stored an empty subject as the composer's
       // "(No Subject)" placeholder; reopen those with an empty field.
       subject: draft.subject && draft.subject !== t('email_composer.no_subject') ? draft.subject : '',
