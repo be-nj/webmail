@@ -641,7 +641,9 @@
       "recipient_required": "請新增收件者",
       "body_required": "請輸入郵件內容或新增附件",
       "attachments_uploading": "附件仍在上傳中，上傳完成後將自動傳送",
-      "attachment_upload_failed": "未傳送 — 附件上傳失敗。請移除該附件後再試一次。"
+      "attachment_upload_failed": "未傳送 — 附件上傳失敗。請移除該附件後再試一次。",
+      "invalid_recipient": "不是有效的電子郵件地址",
+      "invalid_recipients": "未傳送 — {addresses} 不是有效的電子郵件地址。請修正後重試。"
     },
     "upload_progress": "正在上傳 {uploaded} / {total}",
     "upload_cancel": "取消上傳",

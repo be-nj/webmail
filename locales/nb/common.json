@@ -644,7 +644,9 @@
       "recipient_required": "Legg til minst én mottaker før du sender",
       "body_required": "Skriv en melding eller legg ved en fil",
       "attachments_uploading": "Vedlegg lastes fortsatt opp – meldingen sendes så snart opplastingen er ferdig",
-      "attachment_upload_failed": "Ikke sendt – et vedlegg kunne ikke lastes opp. Fjern det og prøv igjen."
+      "attachment_upload_failed": "Ikke sendt – et vedlegg kunne ikke lastes opp. Fjern det og prøv igjen.",
+      "invalid_recipient": "Ikke en gyldig e-postadresse",
+      "invalid_recipients": "Ikke sendt — {addresses} er ikke en gyldig e-postadresse. Rett den og prøv igjen."
     },
     "upload_progress": "Laster opp {uploaded} / {total}",
     "upload_cancel": "Avbryt opplasting",

@@ -2388,6 +2388,19 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
   };
 
   const handleMailboxSelect = async (mailboxId: string) => {
+    // Picking a destination in the sidebar is navigation, not a refinement of
+    // the running search, so it leaves the search entirely - the folder is
+    // shown, the search box empties. This used to re-run the query in the new
+    // mailbox, which stopped meaning anything once the search scope moved into
+    // its own `searchMailboxId` (#788): the re-run returned the identical
+    // result set, so the click changed nothing visible while the search box
+    // stayed filled. clearSearchFilters also resets the scope back to all
+    // folders, so the next search starts global again.
+    if (searchQuery || !isFilterEmpty(searchFilters)) {
+      setSearchQuery("");
+      clearSearchFilters();
+    }
+
     // A shared account's Scheduled row arrives as "__scheduled__:<accountId>";
     // the store only ever sees the plain virtual id plus the account scope.
     const scheduledSelection = parseScheduledMailboxId(mailboxId);
@@ -2429,18 +2442,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       }
 
       const populated = await buildPopulatedUnifiedAccounts();
-      // Keep an active search across the switch and re-run it in this view
-      // (mirrors normal mailboxes), preserving advanced filters; otherwise browse.
-      if (client && (!isFilterEmpty(searchFilters) || searchQuery)) {
-        useEmailStore.setState({ isUnifiedView: true, unifiedRole: role, crossView: null });
-        if (!isFilterEmpty(searchFilters)) {
-          await advancedSearch(client);
-        } else {
-          await searchEmails(client, searchQuery);
-        }
-      } else {
-        await fetchUnifiedEmailsAction(populated, role);
-      }
+      await fetchUnifiedEmailsAction(populated, role);
       refreshUnifiedCounts(populated);
       return;
     }
@@ -2462,18 +2464,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       }
 
       const populated = await buildPopulatedUnifiedAccounts();
-      // Keep an active search across the switch and re-run it in this view
-      // (mirrors normal mailboxes), preserving advanced filters; otherwise browse.
-      if (client && (!isFilterEmpty(searchFilters) || searchQuery)) {
-        useEmailStore.setState({ isUnifiedView: true, crossView: view, unifiedRole: null });
-        if (!isFilterEmpty(searchFilters)) {
-          await advancedSearch(client);
-        } else {
-          await searchEmails(client, searchQuery);
-        }
-      } else {
-        await fetchCrossViewAction(populated, view);
-      }
+      await fetchCrossViewAction(populated, view);
       refreshCrossCounts(populated);
       return;
     }
@@ -2498,17 +2489,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     }
 
     if (client) {
-      // If there's an active search, re-run it in the new mailbox. Advanced
-      // filters must go through advancedSearch (which also includes the text
-      // query) — falling back to fetchEmails would silently drop them while
-      // the UI still shows them as active (#553).
-      if (!isFilterEmpty(searchFilters)) {
-        await advancedSearch(client);
-      } else if (searchQuery) {
-        await searchEmails(client, searchQuery);
-      } else {
-        await fetchEmails(client, mailboxId);
-      }
+      await fetchEmails(client, mailboxId);
     }
   };
 
