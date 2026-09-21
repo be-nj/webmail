@@ -2161,6 +2161,10 @@
         "backup_description": "Behold dine indstillinger på tværs af browsere og enheder.",
         "fix": "Løs problemer",
         "fix_description": "Når en visning ser forældet eller forkert ud, eller du vil starte forfra."
+      },
+      "sender_bimi_logos": {
+        "label": "Afsenderes brandlogoer (BIMI)",
+        "description": "Vis det brandlogo, som afsenderens domæne offentliggør (BIMI), kun på beskeder, der har bestået afsenderbekræftelse"
       }
     },
     "sidebar_apps": {

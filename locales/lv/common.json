@@ -2158,6 +2158,10 @@
         "backup_description": "Saglabājiet iestatījumus dažādās pārlūkprogrammās un ierīcēs.",
         "fix": "Problēmu novēršana",
         "fix_description": "Ja skats izskatās novecojis vai nepareizs, vai vēlaties sākt no jauna."
+      },
+      "sender_bimi_logos": {
+        "label": "Sūtītāju zīmolu logotipi (BIMI)",
+        "description": "Rādīt sūtītāja domēna publicēto zīmola logotipu (BIMI) tikai ziņojumos, kas izturējuši sūtītāja pārbaudi"
       }
     },
     "sidebar_apps": {

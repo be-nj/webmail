@@ -75,6 +75,7 @@ export const tabSearchPaths: Record<Tab, string[]> = {
     'settings.appearance.tint_list_rows',
     'settings.email_behavior.show_verification_codes',
     'settings.advanced.sender_favicons',
+    'settings.advanced.sender_bimi_logos',
     'settings.advanced.show_avatars_in_junk',
     'settings.email_behavior.hover_actions',
     'settings.email_behavior.swipe_right_action',

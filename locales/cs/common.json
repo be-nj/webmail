@@ -2158,6 +2158,10 @@
         "backup_description": "Zachovejte nastavení napříč prohlížeči a zařízeními.",
         "fix": "Řešení potíží",
         "fix_description": "Když zobrazení vypadá zastarale nebo chybně, nebo chcete začít znovu."
+      },
+      "sender_bimi_logos": {
+        "label": "Loga značek odesílatelů (BIMI)",
+        "description": "Zobrazit logo značky zveřejněné doménou odesílatele (BIMI), pouze u zpráv, které prošly ověřením odesílatele"
       }
     },
     "sidebar_apps": {

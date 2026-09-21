@@ -2161,6 +2161,10 @@
         "backup_description": "Őrizze meg beállításait böngészők és eszközök között.",
         "fix": "Hibák elhárítása",
         "fix_description": "Ha egy nézet elavultnak vagy hibásnak tűnik, vagy elölről szeretné kezdeni."
+      },
+      "sender_bimi_logos": {
+        "label": "Feladók márkalogói (BIMI)",
+        "description": "A feladó domainje által közzétett márkalogó (BIMI) megjelenítése, csak a feladó-ellenőrzésen átment üzeneteknél"
       }
     },
     "sidebar_apps": {

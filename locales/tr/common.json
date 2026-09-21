@@ -2158,6 +2158,10 @@
         "backup_description": "Ayarlarınızı tarayıcılar ve cihazlar arasında koruyun.",
         "fix": "Sorunları giderme",
         "fix_description": "Bir görünüm eski ya da yanlış göründüğünde ya da baştan başlamak istediğinizde."
+      },
+      "sender_bimi_logos": {
+        "label": "Gönderen marka logoları (BIMI)",
+        "description": "Gönderen alan adının yayımladığı marka logosunu (BIMI) yalnızca gönderen doğrulamasını geçen iletilerde göster"
       }
     },
     "sidebar_apps": {

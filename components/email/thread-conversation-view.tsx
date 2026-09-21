@@ -15,7 +15,7 @@ import { DARK_PENDING_CLASS, applyEmailDarkMode, emailDarkModeCss } from "@/lib/
 import { useThemeStore } from "@/stores/theme-store";
 import { useShallow } from "zustand/react/shallow";
 import { Avatar } from "@/components/ui/avatar";
-import { isAuthenticationSpoofed } from "@/lib/email-headers";
+import { hasAlignedDmarcPass, isAuthenticationSpoofed } from "@/lib/email-headers";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatFileSize, cn, cleanPreview } from "@/lib/utils";
 import {
@@ -388,6 +388,7 @@ function EmailCard({
             email={sender?.email}
             size="md"
             className="flex-shrink-0"
+            dmarcPass={hasAlignedDmarcPass(email)}
           />
         )}
         <div className="flex-1 min-w-0">

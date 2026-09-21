@@ -2158,6 +2158,10 @@
         "backup_description": "在浏览器和设备之间保留您的设置。",
         "fix": "修复问题",
         "fix_description": "当视图看起来过时或有误，或者您想重新开始时。"
+      },
+      "sender_bimi_logos": {
+        "label": "发件人品牌徽标 (BIMI)",
+        "description": "显示发件人域名发布的品牌徽标 (BIMI)，仅用于通过发件人验证的邮件"
       }
     },
     "sidebar_apps": {

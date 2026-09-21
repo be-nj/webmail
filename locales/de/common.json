@@ -2158,6 +2158,10 @@
         "backup_description": "Ihre Einstellungen über Browser und Geräte hinweg behalten.",
         "fix": "Probleme beheben",
         "fix_description": "Wenn eine Ansicht veraltet oder falsch aussieht oder Sie neu anfangen möchten."
+      },
+      "sender_bimi_logos": {
+        "label": "Absender-Markenlogos (BIMI)",
+        "description": "Markenlogo der Absenderdomain (BIMI) anzeigen, nur bei Nachrichten mit bestandener Absenderprüfung"
       }
     },
     "sidebar_apps": {

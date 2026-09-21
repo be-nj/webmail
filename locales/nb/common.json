@@ -2101,6 +2101,10 @@
         "refresh_button": "Oppdater",
         "refresh_done": "Avsenderikonene hentes på nytt"
       },
+      "sender_bimi_logos": {
+        "label": "Avsenderes merkevarelogoer (BIMI)",
+        "description": "Vis merkevarelogoen som avsenderens domene publiserer (BIMI), bare på meldinger som har bestått avsenderbekreftelse"
+      },
       "show_avatars_in_junk": {
         "label": "Vis profilbilder i søppelpostmappen",
         "description": "Vis profilbilder og nettstedsikoner for avsendere i søppelpostmappen. Dette er deaktivert som standard for å unngå at svindelforsøk virker mer troverdige."
