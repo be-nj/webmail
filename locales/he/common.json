@@ -606,7 +606,11 @@
     "mv_position": "{index} מתוך {total}",
     "plugin_panel_show": "הצגת חלונית התוסף",
     "plugin_panel_hide": "הסתרת חלונית התוסף",
-    "copy": "העתק"
+    "copy": "העתק",
+    "impersonation_warning": {
+      "title": "לא מהשולח המהימן שלך",
+      "description": "הודעה זו טוענת שהיא מ-{address}, אחד השולחים המהימנים שלך, אך נכשלה באימות השולח. ככל הנראה היא לא נשלחה על ידו."
+    }
   },
   "email_composer": {
     "select_from_directory": "בחירה מהספרייה",

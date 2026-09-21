@@ -641,7 +641,11 @@
     "mv_position": "{index} sur {total}",
     "plugin_panel_show": "Afficher le panneau du plugin",
     "plugin_panel_hide": "Masquer le panneau du plugin",
-    "copy": "Copier"
+    "copy": "Copier",
+    "impersonation_warning": {
+      "title": "Ne vient pas de votre expéditeur de confiance",
+      "description": "Ce message prétend venir de {address}, l'un de vos expéditeurs de confiance, mais a échoué à la vérification de l'expéditeur. Il n'a très probablement pas été envoyé par lui."
+    }
   },
   "email_composer": {
     "select_from_directory": "Choisir dans l'annuaire",

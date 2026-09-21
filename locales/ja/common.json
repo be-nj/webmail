@@ -641,7 +641,11 @@
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "プラグインパネルを表示",
     "plugin_panel_hide": "プラグインパネルを隠す",
-    "copy": "コピー"
+    "copy": "コピー",
+    "impersonation_warning": {
+      "title": "信頼済み送信者からではありません",
+      "description": "このメッセージは信頼済み送信者の {address} からと称していますが、送信者認証に失敗しました。本人が送信したものではない可能性が高いです。"
+    }
   },
   "email_composer": {
     "select_from_directory": "ディレクトリから選択",

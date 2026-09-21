@@ -641,7 +641,11 @@
     "mv_position": "{index} de {total}",
     "plugin_panel_show": "Mostra el tauler del connector",
     "plugin_panel_hide": "Amaga el tauler del connector",
-    "copy": "Copia"
+    "copy": "Copia",
+    "impersonation_warning": {
+      "title": "No és del teu remitent de confiança",
+      "description": "Aquest missatge diu que ve de {address}, un dels teus remitents de confiança, però no ha superat la verificació del remitent. Molt probablement no l'ha enviat."
+    }
   },
   "email_composer": {
     "select_from_directory": "Selecciona del directori",

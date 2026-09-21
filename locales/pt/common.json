@@ -641,7 +641,11 @@
     "mv_position": "{index} de {total}",
     "plugin_panel_show": "Mostrar o painel do plugin",
     "plugin_panel_hide": "Ocultar o painel do plugin",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "impersonation_warning": {
+      "title": "Não é do seu remetente de confiança",
+      "description": "Esta mensagem afirma vir de {address}, um dos seus remetentes de confiança, mas falhou a verificação do remetente. Muito provavelmente não foi enviada por ele."
+    }
   },
   "email_composer": {
     "select_from_directory": "Selecionar do diretório",

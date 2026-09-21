@@ -641,7 +641,11 @@
     "mv_position": "{index} من {total}",
     "plugin_panel_show": "إظهار لوحة الإضافة",
     "plugin_panel_hide": "إخفاء لوحة الإضافة",
-    "copy": "نسخ"
+    "copy": "نسخ",
+    "impersonation_warning": {
+      "title": "ليست من مرسلك الموثوق",
+      "description": "تدّعي هذه الرسالة أنها من {address}، أحد المرسلين الموثوقين لديك، لكنها فشلت في التحقق من المرسل. على الأرجح لم يرسلها."
+    }
   },
   "email_composer": {
     "select_from_directory": "الاختيار من الدليل",

@@ -641,7 +641,11 @@
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "Bővítménypanel megjelenítése",
     "plugin_panel_hide": "Bővítménypanel elrejtése",
-    "copy": "Másolás"
+    "copy": "Másolás",
+    "impersonation_warning": {
+      "title": "Nem a megbízható feladódtól",
+      "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
+    }
   },
   "email_composer": {
     "select_from_directory": "Kiválasztás a címtárból",

@@ -641,7 +641,11 @@
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "Eklenti panelini göster",
     "plugin_panel_hide": "Eklenti panelini gizle",
-    "copy": "Kopyala"
+    "copy": "Kopyala",
+    "impersonation_warning": {
+      "title": "Güvenilir göndericinizden değil",
+      "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."
+    }
   },
   "email_composer": {
     "select_from_directory": "Dizinden seç",

@@ -641,7 +641,11 @@
     "mv_position": "{index} no {total}",
     "plugin_panel_show": "Rādīt spraudņa paneli",
     "plugin_panel_hide": "Slēpt spraudņa paneli",
-    "copy": "Kopēt"
+    "copy": "Kopēt",
+    "impersonation_warning": {
+      "title": "Nav no jūsu uzticamā sūtītāja",
+      "description": "Šis ziņojums apgalvo, ka ir no {address}, viena no jūsu uzticamajiem sūtītājiem, taču nav izturējis sūtītāja pārbaudi. Visticamāk, to nav sūtījis viņš."
+    }
   },
   "email_composer": {
     "select_from_directory": "Izvēlēties no kataloga",

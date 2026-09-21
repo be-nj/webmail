@@ -32,6 +32,9 @@ import { useMeasuredTagDisplay } from "@/hooks/use-tag-display";
 import { useKeywordFormat } from "@/hooks/use-keyword-format";
 import { getEmailTagIds } from "@/lib/thread-utils";
 import { getSecurityStatus, extractListHeaders, getSenderVerification, hasAlignedDmarcPass, isAuthenticationSpoofed } from "@/lib/email-headers";
+import { senderTrustSignal } from "@/lib/sender-trust";
+import { useIsTrustedSender } from "@/hooks/use-trusted-sender";
+import { ImpersonationWarning } from "@/components/email/impersonation-warning";
 import { emailToReadView } from "@/lib/plugin-projection";
 import type { EmailReadView, ExternalLinkContext } from "@/lib/plugin-types";
 import { generateEmailSource } from "@/lib/email-source";
@@ -1098,6 +1101,7 @@ export function EmailViewer({
   const addTrustedSender = useSettingsStore((state) => state.addTrustedSender);
   const isSenderTrusted = useSettingsStore((state) => state.isSenderTrusted);
   const trustedSendersAddressBook = useSettingsStore((state) => state.trustedSendersAddressBook);
+  const isTrustedSender = useIsTrustedSender();
   const isTrustedAddressBookSender = useContactStore((state) => state.isTrustedAddressBookSender);
   const addToTrustedSendersBook = useContactStore((state) => state.addToTrustedSendersBook);
   const emailKeywords = useSettingsStore((state) => state.emailKeywords);
@@ -3783,6 +3787,7 @@ export function EmailViewer({
       : senderVerification.sentFrom
         ? t('sender_check.unverified_sent_from', { domain: senderVerification.domain, host: senderVerification.sentFrom })
         : t('sender_check.unverified', { domain: senderVerification.domain });
+  const trustSignal = senderTrustSignal(email, isTrustedSender);
   const isStarred = email.keywords?.$flagged;
   const isUnread = !email.keywords?.$seen;
   const isImportant = email.keywords?.["$important"];
@@ -4945,6 +4950,7 @@ export function EmailViewer({
           <MvConversationRun emails={mvBefore} onOpen={toggleMvExpanded} expandedIds={mvExpandedIds} renderExpanded={renderMvExpanded} timeFormat={timeFormat} compact={mvMobileViewer} collapseLongRun />
         </div>
       )}
+      {trustSignal === 'impersonated' && sender?.email && <ImpersonationWarning address={sender.email} />}
 
       {/* Mountain View: the open message folded like the rest of the conversation. */}
       {mvOpenFolded && email ? (
@@ -4986,6 +4992,7 @@ export function EmailViewer({
                 size="lg"
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
                 dmarcPass={hasAlignedDmarcPass(email)}
+                senderTrust={trustSignal}
               />
             </button>
 
@@ -5283,6 +5290,7 @@ export function EmailViewer({
                 size="lg"
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
                 dmarcPass={hasAlignedDmarcPass(email)}
+                senderTrust={trustSignal}
               />
             </button>
             <div className="flex-1 min-w-0">
