@@ -2214,6 +2214,10 @@
         "backup_description": "브라우저와 기기 간에 설정을 유지합니다.",
         "fix": "문제 해결",
         "fix_description": "보기가 오래되었거나 잘못되었을 때, 또는 처음부터 다시 시작하고 싶을 때."
+      },
+      "sender_bimi_logos": {
+        "label": "발신자 브랜드 로고 (BIMI)",
+        "description": "발신자 도메인이 게시한 브랜드 로고(BIMI)를 발신자 인증을 통과한 메시지에만 표시합니다"
       }
     },
     "sidebar_apps": {

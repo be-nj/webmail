@@ -2214,6 +2214,10 @@
         "backup_description": "Bewaar uw instellingen over browsers en apparaten heen.",
         "fix": "Problemen oplossen",
         "fix_description": "Als een weergave verouderd of onjuist lijkt, of u opnieuw wilt beginnen."
+      },
+      "sender_bimi_logos": {
+        "label": "Merklogo's van afzenders (BIMI)",
+        "description": "Toon het merklogo dat het domein van de afzender publiceert (BIMI), alleen bij berichten die de afzendercontrole hebben doorstaan"
       }
     },
     "sidebar_apps": {

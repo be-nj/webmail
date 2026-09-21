@@ -2221,6 +2221,10 @@
         "backup_description": "Conserveu la configuració entre navegadors i dispositius.",
         "fix": "Solucionar problemes",
         "fix_description": "Quan una vista sembla antiga o incorrecta, o voleu començar de nou."
+      },
+      "sender_bimi_logos": {
+        "label": "Logotips de marca dels remitents (BIMI)",
+        "description": "Mostra el logotip de marca que publica el domini del remitent (BIMI), només en missatges que han superat la verificació del remitent"
       }
     },
     "sidebar_apps": {

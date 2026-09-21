@@ -2221,6 +2221,10 @@
         "backup_description": "Păstrați-vă setările între browsere și dispozitive.",
         "fix": "Rezolvarea problemelor",
         "fix_description": "Când o vizualizare pare învechită sau greșită, sau vreți să o luați de la capăt."
+      },
+      "sender_bimi_logos": {
+        "label": "Logouri de marcă ale expeditorilor (BIMI)",
+        "description": "Afișează logoul de marcă publicat de domeniul expeditorului (BIMI), doar la mesajele care au trecut verificarea expeditorului"
       }
     },
     "sidebar_apps": {

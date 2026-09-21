@@ -2214,6 +2214,10 @@
         "backup_description": "Conserve sus ajustes entre navegadores y dispositivos.",
         "fix": "Solucionar problemas",
         "fix_description": "Cuando una vista parece desactualizada o incorrecta, o quiere empezar de cero."
+      },
+      "sender_bimi_logos": {
+        "label": "Logotipos de marca de remitentes (BIMI)",
+        "description": "Mostrar el logotipo de marca que publica el dominio del remitente (BIMI), solo en mensajes que superaron la verificación del remitente"
       }
     },
     "sidebar_apps": {

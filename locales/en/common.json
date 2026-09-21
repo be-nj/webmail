@@ -2221,6 +2221,10 @@
         "backup_description": "Keep your settings across browsers and devices.",
         "fix": "Fix problems",
         "fix_description": "When a view looks stale or wrong, or you want to start over."
+      },
+      "sender_bimi_logos": {
+        "label": "Sender Brand Logos (BIMI)",
+        "description": "Show the brand logo a sender domain publishes (BIMI), only on messages that passed sender verification"
       }
     },
     "sidebar_apps": {

@@ -71,6 +71,7 @@ export function MessageListSettings() {
     mvInboxType,
     tintListRowsByTag,
     senderFavicons,
+    senderBimiLogos,
     showAvatarsInJunk,
     updateSetting,
   } = useSettingsStore();
@@ -233,6 +234,12 @@ export function MessageListSettings() {
               <RefreshCw className="w-3.5 h-3.5 me-1" />
               {tAdvanced('sender_favicons.refresh_button')}
             </Button>
+          </SettingItem>
+        )}
+
+        {!IS_LITE && (
+          <SettingItem label={tAdvanced('sender_bimi_logos.label')} description={tAdvanced('sender_bimi_logos.description')}>
+            <ToggleSwitch checked={senderBimiLogos} onChange={(checked) => updateSetting('senderBimiLogos', checked)} />
           </SettingItem>
         )}
 

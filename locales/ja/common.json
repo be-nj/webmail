@@ -2214,6 +2214,10 @@
         "backup_description": "ブラウザーやデバイスをまたいで設定を保持します。",
         "fix": "問題の解決",
         "fix_description": "表示が古い、または正しくないとき、あるいは最初からやり直したいときに。"
+      },
+      "sender_bimi_logos": {
+        "label": "送信者のブランドロゴ (BIMI)",
+        "description": "送信者ドメインが公開しているブランドロゴ (BIMI) を、送信者認証に合格したメッセージにのみ表示します"
       }
     },
     "sidebar_apps": {

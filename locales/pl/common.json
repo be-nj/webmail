@@ -2214,6 +2214,10 @@
         "backup_description": "Zachowaj ustawienia w różnych przeglądarkach i na różnych urządzeniach.",
         "fix": "Rozwiązywanie problemów",
         "fix_description": "Gdy widok wygląda na nieaktualny lub błędny albo chcesz zacząć od nowa."
+      },
+      "sender_bimi_logos": {
+        "label": "Logo marek nadawców (BIMI)",
+        "description": "Pokazuj logo marki publikowane przez domenę nadawcy (BIMI), tylko w wiadomościach, które przeszły weryfikację nadawcy"
       }
     },
     "sidebar_apps": {

@@ -2221,6 +2221,10 @@
         "backup_description": "Zachovajte nastavenia naprieč prehliadačmi a zariadeniami.",
         "fix": "Riešenie problémov",
         "fix_description": "Keď zobrazenie vyzerá zastarano alebo chybne, alebo chcete začať odznova."
+      },
+      "sender_bimi_logos": {
+        "label": "Logá značiek odosielateľov (BIMI)",
+        "description": "Zobraziť logo značky zverejnené doménou odosielateľa (BIMI), len pri správach, ktoré prešli overením odosielateľa"
       }
     },
     "sidebar_apps": {

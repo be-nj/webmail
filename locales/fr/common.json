@@ -2214,6 +2214,10 @@
         "backup_description": "Conservez vos paramètres d'un navigateur et d'un appareil à l'autre.",
         "fix": "Résoudre les problèmes",
         "fix_description": "Quand une vue semble obsolète ou incorrecte, ou pour repartir de zéro."
+      },
+      "sender_bimi_logos": {
+        "label": "Logos de marque des expéditeurs (BIMI)",
+        "description": "Afficher le logo de marque publié par le domaine de l'expéditeur (BIMI), uniquement pour les messages ayant passé la vérification de l'expéditeur"
       }
     },
     "sidebar_apps": {
