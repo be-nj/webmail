@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Skjul pluginpanel",
     "plugin_panel": "Pluginpanel",
     "copy": "Kopiér",
+    "impersonation_warning": {
+      "title": "Ikke fra din betroede afsender",
+      "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
+    },
     "contact_added": "Kontakt tilføjet",
     "save_to_files": {
       "title": "Gem i Filer",

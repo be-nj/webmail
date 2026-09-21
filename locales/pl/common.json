@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Ukryj panel wtyczki",
     "plugin_panel": "Panel wtyczki",
     "copy": "Kopiuj",
+    "impersonation_warning": {
+      "title": "Nie od zaufanego nadawcy",
+      "description": "Ta wiadomość podaje się za wysłaną przez {address}, jednego z Twoich zaufanych nadawców, ale nie przeszła weryfikacji nadawcy. Najprawdopodobniej nie została przez niego wysłana."
+    },
     "contact_added": "Dodano kontakt",
     "save_to_files": {
       "title": "Zapisz w Plikach",

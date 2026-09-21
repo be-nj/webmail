@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Ocultar o painel do plugin",
     "plugin_panel": "Painel do plugin",
     "copy": "Copiar",
+    "impersonation_warning": {
+      "title": "Não é do seu remetente de confiança",
+      "description": "Esta mensagem afirma vir de {address}, um dos seus remetentes de confiança, mas falhou a verificação do remetente. Muito provavelmente não foi enviada por ele."
+    },
     "contact_added": "Contacto adicionado",
     "save_to_files": {
       "title": "Guardar em Ficheiros",

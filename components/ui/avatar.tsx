@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { ShieldAlert } from "@/components/icons";
+import { AlertTriangle, HeartHandshake, ShieldAlert } from "@/components/icons";
+import type { SenderTrustSignal } from "@/lib/sender-trust";
 import { getLuminance, parseColor } from "@/lib/color-transform";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useContactStore, getContactPhotoIndex, type ContactPhotoRef } from "@/stores/contact-store";
@@ -168,6 +169,14 @@ interface AvatarProps {
    * every source but a contact photo.
    */
   brandDomain?: string;
+  /**
+   * Fork: what the message says about the sender as a Trusted Sender (see
+   * `senderTrustSignal`): a handshake badge for `trusted`, a red warning badge
+   * for `impersonated`.
+   */
+  senderTrust?: SenderTrustSignal;
+  /** Tooltip for the sender-trust badge; the caller translates it. */
+  senderTrustLabel?: string;
 }
 
 /**
@@ -182,7 +191,7 @@ function initialsColor(background: string): string {
   return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? '#ffffff' : '#000000';
 }
 
-export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain }: AvatarProps) {
+export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain, senderTrust = null, senderTrustLabel }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
   // The BIMI logo of this domain answered with no logo (or didn't load).
   const [failedBrand, setFailedBrand] = useState<string | null>(null);
@@ -319,6 +328,8 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   }, [imgSrc, pluginAvatar, faviconDomain, resolvedContactPhoto, brandSrc, brandDomain, customAvatar, profilePic]);
 
   const initialsBackground = fallbackColor ?? getBackgroundColor();
+  // Badges sit on the edge, so the circle must not clip them; the image clips itself.
+  const badge = senderTrust === "impersonated" || senderTrust === "trusted" ? senderTrust : null;
 
   if (senderWarning) {
     return (
@@ -340,7 +351,9 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
     <div
       ref={observe}
       className={cn(
-        "rounded-full flex items-center justify-center font-semibold text-white overflow-hidden",
+        "relative rounded-full flex items-center justify-center font-semibold text-white",
+        !badge && "overflow-hidden",
+        badge === "impersonated" && "ring-2 ring-red-600 dark:ring-red-500",
         sizeClasses[size],
         className
       )}
@@ -354,7 +367,7 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
         <img
           src={imgSrc}
           alt=""
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-full"
           onError={handleImgError}
           // /api/favicon and /api/bimi return a 1x1 transparent PNG (HTTP 200)
           // when there is no icon, to avoid spamming the DevTools console with
@@ -368,6 +381,26 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
         />
       ) : (
         getInitials()
+      )}
+      {badge && (
+        // Trusted: the reader trusts this exact address and the message passed
+        // its sender check - a handshake, not a check mark, so it can't read
+        // as "verified by the platform". Impersonated: a trusted address in
+        // From, but the message failed its check.
+        <span
+          role="img"
+          aria-label={senderTrustLabel}
+          title={senderTrustLabel}
+          data-testid={badge === "trusted" ? "trusted-mark" : "impersonation-mark"}
+          className={cn(
+            "absolute -bottom-0.5 -end-0.5 w-[46%] h-[46%] rounded-full flex items-center justify-center ring-2 ring-background",
+            badge === "trusted" ? "bg-primary text-primary-foreground" : "bg-red-600 text-white",
+          )}
+        >
+          {badge === "trusted"
+            ? <HeartHandshake aria-hidden className="w-[72%] h-[72%]" strokeWidth={2.25} />
+            : <AlertTriangle aria-hidden className="w-[66%] h-[66%]" strokeWidth={2.5} />}
+        </span>
       )}
     </div>
   );

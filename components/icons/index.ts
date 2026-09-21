@@ -17,6 +17,7 @@ export {
   IconActivity as Activity,
   IconAlertCircle as AlertCircle,
   IconAlertTriangle as AlertTriangle,
+  IconHeartHandshake as HeartHandshake,
   IconAlignCenter as AlignCenter,
   IconAlignLeft as AlignLeft,
   IconAlignRight as AlignRight,

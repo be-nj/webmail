@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Ocultar el panel del complemento",
     "plugin_panel": "Panel del complemento",
     "copy": "Copiar",
+    "impersonation_warning": {
+      "title": "No es de tu remitente de confianza",
+      "description": "Este mensaje dice venir de {address}, uno de tus remitentes de confianza, pero no superó la verificación del remitente. Lo más probable es que no lo haya enviado."
+    },
     "contact_added": "Contacto añadido",
     "save_to_files": {
       "title": "Guardar en Archivos",

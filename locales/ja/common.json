@@ -845,6 +845,10 @@
     "plugin_panel_hide": "プラグインパネルを隠す",
     "plugin_panel": "プラグインパネル",
     "copy": "コピー",
+    "impersonation_warning": {
+      "title": "信頼済み送信者からではありません",
+      "description": "このメッセージは信頼済み送信者の {address} からと称していますが、送信者認証に失敗しました。本人が送信したものではない可能性が高いです。"
+    },
     "contact_added": "連絡先を追加しました",
     "save_to_files": {
       "title": "ファイルに保存",

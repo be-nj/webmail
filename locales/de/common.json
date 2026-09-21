@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Plugin-Bereich ausblenden",
     "plugin_panel": "Plugin-Bereich",
     "copy": "Kopieren",
+    "impersonation_warning": {
+      "title": "Nicht von deinem vertrauten Absender",
+      "description": "Diese Nachricht gibt vor, von {address} zu kommen – einem deiner vertrauten Absender –, hat aber die Absenderprüfung nicht bestanden. Sie stammt sehr wahrscheinlich nicht von dort."
+    },
     "contact_added": "Kontakt hinzugefügt",
     "save_to_files": {
       "title": "In Dateien speichern",

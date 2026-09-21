@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Ascunde panoul pluginului",
     "plugin_panel": "Panoul pluginului",
     "copy": "Copiază",
+    "impersonation_warning": {
+      "title": "Nu este de la expeditorul tău de încredere",
+      "description": "Acest mesaj pretinde că vine de la {address}, unul dintre expeditorii tăi de încredere, dar nu a trecut verificarea expeditorului. Cel mai probabil nu a fost trimis de acesta."
+    },
     "contact_added": "Contact adăugat",
     "save_to_files": {
       "title": "Salvează în Fișiere",

@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Eklenti panelini gizle",
     "plugin_panel": "Eklenti paneli",
     "copy": "Kopyala",
+    "impersonation_warning": {
+      "title": "Güvenilir göndericinizden değil",
+      "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."
+    },
     "contact_added": "Kişi eklendi",
     "save_to_files": {
       "title": "Dosyalar'a kaydet",

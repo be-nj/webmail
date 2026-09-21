@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Bővítménypanel elrejtése",
     "plugin_panel": "Bővítménypanel",
     "copy": "Másolás",
+    "impersonation_warning": {
+      "title": "Nem a megbízható feladódtól",
+      "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
+    },
     "contact_added": "Névjegy hozzáadva",
     "save_to_files": {
       "title": "Mentés a Fájlokba",

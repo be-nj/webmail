@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Plug-inpaneel verbergen",
     "plugin_panel": "Plug-inpaneel",
     "copy": "Kopiëren",
+    "impersonation_warning": {
+      "title": "Niet van je vertrouwde afzender",
+      "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
+    },
     "contact_added": "Contact toegevoegd",
     "save_to_files": {
       "title": "Opslaan in Bestanden",

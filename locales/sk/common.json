@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Skryť panel doplnku",
     "plugin_panel": "Panel doplnku",
     "copy": "Kopírovať",
+    "impersonation_warning": {
+      "title": "Nie je od vášho dôveryhodného odosielateľa",
+      "description": "Táto správa tvrdí, že pochádza od {address}, jedného z vašich dôveryhodných odosielateľov, ale neprešla overením odosielateľa. S najväčšou pravdepodobnosťou ju neodoslal."
+    },
     "contact_added": "Kontakt pridaný",
     "save_to_files": {
       "title": "Uložiť do Súborov",

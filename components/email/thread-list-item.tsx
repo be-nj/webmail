@@ -38,6 +38,8 @@ import { PluginRowBadges } from "./plugin-row-badges";
 import { useOwnDomainAddress } from "@/hooks/use-own-domain-address";
 import { useSenderWarning } from "@/hooks/use-sender-warning";
 import { brandIndicatorDomain } from "@/lib/email-headers";
+import { senderTrustSignal } from "@/lib/sender-trust";
+import { useIsTrustedSender } from "@/hooks/use-trusted-sender";
 import { useTranslations } from "next-intl";
 
 /**
@@ -460,6 +462,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
     const timeFormat = useSettingsStore((state) => state.timeFormat);
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
     const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
+    const isTrustedSender = useIsTrustedSender();
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
     const senderWarning = useSenderWarning(showRecipient ? undefined : email);
     // Show the originating folder in the aggregate "All …" views.
@@ -756,6 +759,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                   disableImages={hideJunkAvatarImages}
                   senderWarning={senderWarning}
                   brandDomain={showRecipient ? undefined : brandIndicatorDomain(email)}
+                  senderTrust={showRecipient ? null : senderTrustSignal(email, isTrustedSender)}
                   checked={isChecked}
                   onToggle={handleCheckboxClick}
                   selectLabel={selectRowLabel}
@@ -1058,6 +1062,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
     const timeFormat = useSettingsStore((state) => state.timeFormat);
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
     const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
+    const isTrustedSender = useIsTrustedSender();
     const isMobile = useUIStore((state) => state.isMobile);
     const { latestEmail, participantNames, hasUnread, hasStarred, hasPinned, hasAnswered, hasForwarded, emailCount } = thread;
     // Only the latest email's parts are loaded; an older one with the flag keeps the paperclip.
@@ -1460,6 +1465,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                     disableImages={hideJunkAvatarImages}
                     senderWarning={senderWarning}
                     brandDomain={showRecipient ? undefined : brandIndicatorDomain(latestEmail)}
+                    senderTrust={showRecipient ? null : senderTrustSignal(latestEmail, isTrustedSender)}
                     checked={isChecked}
                     onToggle={handleThreadCheckboxClick}
                     selectLabel={selectRowLabel}

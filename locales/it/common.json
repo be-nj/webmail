@@ -845,6 +845,10 @@
     "plugin_panel_hide": "Nascondi il pannello del plugin",
     "plugin_panel": "Pannello del plugin",
     "copy": "Copia",
+    "impersonation_warning": {
+      "title": "Non proviene dal tuo mittente attendibile",
+      "description": "Questo messaggio afferma di provenire da {address}, uno dei tuoi mittenti attendibili, ma non ha superato la verifica del mittente. Molto probabilmente non è stato inviato da lui."
+    },
     "contact_added": "Contatto aggiunto",
     "save_to_files": {
       "title": "Salva in File",

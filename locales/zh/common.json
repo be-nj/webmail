@@ -845,6 +845,10 @@
     "plugin_panel_hide": "隐藏插件面板",
     "plugin_panel": "插件面板",
     "copy": "复制",
+    "impersonation_warning": {
+      "title": "并非来自您信任的发件人",
+      "description": "此邮件声称来自您信任的发件人 {address}，但未通过发件人验证。它很可能不是由对方发送的。"
+    },
     "contact_added": "已添加联系人",
     "save_to_files": {
       "title": "保存到文件",
