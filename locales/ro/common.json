@@ -619,7 +619,11 @@
       "copied": "Cod copiat",
       "copy_failed": "Codul nu a putut fi copiat"
     },
-    "mv_position": "{index} din {total}"
+    "mv_position": "{index} din {total}",
+    "impersonation_warning": {
+      "title": "Nu este de la expeditorul tău de încredere",
+      "description": "Acest mesaj pretinde că vine de la {address}, unul dintre expeditorii tăi de încredere, dar nu a trecut verificarea expeditorului. Cel mai probabil nu a fost trimis de acesta."
+    }
   },
   "email_composer": {
     "minimize": "Minimizează",

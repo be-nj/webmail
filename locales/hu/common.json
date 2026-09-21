@@ -619,7 +619,11 @@
       "copied": "Kód másolva",
       "copy_failed": "Nem sikerült másolni a kódot"
     },
-    "mv_position": "{index} / {total}"
+    "mv_position": "{index} / {total}",
+    "impersonation_warning": {
+      "title": "Nem a megbízható feladódtól",
+      "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
+    }
   },
   "email_composer": {
     "minimize": "Kis méret",

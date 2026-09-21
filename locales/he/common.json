@@ -584,7 +584,11 @@
       "copied": "הקוד הועתק",
       "copy_failed": "לא ניתן להעתיק את הקוד"
     },
-    "mv_position": "{index} מתוך {total}"
+    "mv_position": "{index} מתוך {total}",
+    "impersonation_warning": {
+      "title": "לא מהשולח המהימן שלך",
+      "description": "הודעה זו טוענת שהיא מ-{address}, אחד השולחים המהימנים שלך, אך נכשלה באימות השולח. ככל הנראה היא לא נשלחה על ידו."
+    }
   },
   "email_composer": {
     "minimize": "מזעור",

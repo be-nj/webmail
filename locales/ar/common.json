@@ -619,7 +619,11 @@
       "copied": "تم نسخ الرمز",
       "copy_failed": "تعذّر نسخ الرمز"
     },
-    "mv_position": "{index} من {total}"
+    "mv_position": "{index} من {total}",
+    "impersonation_warning": {
+      "title": "ليست من مرسلك الموثوق",
+      "description": "تدّعي هذه الرسالة أنها من {address}، أحد المرسلين الموثوقين لديك، لكنها فشلت في التحقق من المرسل. على الأرجح لم يرسلها."
+    }
   },
   "email_composer": {
     "minimize": "تصغير",

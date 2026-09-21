@@ -619,7 +619,11 @@
       "copied": "Kode kopieret",
       "copy_failed": "Koden kunne ikke kopieres"
     },
-    "mv_position": "{index} af {total}"
+    "mv_position": "{index} af {total}",
+    "impersonation_warning": {
+      "title": "Ikke fra din betroede afsender",
+      "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
+    }
   },
   "email_composer": {
     "minimize": "Minimer",

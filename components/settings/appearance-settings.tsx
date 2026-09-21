@@ -69,7 +69,7 @@ export function AppearanceSettings() {
   const tAdvanced = useTranslations('settings.advanced');
   const tTour = useTranslations('tour');
   const { theme, setTheme } = useThemeStore();
-  const { fontSize, density, animationsEnabled, senderFavicons, senderBimiLogos, showAvatarsInJunk, showOnboardingOnNewDevices, updateSetting } = useSettingsStore();
+  const { fontSize, density, animationsEnabled, senderBimiLogos, showAvatarsInJunk, showOnboardingOnNewDevices, updateSetting } = useSettingsStore();
   const { startTour, resetTourCompletion } = useTour();
   const { isSettingLocked, isSettingHidden } = usePolicyStore();
 
@@ -130,16 +130,12 @@ export function AppearanceSettings() {
       </SettingItem>
       )}
 
-      {/* Sender favicons come from the /api/favicon proxy, absent in the static Lite build (components/ui/avatar.tsx). */}
+      {/* Brand logos come from the /api/bimi route, absent in the static Lite build (components/ui/avatar.tsx). */}
       {!IS_LITE && (
-        <SettingItem label={tAdvanced('sender_favicons.label')} description={tAdvanced('sender_favicons.description')}>
-          <ToggleSwitch checked={senderFavicons} onChange={(checked) => updateSetting('senderFavicons', checked)} />
+        <SettingItem label={tAdvanced('sender_bimi_logos.label')} description={tAdvanced('sender_bimi_logos.description')}>
+          <ToggleSwitch checked={senderBimiLogos} onChange={(checked) => updateSetting('senderBimiLogos', checked)} />
         </SettingItem>
       )}
-
-      <SettingItem label={tAdvanced('sender_bimi_logos.label')} description={tAdvanced('sender_bimi_logos.description')}>
-        <ToggleSwitch checked={senderBimiLogos} onChange={(checked) => updateSetting('senderBimiLogos', checked)} />
-      </SettingItem>
 
       <SettingItem label={tAdvanced('show_avatars_in_junk.label')} description={tAdvanced('show_avatars_in_junk.description')}>
         <ToggleSwitch checked={showAvatarsInJunk} onChange={(checked) => updateSetting('showAvatarsInJunk', checked)} />

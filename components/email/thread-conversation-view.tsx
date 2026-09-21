@@ -14,6 +14,9 @@ import { DARK_PENDING_CLASS, applyEmailDarkMode, emailDarkModeCss } from "@/lib/
 import { useThemeStore } from "@/stores/theme-store";
 import { Avatar } from "@/components/ui/avatar";
 import { hasAlignedDmarcPass, isAuthenticationSpoofed } from "@/lib/email-headers";
+import { senderTrustSignal } from "@/lib/sender-trust";
+import { useIsTrustedSender } from "@/hooks/use-trusted-sender";
+import { ImpersonationWarning } from "@/components/email/impersonation-warning";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatFileSize, cn, cleanPreview } from "@/lib/utils";
 import {
@@ -265,6 +268,8 @@ function EmailCard({
   );
   const sender = email.from?.[0];
   const formatAddress = useOwnDomainAddress();
+  const isTrustedSender = useIsTrustedSender();
+  const trustSignal = senderTrustSignal(email, isTrustedSender);
   const isUnread = !email.keywords?.$seen;
   const isStarred = email.keywords?.$flagged;
   const [hasBlockedContent, setHasBlockedContent] = useState(false);
@@ -537,6 +542,7 @@ function EmailCard({
             size="md"
             className="flex-shrink-0"
             dmarcPass={hasAlignedDmarcPass(email)}
+            senderTrust={trustSignal}
           />
         )}
         <div className="flex-1 min-w-0">
@@ -575,6 +581,7 @@ function EmailCard({
       {/* Expanded Content */}
       {isExpanded && (
         <div className="border-t border-border animate-in slide-in-from-top-2 duration-200">
+          {trustSignal === 'impersonated' && sender?.email && <ImpersonationWarning address={sender.email} />}
           {/* External content warning */}
           {hasBlockedContent && !allowExternal && (
             <div className="px-4 py-2 bg-muted/50 flex items-center justify-between text-sm">

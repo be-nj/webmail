@@ -619,7 +619,11 @@
       "copied": "Code copié",
       "copy_failed": "Impossible de copier le code"
     },
-    "mv_position": "{index} sur {total}"
+    "mv_position": "{index} sur {total}",
+    "impersonation_warning": {
+      "title": "Ne vient pas de votre expéditeur de confiance",
+      "description": "Ce message prétend venir de {address}, l'un de vos expéditeurs de confiance, mais a échoué à la vérification de l'expéditeur. Il n'a très probablement pas été envoyé par lui."
+    }
   },
   "email_composer": {
     "minimize": "Réduire",

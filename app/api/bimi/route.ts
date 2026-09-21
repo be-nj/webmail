@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resolver, lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { getRootDomain, isValidDomain } from '@/lib/sender-domain';
-import {
-  BIMI_MAX_SVG_BYTES,
-  isPublicAddress,
-  parseBimiRecord,
-  validateBimiSvg,
-  type BimiRecord,
-} from '@/lib/bimi';
+import { isPublicAddress, parseBimiRecord, type BimiRecord } from '@/lib/bimi';
 import { MAX_PEM_BYTES, parseCertificates, verifiedLogo } from '@/lib/vmc';
 import { VMC_ROOTS_PEM } from '@/lib/vmc-roots';
 
@@ -17,10 +11,11 @@ import { VMC_ROOTS_PEM } from '@/lib/vmc-roots';
 // This route does not know whether any message passed DMARC; the client only
 // asks for a domain once a message from it did (see Avatar `dmarcPass`).
 //
-// The answer is JSON, `{ svg, verified }`, with `svg: null` when the domain
-// has no usable logo. `verified` says the logo came out of a verified mark
-// certificate that checked out against our own roots (lib/vmc.ts); otherwise
-// it is the picture at the record's l= URL and the client shows it unmarked.
+// The answer is JSON, `{ svg }`, with `svg: null` when the domain has no
+// usable logo. The only logo served is the one inside the domain's verified
+// mark certificate, after it checked out against our own roots (lib/vmc.ts).
+// The picture at the record's l= URL is never fetched: any domain can point
+// that at someone else's logo (docs/adr/0001).
 
 const CACHE_MAX_SIZE = 1000;
 // A domain that gives up BIMI must not keep its logo for weeks.
@@ -35,7 +30,6 @@ const FETCH_TIMEOUT_MS = 5000;
 
 interface Logo {
   svg: string;
-  verified: boolean;
 }
 
 interface CacheEntry extends Logo {
@@ -58,7 +52,7 @@ const resolver = new Resolver({ timeout: 3000, tries: 2 });
 const vmcRoots = parseCertificates(VMC_ROOTS_PEM);
 
 function answer(logo: Logo | null, maxAgeSeconds: number) {
-  return NextResponse.json(logo ? { svg: logo.svg, verified: logo.verified } : { svg: null, verified: false }, {
+  return NextResponse.json({ svg: logo?.svg ?? null }, {
     headers: {
       'Cache-Control': `private, max-age=${maxAgeSeconds}`,
       'X-Content-Type-Options': 'nosniff',
@@ -164,28 +158,16 @@ async function fetchCapped(target: string, cap: number, accept: string): Promise
 }
 
 /**
- * The logo out of the record's verified mark, or null when there is none or it
- * does not check out. Either domain may be the one the mark names; the
- * message's DMARC pass already tied it to both.
+ * The logo out of the record's verified mark. A record without a mark, or with
+ * one that doesn't check out, yields nothing. Either domain may be the one the
+ * mark names; the message's DMARC pass already tied it to both.
  */
-async function markLogo(record: BimiRecord, domains: string[]): Promise<string | null> {
-  if (!record.evidenceUrl) return null;
-  try {
-    const pem = await fetchCapped(record.evidenceUrl, MAX_PEM_BYTES, 'application/pem-certificate-chain');
-    return verifiedLogo(Buffer.from(pem).toString('latin1'), domains, vmcRoots);
-  } catch {
-    // A mark that can't be fetched falls through to the plain logo, like one
-    // that doesn't check out.
-    return null;
-  }
-}
-
 async function fetchLogo(record: BimiRecord, domain: string): Promise<Logo> {
-  const marked = await markLogo(record, lookupDomains(domain));
-  if (marked) return { svg: marked, verified: true };
-  const svg = validateBimiSvg(await fetchCapped(record.logoUrl, BIMI_MAX_SVG_BYTES, 'image/svg+xml'));
+  if (!record.evidenceUrl) throw new NoBimi();
+  const pem = await fetchCapped(record.evidenceUrl, MAX_PEM_BYTES, 'application/pem-certificate-chain');
+  const svg = verifiedLogo(Buffer.from(pem).toString('latin1'), lookupDomains(domain), vmcRoots);
   if (!svg) throw new NoBimi();
-  return { svg, verified: false };
+  return { svg };
 }
 
 function evictOldest<T extends { fetchedAt: number }>(map: Map<string, T>, max: number) {

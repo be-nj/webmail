@@ -619,7 +619,11 @@
       "copied": "Código copiado",
       "copy_failed": "No se pudo copiar el código"
     },
-    "mv_position": "{index} de {total}"
+    "mv_position": "{index} de {total}",
+    "impersonation_warning": {
+      "title": "No es de tu remitente de confianza",
+      "description": "Este mensaje dice venir de {address}, uno de tus remitentes de confianza, pero no superó la verificación del remitente. Lo más probable es que no lo haya enviado."
+    }
   },
   "email_composer": {
     "minimize": "Minimizar",

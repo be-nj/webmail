@@ -619,7 +619,11 @@
       "copied": "Skopiowano kod",
       "copy_failed": "Nie udało się skopiować kodu"
     },
-    "mv_position": "{index} z {total}"
+    "mv_position": "{index} z {total}",
+    "impersonation_warning": {
+      "title": "Nie od zaufanego nadawcy",
+      "description": "Ta wiadomość podaje się za wysłaną przez {address}, jednego z Twoich zaufanych nadawców, ale nie przeszła weryfikacji nadawcy. Najprawdopodobniej nie została przez niego wysłana."
+    }
   },
   "email_composer": {
     "minimize": "Minimalizuj",
