@@ -849,6 +849,11 @@
       "title": "Není od vašeho důvěryhodného odesílatele",
       "description": "Tato zpráva tvrdí, že pochází od {address}, jednoho z vašich důvěryhodných odesílatelů, ale neprošla ověřením odesílatele. S největší pravděpodobností ji neodeslal."
     },
+    "sender_trust": {
+      "label": "Důvěryhodný odesílatel",
+      "trusted": "Důvěryhodný odesílatel – ověření odesílatele prošlo",
+      "impersonated": "Vydává se za důvěryhodného odesílatele – ověření odesílatele selhalo"
+    },
     "contact_added": "Kontakt přidán",
     "save_to_files": {
       "title": "Uložit do Souborů",

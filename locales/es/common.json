@@ -849,6 +849,11 @@
       "title": "No es de tu remitente de confianza",
       "description": "Este mensaje dice venir de {address}, uno de tus remitentes de confianza, pero no superó la verificación del remitente. Lo más probable es que no lo haya enviado."
     },
+    "sender_trust": {
+      "label": "Remitente de confianza",
+      "trusted": "Remitente de confianza – verificación del remitente superada",
+      "impersonated": "Dice ser un remitente de confianza – la verificación del remitente falló"
+    },
     "contact_added": "Contacto añadido",
     "save_to_files": {
       "title": "Guardar en Archivos",

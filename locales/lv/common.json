@@ -849,6 +849,11 @@
       "title": "Nav no jūsu uzticamā sūtītāja",
       "description": "Šis ziņojums apgalvo, ka ir no {address}, viena no jūsu uzticamajiem sūtītājiem, taču nav izturējis sūtītāja pārbaudi. Visticamāk, to nav sūtījis viņš."
     },
+    "sender_trust": {
+      "label": "Uzticams sūtītājs",
+      "trusted": "Uzticams sūtītājs – sūtītāja pārbaude izturēta",
+      "impersonated": "Uzdodas par uzticamu sūtītāju – sūtītāja pārbaude neizdevās"
+    },
     "contact_added": "Kontakts pievienots",
     "save_to_files": {
       "title": "Saglabāt failos",
