@@ -269,6 +269,10 @@
     "reschedule_prompt": "Enter a new date/time, e.g. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Not from your trusted sender",
+      "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."
+    },
     "read_receipt": {
       "prompt": "The sender asked to be notified when you open this message.",
       "send": "Send receipt",
@@ -1861,7 +1865,7 @@
       },
       "sender_bimi_logos": {
         "label": "Sender Brand Logos (BIMI)",
-        "description": "Show the brand logo a sender domain publishes (BIMI), only on messages that passed sender verification. A check mark means a certificate authority confirmed the brand belongs to the domain."
+        "description": "Show the logo of brands whose mark is certified for the sender domain (BIMI with a verified mark certificate), only on messages that passed sender verification. Never for freemail providers."
       },
       "show_avatars_in_junk": {
         "label": "Show Avatars in Junk Folder",

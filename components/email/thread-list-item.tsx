@@ -25,6 +25,8 @@ import { ThreadEmailItem } from "./thread-email-item";
 import { EmailHoverActions } from "./email-hover-actions";
 import { SearchSnippetText } from "./search-snippet-text";
 import { hasAlignedDmarcPass } from "@/lib/email-headers";
+import { senderTrustSignal } from "@/lib/sender-trust";
+import { useIsTrustedSender } from "@/hooks/use-trusted-sender";
 import { useTranslations } from "next-intl";
 
 /**
@@ -181,6 +183,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
     const mailLayout = useSettingsStore((state) => state.mailLayout);
     const timeFormat = useSettingsStore((state) => state.timeFormat);
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
+    const isTrustedSender = useIsTrustedSender();
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
     // Show the originating folder in the aggregate "All …" views.
     const showSourceFolder = isUnifiedView && !!email.sourceFolder;
@@ -380,6 +383,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
               className="flex-shrink-0 self-center shadow-sm"
               disableImages={hideJunkAvatarImages}
               dmarcPass={!showRecipient && hasAlignedDmarcPass(email)}
+              senderTrust={showRecipient ? null : senderTrustSignal(email, isTrustedSender)}
               checked={isChecked}
               onToggle={handleCheckboxClick}
               selectLabel={tBatch('select')}
@@ -628,6 +632,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
     const mailLayout = useSettingsStore((state) => state.mailLayout);
     const timeFormat = useSettingsStore((state) => state.timeFormat);
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
+    const isTrustedSender = useIsTrustedSender();
     const isMobile = useUIStore((state) => state.isMobile);
     const { latestEmail, participantNames, hasUnread, hasStarred, hasPinned, hasAttachment, hasAnswered, hasForwarded, emailCount } = thread;
     // The horizontal one-line "focus" layout doesn't fit on narrow screens; fall back to multi-line on mobile.
@@ -846,6 +851,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                   className="shadow-sm"
                   disableImages={hideJunkAvatarImages}
                   dmarcPass={!showRecipient && hasAlignedDmarcPass(latestEmail)}
+                  senderTrust={showRecipient ? null : senderTrustSignal(latestEmail, isTrustedSender)}
                   checked={isChecked}
                   onToggle={handleThreadCheckboxClick}
                   selectLabel={tBatch('select')}

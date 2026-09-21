@@ -269,6 +269,10 @@
     "reschedule_prompt": "Informe uma nova data/hora, ex. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Não é do seu remetente de confiança",
+      "description": "Esta mensagem afirma vir de {address}, um dos seus remetentes de confiança, mas falhou a verificação do remetente. Muito provavelmente não foi enviada por ele."
+    },
     "read_receipt": {
       "prompt": "O remetente solicita uma confirmação de leitura:",
       "send": "Enviar confirmação",

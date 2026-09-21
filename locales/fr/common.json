@@ -269,6 +269,10 @@
     "reschedule_prompt": "Saisissez une nouvelle date/heure, p. ex. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Ne vient pas de votre expéditeur de confiance",
+      "description": "Ce message prétend venir de {address}, l'un de vos expéditeurs de confiance, mais a échoué à la vérification de l'expéditeur. Il n'a très probablement pas été envoyé par lui."
+    },
     "read_receipt": {
       "prompt": "L''expéditeur demande un accusé de lecture :",
       "send": "Envoyer l''accusé",

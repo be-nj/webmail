@@ -269,6 +269,10 @@
     "reschedule_prompt": "Adj meg egy új dátumot/időpontot, pl. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Nem a megbízható feladódtól",
+      "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
+    },
     "read_receipt": {
       "prompt": "A feladó olvasási visszaigazolást kért:",
       "send": "Visszaigazolás küldése",

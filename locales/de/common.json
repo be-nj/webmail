@@ -269,6 +269,10 @@
     "reschedule_prompt": "Neues Datum/Uhrzeit eingeben, z. B. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Nicht von deinem vertrauten Absender",
+      "description": "Diese Nachricht gibt vor, von {address} zu kommen – einem deiner vertrauten Absender –, hat aber die Absenderprüfung nicht bestanden. Sie stammt sehr wahrscheinlich nicht von dort."
+    },
     "read_receipt": {
       "prompt": "Der Absender bittet um eine Lesebestätigung:",
       "send": "Bestätigung senden",
@@ -1854,7 +1858,7 @@
       },
       "sender_bimi_logos": {
         "label": "Absender-Markenlogos (BIMI)",
-        "description": "Markenlogo der Absenderdomain (BIMI) anzeigen, nur bei Nachrichten mit bestandener Absenderprüfung. Ein Häkchen bedeutet, dass eine Zertifizierungsstelle die Marke der Domain zugeordnet hat."
+        "description": "Logo von Marken anzeigen, deren Marke für die Absenderdomain zertifiziert ist (BIMI mit Markenzertifikat), nur bei Nachrichten mit bestandener Absenderprüfung. Nie bei Freemail-Anbietern."
       },
       "show_avatars_in_junk": {
         "label": "Avatare im Spam-Ordner anzeigen",

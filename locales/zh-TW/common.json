@@ -269,6 +269,10 @@
     "reschedule_prompt": "輸入新的日期與時間，例如 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "並非來自您信任的寄件者",
+      "description": "此郵件聲稱來自您信任的寄件者 {address}，但未通過寄件者驗證。它很可能不是由對方寄出的。"
+    },
     "read_receipt": {
       "prompt": "寄件者要求在您開啟這封郵件時收到通知。",
       "send": "傳送回執",

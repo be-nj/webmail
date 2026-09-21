@@ -269,6 +269,10 @@
     "reschedule_prompt": "Voer een nieuwe datum/tijd in, bijv. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Niet van je vertrouwde afzender",
+      "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
+    },
     "read_receipt": {
       "prompt": "De afzender vraagt om een leesbevestiging:",
       "send": "Bevestiging verzenden",

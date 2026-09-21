@@ -54,7 +54,6 @@ export const tabSearchPaths: Record<Tab, string[]> = {
     'settings.appearance.list_density',
     'settings.appearance.animations',
     'settings.appearance.message_list_order',
-    'settings.advanced.sender_favicons',
     'settings.advanced.sender_bimi_logos',
     'settings.advanced.show_avatars_in_junk',
   ],

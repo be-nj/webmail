@@ -269,6 +269,10 @@
     "reschedule_prompt": "Skriv inn ny dato og klokkeslett, for eksempel 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Ikke fra din betrodde avsender",
+      "description": "Denne meldingen utgir seg for å komme fra {address}, en av dine betrodde avsendere, men besto ikke avsenderbekreftelsen. Den er sannsynligvis ikke sendt av dem."
+    },
     "read_receipt": {
       "prompt": "Avsenderen ba om å bli varslet når du åpner denne meldingen.",
       "send": "Send lesebekreftelse",

@@ -234,6 +234,10 @@
     "reschedule_prompt": "הזן תאריך/שעה חדש, למשל 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "לא מהשולח המהימן שלך",
+      "description": "הודעה זו טוענת שהיא מ-{address}, אחד השולחים המהימנים שלך, אך נכשלה באימות השולח. ככל הנראה היא לא נשלחה על ידו."
+    },
     "no_email_selected": "לא נבחר אימייל",
     "no_email_description": "בחר אימייל מהרשימה כדי להציג אותו כאן",
     "no_conversation_selected": "לא נבחרה שיחה",

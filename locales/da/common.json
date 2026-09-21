@@ -269,6 +269,10 @@
     "reschedule_prompt": "Indtast en ny dato/tid, f.eks. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Ikke fra din betroede afsender",
+      "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
+    },
     "read_receipt": {
       "prompt": "Afsenderen anmoder om en læsekvittering:",
       "send": "Send kvittering",

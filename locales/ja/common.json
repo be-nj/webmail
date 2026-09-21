@@ -269,6 +269,10 @@
     "reschedule_prompt": "新しい日時を入力してください。例: 2026-05-04T15:30"
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "信頼済み送信者からではありません",
+      "description": "このメッセージは信頼済み送信者の {address} からと称していますが、送信者認証に失敗しました。本人が送信したものではない可能性が高いです。"
+    },
     "read_receipt": {
       "prompt": "送信者が開封確認を求めています：",
       "send": "確認を送信",
