@@ -390,6 +390,7 @@ function EmailCard({
             senderWarning={senderWarning}
             brandDomain={brandIndicatorDomain(email)}
             senderTrust={trustSignal}
+            senderTrustLabel={trustSignal ? t(`email_viewer.sender_trust.${trustSignal}`) : undefined}
           />
         )}
         <div className="flex-1 min-w-0">

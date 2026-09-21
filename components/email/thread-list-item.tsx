@@ -453,6 +453,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
     const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
     const isTrustedSender = useIsTrustedSender();
+    const rowTrust = showRecipient ? null : senderTrustSignal(email, isTrustedSender);
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
     const senderWarning = useSenderWarning(showRecipient ? undefined : email);
     // Show the originating folder in the aggregate "All …" views.
@@ -749,7 +750,8 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                   disableImages={hideJunkAvatarImages}
                   senderWarning={senderWarning}
                   brandDomain={showRecipient ? undefined : brandIndicatorDomain(email)}
-                  senderTrust={showRecipient ? null : senderTrustSignal(email, isTrustedSender)}
+                  senderTrust={rowTrust}
+                  senderTrustLabel={rowTrust ? t(`sender_trust.${rowTrust}`) : undefined}
                   checked={isChecked}
                   onToggle={handleCheckboxClick}
                   selectLabel={selectRowLabel}
@@ -1106,6 +1108,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
       sender: avatarPerson?.name || avatarPerson?.email || '',
       subject: latestEmail.subject || tEmailViewer('no_subject'),
     });
+    const threadTrust = showRecipient ? null : senderTrustSignal(latestEmail, isTrustedSender);
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
     const senderWarning = useSenderWarning(showRecipient ? undefined : latestEmail);
 
@@ -1455,7 +1458,8 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                     disableImages={hideJunkAvatarImages}
                     senderWarning={senderWarning}
                     brandDomain={showRecipient ? undefined : brandIndicatorDomain(latestEmail)}
-                    senderTrust={showRecipient ? null : senderTrustSignal(latestEmail, isTrustedSender)}
+                    senderTrust={threadTrust}
+                    senderTrustLabel={threadTrust ? tEmailViewer(`sender_trust.${threadTrust}`) : undefined}
                     checked={isChecked}
                     onToggle={handleThreadCheckboxClick}
                     selectLabel={selectRowLabel}
