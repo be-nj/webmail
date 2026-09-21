@@ -9,7 +9,7 @@ import { useContactPhotoSrc } from "@/hooks/use-contact-photo";
 import { avatarHooks } from "@/lib/plugin-hooks";
 import { withBasePath } from "@/lib/browser-navigation";
 import { IS_LITE } from "@/lib/lite";
-import { AlertTriangle, BadgeCheck } from "@/components/icons";
+import { AlertTriangle, HeartHandshake } from "@/components/icons";
 import type { SenderTrustSignal } from "@/lib/sender-trust";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
@@ -190,13 +190,15 @@ interface AvatarProps {
   dmarcPass?: boolean;
   /**
    * What the message says about the sender as a Trusted Sender (see
-   * `senderTrustSignal`): a check badge for `trusted`, a red warning badge for
+   * `senderTrustSignal`): a handshake badge for `trusted`, a red warning badge for
    * `impersonated`.
    */
   senderTrust?: SenderTrustSignal;
+  /** Tooltip for the sender-trust badge; the caller translates it. */
+  senderTrustLabel?: string;
 }
 
-export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, dmarcPass = false, senderTrust = null }: AvatarProps) {
+export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, dmarcPass = false, senderTrust = null, senderTrustLabel }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
   // Start from what this page already knows, so a row scrolled back into view
   // draws its logo on the first render.
@@ -355,24 +357,25 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
       ) : (
         getInitials()
       )}
-      {badge === "trusted" && (
-        // Trusted Mark: the reader trusts this exact address and the message
-        // passed its sender check. Says nothing about the brand or domain.
-        <BadgeCheck
-          aria-hidden
-          data-testid="trusted-mark"
-          className="absolute -bottom-0.5 -end-0.5 w-[42%] h-[42%] text-primary-foreground fill-primary"
-          strokeWidth={2.5}
-        />
-      )}
-      {badge === "impersonated" && (
-        // A trusted address in From, but the message failed its sender check.
-        <AlertTriangle
-          aria-hidden
-          data-testid="impersonation-mark"
-          className="absolute -bottom-0.5 -end-0.5 w-[42%] h-[42%] text-white fill-red-600"
-          strokeWidth={2.5}
-        />
+      {badge && (
+        // Trusted: the reader trusts this exact address and the message passed
+        // its sender check - a handshake, not a check mark, so it can't read
+        // as "verified by the platform". Impersonated: a trusted address in
+        // From, but the message failed its check.
+        <span
+          role="img"
+          aria-label={senderTrustLabel}
+          title={senderTrustLabel}
+          data-testid={badge === "trusted" ? "trusted-mark" : "impersonation-mark"}
+          className={cn(
+            "absolute -bottom-0.5 -end-0.5 w-[46%] h-[46%] rounded-full flex items-center justify-center ring-2 ring-background",
+            badge === "trusted" ? "bg-primary text-primary-foreground" : "bg-red-600 text-white",
+          )}
+        >
+          {badge === "trusted"
+            ? <HeartHandshake aria-hidden className="w-[72%] h-[72%]" strokeWidth={2.25} />
+            : <AlertTriangle aria-hidden className="w-[66%] h-[66%]" strokeWidth={2.5} />}
+        </span>
       )}
     </div>
   );

@@ -661,6 +661,11 @@
     "impersonation_warning": {
       "title": "Nie od zaufanego nadawcy",
       "description": "Ta wiadomość podaje się za wysłaną przez {address}, jednego z Twoich zaufanych nadawców, ale nie przeszła weryfikacji nadawcy. Najprawdopodobniej nie została przez niego wysłana."
+    },
+    "sender_trust": {
+      "label": "Zaufany nadawca",
+      "trusted": "Zaufany nadawca – weryfikacja nadawcy zaliczona",
+      "impersonated": "Podszywa się pod zaufanego nadawcę – weryfikacja nadawcy nieudana"
     }
   },
   "email_composer": {
