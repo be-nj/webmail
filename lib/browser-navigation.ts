@@ -33,18 +33,32 @@ export function getPathPrefix(locale?: string): string {
 
   const segments = window.location.pathname.split('/').filter(Boolean);
 
-  let localeIndex: number;
-  if (locale) {
-    localeIndex = segments.indexOf(locale);
-  } else {
-    localeIndex = segments.findIndex(s =>
-      (locales as readonly string[]).includes(s)
-    );
-  }
-
+  const localeIndex = findLocaleSegment(segments, locale);
   if (localeIndex <= 0) return '';
   return '/' + segments.slice(0, localeIndex).join('/');
 }
+
+/**
+ * Index of the locale segment in a path's segments, or -1.
+ *
+ * Only a segment before the first app route counts. With localePrefix "never"
+ * app URLs carry no locale at all, and deep links end in server-chosen ids: a
+ * folder whose id is "de" (`/mail/folder/de`) is neither a locale nor the end
+ * of a mount prefix.
+ */
+export function findLocaleSegment(segments: string[], locale?: string): number {
+  const isLocale = locale
+    ? (s: string) => s === locale
+    : (s: string) => (locales as readonly string[]).includes(s);
+  const index = segments.findIndex(s => isLocale(s) || APP_ROUTE_ROOTS.has(s));
+  return index >= 0 && isLocale(segments[index]) ? index : -1;
+}
+
+/** First path segments of the app's own routes; a mount prefix never contains one. */
+const APP_ROUTE_ROOTS = new Set([
+  'mail', 'calendar', 'contacts', 'files', 'settings', 'plugins', 'pro',
+  'auth', 'login', 'admin', 'setup', 'api',
+]);
 
 /**
  * Mount-prefix-aware wrapper around `fetch()`.
@@ -124,8 +138,6 @@ export function getLocaleFromPath(): string {
   if (typeof window === 'undefined') return 'en';
 
   const segments = window.location.pathname.split('/').filter(Boolean);
-  const locale = segments.find(s =>
-    (locales as readonly string[]).includes(s)
-  );
-  return locale || 'en';
+  const index = findLocaleSegment(segments);
+  return index >= 0 ? segments[index] : 'en';
 }

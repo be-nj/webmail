@@ -13,8 +13,7 @@ import {
   pickRequestHost,
   type BrandingOverrideKey,
 } from "@/lib/admin/domain-branding";
-import { withBasePath } from "@/lib/browser-navigation";
-import { locales } from "@/i18n/routing";
+import { findLocaleSegment, withBasePath } from "@/lib/browser-navigation";
 import "../globals.css";
 
 // This layout renders <html> and sits ABOVE the [locale] segment, so
@@ -25,8 +24,9 @@ import "../globals.css";
 // Accept-Language) when the path carries no locale segment.
 async function resolveRequestLocale(): Promise<string> {
   const pathname = (await headers()).get("x-pathname") || "";
-  const seg = pathname.split("/").find((s) => (locales as readonly string[]).includes(s));
-  return seg ?? (await getLocale());
+  const segments = pathname.split("/").filter(Boolean);
+  const index = findLocaleSegment(segments);
+  return index >= 0 ? segments[index] : await getLocale();
 }
 
 const geistSans = Geist({
