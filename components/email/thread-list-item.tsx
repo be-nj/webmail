@@ -28,6 +28,7 @@ import { ThreadEmailItem } from "./thread-email-item";
 import { EmailHoverActions } from "./email-hover-actions";
 import { SearchSnippetText } from "./search-snippet-text";
 import { useOwnDomainAddress } from "@/hooks/use-own-domain-address";
+import { hasAlignedDmarcPass } from "@/lib/email-headers";
 import { useTranslations } from "next-intl";
 
 /**
@@ -415,6 +416,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                 size={isFocusedMailLayout ? "sm" : "md"}
                 className="shadow-sm"
                 disableImages={hideJunkAvatarImages}
+                dmarcPass={!showRecipient && hasAlignedDmarcPass(email)}
                 checked={isChecked}
                 onToggle={handleCheckboxClick}
                 selectLabel={tBatch('select')}
@@ -886,6 +888,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                   size={isFocusedMailLayout ? "sm" : "md"}
                   className="shadow-sm"
                   disableImages={hideJunkAvatarImages}
+                  dmarcPass={!showRecipient && hasAlignedDmarcPass(latestEmail)}
                   checked={isChecked}
                   onToggle={handleThreadCheckboxClick}
                   selectLabel={tBatch('select')}

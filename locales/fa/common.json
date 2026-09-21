@@ -1967,6 +1967,10 @@
       },
       "about": {
         "title": "Bulwark Webmail"
+      },
+      "sender_bimi_logos": {
+        "label": "لوگوی برند فرستندگان (BIMI)",
+        "description": "نمایش لوگوی برندی که دامنه فرستنده منتشر می‌کند (BIMI)، فقط برای پیام‌هایی که تأیید فرستنده را گذرانده‌اند"
       }
     },
     "sidebar_apps": {

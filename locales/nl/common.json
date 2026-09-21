@@ -1960,6 +1960,10 @@
       },
       "about": {
         "title": "Bulwark Webmail"
+      },
+      "sender_bimi_logos": {
+        "label": "Merklogo's van afzenders (BIMI)",
+        "description": "Toon het merklogo dat het domein van de afzender publiceert (BIMI), alleen bij berichten die de afzendercontrole hebben doorstaan"
       }
     },
     "sidebar_apps": {

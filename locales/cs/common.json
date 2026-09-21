@@ -1960,6 +1960,10 @@
       },
       "about": {
         "title": "Bulwark Webmail"
+      },
+      "sender_bimi_logos": {
+        "label": "Loga značek odesílatelů (BIMI)",
+        "description": "Zobrazit logo značky zveřejněné doménou odesílatele (BIMI), pouze u zpráv, které prošly ověřením odesílatele"
       }
     },
     "sidebar_apps": {

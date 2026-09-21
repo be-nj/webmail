@@ -1960,6 +1960,10 @@
       },
       "about": {
         "title": "Bulwark Webmail 정보"
+      },
+      "sender_bimi_logos": {
+        "label": "발신자 브랜드 로고 (BIMI)",
+        "description": "발신자 도메인이 게시한 브랜드 로고(BIMI)를 발신자 인증을 통과한 메시지에만 표시합니다"
       }
     },
     "sidebar_apps": {

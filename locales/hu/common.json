@@ -1963,6 +1963,10 @@
       },
       "about": {
         "title": "Bulwark Webmail"
+      },
+      "sender_bimi_logos": {
+        "label": "Feladók márkalogói (BIMI)",
+        "description": "A feladó domainje által közzétett márkalogó (BIMI) megjelenítése, csak a feladó-ellenőrzésen átment üzeneteknél"
       }
     },
     "sidebar_apps": {

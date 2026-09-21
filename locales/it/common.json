@@ -1960,6 +1960,10 @@
       },
       "about": {
         "title": "Bulwark Webmail"
+      },
+      "sender_bimi_logos": {
+        "label": "Loghi del marchio dei mittenti (BIMI)",
+        "description": "Mostra il logo del marchio pubblicato dal dominio del mittente (BIMI), solo nei messaggi che hanno superato la verifica del mittente"
       }
     },
     "sidebar_apps": {

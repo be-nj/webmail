@@ -1963,6 +1963,10 @@
       },
       "about": {
         "title": "Bulwark Webmail"
+      },
+      "sender_bimi_logos": {
+        "label": "Afsenderes brandlogoer (BIMI)",
+        "description": "Vis det brandlogo, som afsenderens domæne offentliggør (BIMI), kun på beskeder, der har bestået afsenderbekræftelse"
       }
     },
     "sidebar_apps": {

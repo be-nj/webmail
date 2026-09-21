@@ -451,6 +451,7 @@ interface SettingsState {
   disableThreading: boolean; // Show emails as individual messages instead of grouped by conversation
 
   senderFavicons: boolean;
+  senderBimiLogos: boolean; // Show the sender domain's BIMI logo on messages that passed DMARC
   showAvatarsInJunk: boolean; // Show profile images/favicons in the junk folder
   faviconUnreadBadge: boolean; // Badge the browser-tab icon with the inbox unread count
 
@@ -668,6 +669,7 @@ const DEFAULT_SETTINGS = {
   disableThreading: false,
 
   senderFavicons: true,
+  senderBimiLogos: true,
   showAvatarsInJunk: false,
   faviconUnreadBadge: true,
 
@@ -868,6 +870,7 @@ export const useSettingsStore = create<SettingsState>()(
           enableCrossStarredView: state.enableCrossStarredView,
           enableCrossAllView: state.enableCrossAllView,
           senderFavicons: state.senderFavicons,
+          senderBimiLogos: state.senderBimiLogos,
           showAvatarsInJunk: state.showAvatarsInJunk,
           faviconUnreadBadge: state.faviconUnreadBadge,
           colorfulSidebarIcons: state.colorfulSidebarIcons,
