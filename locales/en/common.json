@@ -1861,7 +1861,7 @@
       },
       "sender_bimi_logos": {
         "label": "Sender Brand Logos (BIMI)",
-        "description": "Show the brand logo a sender domain publishes (BIMI), only on messages that passed sender verification"
+        "description": "Show the brand logo a sender domain publishes (BIMI), only on messages that passed sender verification. A check mark means a certificate authority confirmed the brand belongs to the domain."
       },
       "show_avatars_in_junk": {
         "label": "Show Avatars in Junk Folder",

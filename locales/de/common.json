@@ -1854,7 +1854,7 @@
       },
       "sender_bimi_logos": {
         "label": "Absender-Markenlogos (BIMI)",
-        "description": "Markenlogo der Absenderdomain (BIMI) anzeigen, nur bei Nachrichten mit bestandener Absenderprüfung"
+        "description": "Markenlogo der Absenderdomain (BIMI) anzeigen, nur bei Nachrichten mit bestandener Absenderprüfung. Ein Häkchen bedeutet, dass eine Zertifizierungsstelle die Marke der Domain zugeordnet hat."
       },
       "show_avatars_in_junk": {
         "label": "Avatare im Spam-Ordner anzeigen",

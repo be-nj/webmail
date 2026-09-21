@@ -7,6 +7,7 @@ import { useContactStore, getContactPhotoUri } from "@/stores/contact-store";
 import { useConfig } from "@/hooks/use-config";
 import { avatarHooks } from "@/lib/plugin-hooks";
 import { withBasePath } from "@/lib/browser-navigation";
+import { BadgeCheck } from "lucide-react";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -65,8 +66,36 @@ function getRootDomain(domain: string): string {
 // Module-level cache of domains whose favicons failed to load.
 // Shared across all Avatar instances to avoid re-requesting known-bad domains.
 const failedFaviconDomains = new Set<string>();
-// Same for BIMI logos, keyed by the exact From domain.
-const failedBimiDomains = new Set<string>();
+// BIMI logos by exact From domain: one request per domain per page load,
+// shared by every Avatar. `settledBimiLogos` holds the answers already in, so
+// a row scrolled back into view draws its logo without a flash.
+interface BimiLogo {
+  src: string;
+  /** Came out of a verified mark certificate that checked out on the server. */
+  verified: boolean;
+}
+const pendingBimiLogos = new Map<string, Promise<BimiLogo | null>>();
+const settledBimiLogos = new Map<string, BimiLogo | null>();
+
+function loadBimiLogo(domain: string): Promise<BimiLogo | null> {
+  let pending = pendingBimiLogos.get(domain);
+  if (!pending) {
+    pending = fetch(withBasePath(`/api/bimi?domain=${encodeURIComponent(domain)}`))
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { svg?: string | null; verified?: boolean } | null) =>
+        data?.svg
+          ? { src: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(data.svg)}`, verified: data.verified === true }
+          : null,
+      )
+      .catch(() => null)
+      .then((logo) => {
+        settledBimiLogos.set(domain, logo);
+        return logo;
+      });
+    pendingBimiLogos.set(domain, pending);
+  }
+  return pending;
+}
 // Personal email domains where the favicon is the mail provider logo, not the sender
 const PERSONAL_DOMAINS = new Set([
   "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com",
@@ -160,6 +189,12 @@ interface AvatarProps {
 
 export function Avatar({ name, email, contactPhotoUri, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, dmarcPass = false }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
+  // Start from what this page already knows, so a row scrolled back into view
+  // draws its logo on the first render.
+  const [bimiLogo, setBimiLogo] = useState<BimiLogo | null | undefined>(() => {
+    const d = email?.split("@")[1]?.toLowerCase();
+    return d ? settledBimiLogos.get(d) : undefined;
+  });
   const [bimiError, setBimiError] = useState(false);
   const [pluginAvatarUrl, setPluginAvatarUrl] = useState<string | null>(null);
   const [pluginAvatarFailed, setPluginAvatarFailed] = useState(false);
@@ -203,8 +238,29 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
   const faviconDomain = domain ? getRootDomain(domain) : undefined;
   const domainFailed = faviconDomain ? failedFaviconDomains.has(faviconDomain) : false;
 
-  // A new sender gets a fresh chance at its own logo.
-  useEffect(() => { setBimiError(false); }, [domain]);
+  // BIMI: the logo the sender domain publishes in DNS, asked for only for a
+  // message that passed DMARC for that domain. Personal mail domains are
+  // skipped for the same reason as their favicons: the logo would be the mail
+  // provider's, not the sender's.
+  const wantBimi =
+    !disableImages && !disableFavicon && senderBimiLogos && dmarcPass && !!domain && !!faviconDomain &&
+    !PERSONAL_DOMAINS.has(faviconDomain);
+
+  useEffect(() => {
+    setBimiError(false);
+    if (!wantBimi || !domain) {
+      setBimiLogo(undefined);
+      return;
+    }
+    if (settledBimiLogos.has(domain)) {
+      setBimiLogo(settledBimiLogos.get(domain));
+      return;
+    }
+    setBimiLogo(undefined);
+    let cancelled = false;
+    loadBimiLogo(domain).then((logo) => { if (!cancelled) setBimiLogo(logo); });
+    return () => { cancelled = true; };
+  }, [wantBimi, domain]);
 
   const getInitials = () => {
     if (name) {
@@ -247,23 +303,21 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
   const showFavicon =
     !disableFavicon && senderFavicons && faviconDomain && !PERSONAL_DOMAINS.has(faviconDomain) && !imgError && !domainFailed;
 
-  // BIMI: the logo the sender domain publishes in DNS, shown only for a
-  // message that passed DMARC for that domain. Personal mail domains are
-  // skipped for the same reason as their favicons: the logo would be the mail
-  // provider's, not the sender's.
-  const showBimi =
-    !disableFavicon && senderBimiLogos && dmarcPass && !!domain && !!faviconDomain &&
-    !PERSONAL_DOMAINS.has(faviconDomain) && !bimiError && !failedBimiDomains.has(domain);
+  // While the BIMI answer is out, hold back the favicon so a sender with a
+  // logo doesn't flash its favicon first.
+  const bimiPending = wantBimi && bimiLogo === undefined;
+  const activeBimi = wantBimi && bimiLogo && !bimiError ? bimiLogo : null;
 
   // Priority: contact photo > plugin avatar (e.g. Gravatar) > custom avatar > profile picture > BIMI logo > company favicon > initials
   const customAvatar = devMode && email ? CUSTOM_AVATARS[email.toLowerCase()] : null;
   const pluginAvatar = pluginAvatarFailed ? null : pluginAvatarUrl;
   const photoSrc = resolvedContactPhoto || pluginAvatar || customAvatar || profilePic || null;
-  const bimiSrc = showBimi ? withBasePath(`/api/bimi?domain=${encodeURIComponent(domain!)}`) : null;
-  const faviconSrc = !imgError && !domainFailed && showFavicon ? withBasePath(`/api/favicon?domain=${encodeURIComponent(faviconDomain!)}`) : null;
+  const bimiSrc = activeBimi?.src ?? null;
+  const faviconSrc = !bimiPending && !imgError && !domainFailed && showFavicon ? withBasePath(`/api/favicon?domain=${encodeURIComponent(faviconDomain!)}`) : null;
   const imgSrc = disableImages ? null : (photoSrc || bimiSrc || faviconSrc);
   const isFavicon = imgSrc !== null && imgSrc === faviconSrc;
   const isBimi = imgSrc !== null && imgSrc === bimiSrc;
+  const showVerifiedMark = isBimi && activeBimi?.verified === true;
 
   const handleImgError = useCallback(() => {
     // If the plugin avatar just failed, mark it and fall through to the next source
@@ -271,9 +325,8 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
       setPluginAvatarFailed(true);
       return;
     }
-    // No BIMI logo: fall through to the favicon, not straight to initials.
+    // A logo the browser can't draw: fall through to the favicon.
     if (bimiSrc && imgSrc === bimiSrc) {
-      if (domain) failedBimiDomains.add(domain);
       setBimiError(true);
       return;
     }
@@ -282,12 +335,15 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
     if (faviconDomain && !resolvedContactPhoto && !pluginAvatar && !customAvatar && !profilePic) {
       failedFaviconDomains.add(faviconDomain);
     }
-  }, [imgSrc, pluginAvatar, bimiSrc, domain, faviconDomain, resolvedContactPhoto, customAvatar, profilePic]);
+  }, [imgSrc, pluginAvatar, bimiSrc, faviconDomain, resolvedContactPhoto, customAvatar, profilePic]);
 
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center font-semibold text-white overflow-hidden",
+        "relative rounded-full flex items-center justify-center font-semibold text-white",
+        // The verified mark sits on the edge, so it needs the circle not to
+        // clip it; the image clips itself instead.
+        !showVerifiedMark && "overflow-hidden",
         sizeClasses[size],
         className
       )}
@@ -298,24 +354,31 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
         <img
           src={imgSrc}
           alt=""
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-full"
           onError={handleImgError}
           // /api/favicon returns a 1x1 transparent PNG (HTTP 200) when no real
           // favicon exists, to avoid spamming the DevTools console with 404s.
           // Detect that sentinel by naturalWidth and fall back to initials.
-          // /api/bimi uses the same sentinel. It checks for exactly 1x1: an SVG
-          // logo with only a viewBox may report a natural size of 0.
           onLoad={(e) => {
             const img = e.currentTarget;
             if (isFavicon && img.naturalWidth <= 1) {
-              handleImgError();
-            } else if (isBimi && img.naturalWidth === 1 && img.naturalHeight === 1) {
               handleImgError();
             }
           }}
         />
       ) : (
         getInitials()
+      )}
+      {showVerifiedMark && (
+        // The logo came out of a verified mark certificate: a mark authority
+        // tied this brand to this domain. Small and at the edge - it qualifies
+        // the logo, it is not a verdict on the message.
+        <BadgeCheck
+          aria-hidden
+          data-testid="bimi-verified-mark"
+          className="absolute -bottom-0.5 -end-0.5 w-[42%] h-[42%] text-primary-foreground fill-primary"
+          strokeWidth={2.5}
+        />
       )}
     </div>
   );

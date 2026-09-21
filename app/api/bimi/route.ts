@@ -9,13 +9,18 @@ import {
   validateBimiSvg,
   type BimiRecord,
 } from '@/lib/bimi';
+import { MAX_PEM_BYTES, parseCertificates, verifiedLogo } from '@/lib/vmc';
+import { VMC_ROOTS_PEM } from '@/lib/vmc-roots';
 
 // BIMI sender logos, looked up from the sender domain's DNS.
 //
 // This route does not know whether any message passed DMARC; the client only
 // asks for a domain once a message from it did (see Avatar `dmarcPass`).
-// Responses follow the favicon route: the logo, or a 1x1 transparent PNG with
-// HTTP 200 when the domain has none, so <img> falls back without console noise.
+//
+// The answer is JSON, `{ svg, verified }`, with `svg: null` when the domain
+// has no usable logo. `verified` says the logo came out of a verified mark
+// certificate that checked out against our own roots (lib/vmc.ts); otherwise
+// it is the picture at the record's l= URL and the client shows it unmarked.
 
 const CACHE_MAX_SIZE = 1000;
 // A domain that gives up BIMI must not keep its logo for weeks.
@@ -28,8 +33,12 @@ const ERROR_CACHE_TTL_MS = 60 * 60 * 1000;
 const MAX_REDIRECTS = 3;
 const FETCH_TIMEOUT_MS = 5000;
 
-interface CacheEntry {
+interface Logo {
   svg: string;
+  verified: boolean;
+}
+
+interface CacheEntry extends Logo {
   fetchedAt: number;
 }
 
@@ -40,33 +49,18 @@ interface NegativeCacheEntry {
 
 const cache = new Map<string, CacheEntry>();
 const negativeCache = new Map<string, NegativeCacheEntry>();
-const inflight = new Map<string, Promise<string | null>>();
+const inflight = new Map<string, Promise<Logo | null>>();
 
 const resolver = new Resolver({ timeout: 3000, tries: 2 });
 
-const TRANSPARENT_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=',
-  'base64',
-);
+// Parsed once. Empty would mean nothing can be verified, never that the check
+// is skipped.
+const vmcRoots = parseCertificates(VMC_ROOTS_PEM);
 
-function missing(maxAgeSeconds: number) {
-  return new NextResponse(TRANSPARENT_PNG, {
+function answer(logo: Logo | null, maxAgeSeconds: number) {
+  return NextResponse.json(logo ? { svg: logo.svg, verified: logo.verified } : { svg: null, verified: false }, {
     headers: {
-      'Content-Type': 'image/png',
-      'Cache-Control': `public, max-age=${maxAgeSeconds}`,
-      'X-Bulwark-Bimi': 'missing',
-    },
-  });
-}
-
-function logo(svg: string) {
-  return new NextResponse(svg, {
-    headers: {
-      'Content-Type': 'image/svg+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=86400',
-      // Opened directly instead of through <img>, the SVG still gets no
-      // script, no network and no same-origin access.
-      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+      'Cache-Control': `private, max-age=${maxAgeSeconds}`,
       'X-Content-Type-Options': 'nosniff',
     },
   });
@@ -101,6 +95,11 @@ async function findRecord(domain: string): Promise<BimiRecord> {
   return inherited;
 }
 
+/** The From domain and, for a subdomain, its organizational domain. */
+function lookupDomains(domain: string): string[] {
+  return [...new Set([domain, getRootDomain(domain)])];
+}
+
 /** Refuse hosts that are, or resolve to, anything but public addresses. */
 async function assertPublicHost(hostname: string): Promise<void> {
   if (isIP(hostname) || !isValidDomain(hostname)) throw new NoBimi();
@@ -110,9 +109,9 @@ async function assertPublicHost(hostname: string): Promise<void> {
   }
 }
 
-async function readCapped(response: Response): Promise<Uint8Array> {
+async function readCapped(response: Response, cap: number): Promise<Uint8Array> {
   const declared = Number(response.headers.get('content-length'));
-  if (declared > BIMI_MAX_SVG_BYTES) throw new NoBimi();
+  if (declared > cap) throw new NoBimi();
   if (!response.body) throw new NoBimi();
 
   const reader = response.body.getReader();
@@ -122,7 +121,7 @@ async function readCapped(response: Response): Promise<Uint8Array> {
     const { done, value } = await reader.read();
     if (done) break;
     total += value.byteLength;
-    if (total > BIMI_MAX_SVG_BYTES) {
+    if (total > cap) {
       await reader.cancel();
       throw new NoBimi();
     }
@@ -137,8 +136,9 @@ async function readCapped(response: Response): Promise<Uint8Array> {
   return bytes;
 }
 
-async function fetchLogo(logoUrl: string): Promise<string> {
-  let url = new URL(logoUrl);
+/** The body at an https URL on a public host, capped at `cap` bytes. */
+async function fetchCapped(target: string, cap: number, accept: string): Promise<Uint8Array> {
+  let url = new URL(target);
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     if (url.protocol !== 'https:' || (url.port && url.port !== '443')) throw new NoBimi();
     await assertPublicHost(url.hostname);
@@ -147,7 +147,7 @@ async function fetchLogo(logoUrl: string): Promise<string> {
       redirect: 'manual',
       cache: 'no-store',
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { Accept: 'image/svg+xml' },
+      headers: { Accept: accept },
     });
 
     if (response.status >= 300 && response.status < 400) {
@@ -157,13 +157,35 @@ async function fetchLogo(logoUrl: string): Promise<string> {
       url = new URL(location, url);
       continue;
     }
-    if (!response.ok) throw new Error(`logo fetch failed: HTTP ${response.status}`);
-
-    const svg = validateBimiSvg(await readCapped(response));
-    if (!svg) throw new NoBimi();
-    return svg;
+    if (!response.ok) throw new Error(`fetch failed: HTTP ${response.status}`);
+    return readCapped(response, cap);
   }
   throw new NoBimi();
+}
+
+/**
+ * The logo out of the record's verified mark, or null when there is none or it
+ * does not check out. Either domain may be the one the mark names; the
+ * message's DMARC pass already tied it to both.
+ */
+async function markLogo(record: BimiRecord, domains: string[]): Promise<string | null> {
+  if (!record.evidenceUrl) return null;
+  try {
+    const pem = await fetchCapped(record.evidenceUrl, MAX_PEM_BYTES, 'application/pem-certificate-chain');
+    return verifiedLogo(Buffer.from(pem).toString('latin1'), domains, vmcRoots);
+  } catch {
+    // A mark that can't be fetched falls through to the plain logo, like one
+    // that doesn't check out.
+    return null;
+  }
+}
+
+async function fetchLogo(record: BimiRecord, domain: string): Promise<Logo> {
+  const marked = await markLogo(record, lookupDomains(domain));
+  if (marked) return { svg: marked, verified: true };
+  const svg = validateBimiSvg(await fetchCapped(record.logoUrl, BIMI_MAX_SVG_BYTES, 'image/svg+xml'));
+  if (!svg) throw new NoBimi();
+  return { svg, verified: false };
 }
 
 function evictOldest<T extends { fetchedAt: number }>(map: Map<string, T>, max: number) {
@@ -179,13 +201,13 @@ function evictOldest<T extends { fetchedAt: number }>(map: Map<string, T>, max: 
   if (oldestKey) map.delete(oldestKey);
 }
 
-async function loadLogo(domain: string): Promise<string | null> {
+async function loadLogo(domain: string): Promise<Logo | null> {
   try {
     const record = await findRecord(domain);
-    const svg = await fetchLogo(record.logoUrl);
+    const logo = await fetchLogo(record, domain);
     evictOldest(cache, CACHE_MAX_SIZE);
-    cache.set(domain, { svg, fetchedAt: Date.now() });
-    return svg;
+    cache.set(domain, { ...logo, fetchedAt: Date.now() });
+    return logo;
   } catch (error) {
     const ttl = error instanceof NoBimi ? NEGATIVE_CACHE_TTL_MS : ERROR_CACHE_TTL_MS;
     evictOldest(negativeCache, NEGATIVE_CACHE_MAX_SIZE);
@@ -208,12 +230,12 @@ export async function GET(request: NextRequest) {
 
   const neg = negativeCache.get(domain);
   if (neg && Date.now() - neg.fetchedAt < neg.ttl) {
-    return missing(Math.round(neg.ttl / 1000));
+    return answer(null, Math.round(neg.ttl / 1000));
   }
 
   const cached = cache.get(domain);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return logo(cached.svg);
+    return answer(cached, 86400);
   }
 
   let pending = inflight.get(domain);
@@ -221,9 +243,9 @@ export async function GET(request: NextRequest) {
     pending = loadLogo(domain).finally(() => inflight.delete(domain));
     inflight.set(domain, pending);
   }
-  const svg = await pending;
-  if (svg) return logo(svg);
+  const logo = await pending;
+  if (logo) return answer(logo, 86400);
 
   const entry = negativeCache.get(domain);
-  return missing(Math.round((entry?.ttl ?? ERROR_CACHE_TTL_MS) / 1000));
+  return answer(null, Math.round((entry?.ttl ?? ERROR_CACHE_TTL_MS) / 1000));
 }
