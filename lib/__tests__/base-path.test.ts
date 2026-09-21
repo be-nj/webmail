@@ -102,3 +102,56 @@ describe('toRouterPath — router.push paths under a subpath', () => {
     expect(toRouterPath('/en')).toBe('/en');
   });
 });
+
+describe('getPathPrefix — runtime detection on app routes', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  // With the default localePrefix "never", app URLs carry no locale, and the
+  // deep-link routes end in ids chosen by the mail server. A folder whose id
+  // happens to be "de" must not turn "/mail/folder" into a mount prefix, or
+  // every withBasePath()/apiFetch() URL on that page points nowhere.
+  it.each([
+    '/mail/folder/de',
+    '/mail/message/it',
+    '/mail/thread/ca/x',
+    '/settings/de',
+    '/calendar/nb',
+  ])('finds no prefix on %s', async (path) => {
+    window.history.replaceState(null, '', path);
+    const { getPathPrefix, withBasePath } = await loadNav(undefined);
+    expect(getPathPrefix()).toBe('');
+    expect(withBasePath('/api/bimi')).toBe('/api/bimi');
+  });
+
+  it('still finds a proxy mount before the locale', async () => {
+    window.history.replaceState(null, '', '/webmail/de/mail/folder/it');
+    const { getPathPrefix } = await loadNav(undefined);
+    expect(getPathPrefix()).toBe('/webmail');
+  });
+
+  it('still reads a locale at the root as no prefix', async () => {
+    window.history.replaceState(null, '', '/de/mail/folder/it');
+    const { getPathPrefix } = await loadNav(undefined);
+    expect(getPathPrefix()).toBe('');
+  });
+});
+
+describe('getLocaleFromPath — ids that look like locales', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('does not read a folder id as the locale', async () => {
+    window.history.replaceState(null, '', '/mail/folder/de');
+    const { getLocaleFromPath } = await loadNav(undefined);
+    expect(getLocaleFromPath()).toBe('en');
+  });
+
+  it('reads the locale segment when there is one', async () => {
+    window.history.replaceState(null, '', '/webmail/fr/mail/folder/de');
+    const { getLocaleFromPath } = await loadNav(undefined);
+    expect(getLocaleFromPath()).toBe('fr');
+  });
+});
