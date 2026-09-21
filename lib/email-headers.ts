@@ -54,6 +54,30 @@ export function hasAlignedDmarcPass(email: {
 }
 
 /**
+ * Parse every Authentication-Results header of a message, in the order they
+ * stand in it.
+ *
+ * SPF and DKIM are read from all of them together, so the most severe result
+ * wins (a forged pass can't hide a real fail). DMARC is read from the FIRST
+ * header only: that one was prepended by the server that delivered into this
+ * mailbox (RFC 8601 §5), every header below it was written earlier by hosts
+ * we have no reason to trust - the sender included. Without this a spoofer
+ * could add "dmarc=pass" to their own message and, whenever our header
+ * carried no DMARC result, decide what the UI shows. A blank first header is
+ * not skipped, since that would promote the one below it.
+ */
+export function parseAuthenticationResultsHeaders(values: string[]): AuthenticationResults {
+  const results = parseAuthenticationResults(values.join('; '));
+  const delivering = parseAuthenticationResults(values[0] ?? '');
+  if (delivering.dmarc) {
+    results.dmarc = delivering.dmarc;
+  } else {
+    delete results.dmarc;
+  }
+  return results;
+}
+
+/**
  * Parse Authentication-Results header to extract SPF, DKIM, DMARC results
  */
 export function parseAuthenticationResults(header: string): AuthenticationResults {
@@ -108,10 +132,10 @@ export function parseAuthenticationResults(header: string): AuthenticationResult
     };
   }
 
-  // Parse DMARC. The first result wins: headers arrive top to bottom, and the
-  // topmost Authentication-Results is the one our own server added. Properties
-  // are read from the rest of that result (up to the next ';'), so a comment
-  // like "(p=REJECT)" between them doesn't hide header.from.
+  // Parse DMARC. Properties are read from the rest of the result (up to the
+  // next ';'), so a comment like "(p=REJECT)" doesn't hide header.from. With
+  // several headers, use parseAuthenticationResultsHeaders: it takes DMARC
+  // from the topmost header only.
   const dmarcMatch = header.match(/dmarc=(\w+)([^;]*)/);
   if (dmarcMatch) {
     const props = dmarcMatch[2];

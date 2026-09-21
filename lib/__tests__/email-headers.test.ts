@@ -9,6 +9,7 @@ import {
   extractListHeaders,
   isAuthenticationSpoofed,
   hasAlignedDmarcPass,
+  parseAuthenticationResultsHeaders,
 } from '../email-headers';
 
 describe('parseAuthenticationResults', () => {
@@ -341,9 +342,30 @@ describe('DMARC parsing for BIMI', () => {
     expect(result.dmarc).toEqual({ result: 'pass', domain: 'brand.example', policy: 'reject' });
   });
 
-  it('keeps the first (topmost) DMARC result when several headers are joined', () => {
-    const joined = 'mx.example; dmarc=fail header.from=brand.example; forged.example; dmarc=pass header.from=brand.example';
-    expect(parseAuthenticationResults(joined).dmarc?.result).toBe('fail');
+  it('takes DMARC from the topmost header only', () => {
+    const ours = 'mx.example; dmarc=fail header.from=brand.example';
+    const forged = 'forged.example; dmarc=pass header.from=brand.example';
+    expect(parseAuthenticationResultsHeaders([ours, forged]).dmarc?.result).toBe('fail');
+    expect(parseAuthenticationResultsHeaders([forged.replace('forged', 'mx'), ours]).dmarc?.result).toBe('pass');
+  });
+
+  it('does not let a lower header supply DMARC when ours has none', () => {
+    const ours = 'mx.example; spf=pass smtp.mailfrom=brand.example';
+    const forged = 'forged.example; dmarc=pass header.from=brand.example';
+    const result = parseAuthenticationResultsHeaders([ours, forged]);
+    expect(result.dmarc).toBeUndefined();
+    expect(result.spf?.result).toBe('pass');
+    expect(parseAuthenticationResultsHeaders(['   ', forged]).dmarc).toBeUndefined();
+  });
+
+  it('still lets a lower header escalate SPF to a failure', () => {
+    const result = parseAuthenticationResultsHeaders(['mx.example; spf=pass smtp.mailfrom=a.example', 'x; spf=fail smtp.mailfrom=a.example']);
+    expect(result.spf?.result).toBe('fail');
+  });
+
+  it('reads the format Stalwart writes', () => {
+    const stalwart = 'mx.example;\r\n\tdkim=pass header.d=brand.example header.s=s1 header.b=abc;\r\n\tspf=pass (mx.example: domain of a@brand.example designates 1.2.3.4 as permitted sender) smtp.mailfrom=a@brand.example;\r\n\tdmarc=pass header.from=brand.example policy.dmarc=reject';
+    expect(parseAuthenticationResultsHeaders([stalwart]).dmarc).toEqual({ result: 'pass', domain: 'brand.example', policy: 'reject' });
   });
 
   it('does not take header.from from a later result', () => {

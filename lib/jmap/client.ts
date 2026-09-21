@@ -8,7 +8,7 @@ import { batched, itemsPerRequest } from "./request-limits";
 import { keywordPointer } from "./patch-pointer";
 import { FirstTouchGate } from "./first-touch-gate";
 import { debug } from "@/lib/debug";
-import { parseAuthenticationResults } from "@/lib/email-headers";
+import { parseAuthenticationResultsHeaders } from "@/lib/email-headers";
 import { normalizeCalendarEventLike } from "@/lib/calendar-event-normalization";
 import { SYNTHETIC_ID_PROBE, RECURRENCE_BASE_PROPERTIES, hydrateRecurrenceInstances, isServerRecurrenceInstance } from "@/lib/recurrence-instances";
 import { findTasksOnlyCalendarIds, isTaskLikeObject, type ScannedCalendarObject } from "@/lib/calendar-component-detection";
@@ -230,7 +230,7 @@ function applyListAuthenticationResults(emails: Email[]): void {
     if (values === undefined) continue;
     delete record[AUTH_RESULTS_LIST_PROPERTY];
     if (values && values.length > 0 && !email.authenticationResults) {
-      email.authenticationResults = parseAuthenticationResults(values.join('; '));
+      email.authenticationResults = parseAuthenticationResultsHeaders(values);
     }
   }
 }
@@ -2095,7 +2095,7 @@ export class JMAPClient implements IJMAPClient {
   }
 
   private async parseEmailHeaders(email: Email): Promise<void> {
-    const { parseAuthenticationResults, parseSpamScore, parseSpamLLM } = await import('@/lib/email-headers');
+    const { parseAuthenticationResultsHeaders, parseSpamScore, parseSpamLLM } = await import('@/lib/email-headers');
 
     let headersRecord: Record<string, string | string[]>;
     if (Array.isArray(email.headers)) {
@@ -2119,9 +2119,10 @@ export class JMAPClient implements IJMAPClient {
     const authResultsHeader = headersRecord['Authentication-Results'];
     if (authResultsHeader) {
       // Multiple Authentication-Results headers (or multiple SPF identities in
-      // one header) must all be considered so the most severe result wins.
-      const value = Array.isArray(authResultsHeader) ? authResultsHeader.join('; ') : authResultsHeader;
-      email.authenticationResults = parseAuthenticationResults(value);
+      // one header) must all be considered so the most severe result wins;
+      // DMARC comes from the topmost (our server's) header only.
+      const values = Array.isArray(authResultsHeader) ? authResultsHeader : [authResultsHeader];
+      email.authenticationResults = parseAuthenticationResultsHeaders(values);
     }
 
     for (const headerName of ['X-Spam-Score', 'X-Spam-Status', 'X-Spam-Result', 'X-Rspamd-Score']) {
