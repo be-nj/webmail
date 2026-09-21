@@ -315,6 +315,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
     const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
     const isTrustedSender = useIsTrustedSender();
+    const rowTrust = showRecipient ? null : senderTrustSignal(email, isTrustedSender);
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
     // Show the originating folder in the aggregate "All …" views.
     const showSourceFolder = isUnifiedView && !!email.sourceFolder;
@@ -553,7 +554,8 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                 className="shadow-sm"
                 disableImages={hideJunkAvatarImages}
                 dmarcPass={!showRecipient && hasAlignedDmarcPass(email)}
-                senderTrust={showRecipient ? null : senderTrustSignal(email, isTrustedSender)}
+                senderTrust={rowTrust}
+                senderTrustLabel={rowTrust ? t(`sender_trust.${rowTrust}`) : undefined}
                 checked={isChecked}
                 onToggle={handleCheckboxClick}
                 selectLabel={tBatch('select')}
@@ -868,6 +870,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
         )).slice(0, 4)
       : participantNames;
     const avatarPerson = showRecipient ? latestEmail.to?.[0] : latestEmail.from?.[0];
+    const threadTrust = showRecipient ? null : senderTrustSignal(latestEmail, isTrustedSender);
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
 
     const { dragHandlers, isDragging: isThreadDragging } = useEmailDrag({
@@ -1091,7 +1094,8 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                   className="shadow-sm"
                   disableImages={hideJunkAvatarImages}
                   dmarcPass={!showRecipient && hasAlignedDmarcPass(latestEmail)}
-                  senderTrust={showRecipient ? null : senderTrustSignal(latestEmail, isTrustedSender)}
+                  senderTrust={threadTrust}
+                  senderTrustLabel={threadTrust ? tEmailViewer(`sender_trust.${threadTrust}`) : undefined}
                   checked={isChecked}
                   onToggle={handleThreadCheckboxClick}
                   selectLabel={tBatch('select')}

@@ -623,6 +623,11 @@
     "impersonation_warning": {
       "title": "Nie je od vášho dôveryhodného odosielateľa",
       "description": "Táto správa tvrdí, že pochádza od {address}, jedného z vašich dôveryhodných odosielateľov, ale neprešla overením odosielateľa. S najväčšou pravdepodobnosťou ju neodoslal."
+    },
+    "sender_trust": {
+      "label": "Dôveryhodný odosielateľ",
+      "trusted": "Dôveryhodný odosielateľ – overenie odosielateľa prešlo",
+      "impersonated": "Vydáva sa za dôveryhodného odosielateľa – overenie odosielateľa zlyhalo"
     }
   },
   "email_composer": {
