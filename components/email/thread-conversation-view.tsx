@@ -11,6 +11,7 @@ import { fitEmailBodyWidth } from "@/lib/email-fit-width";
 import { transformInlineStyles, transformColorForDarkMode, transformBgColorForDarkMode } from "@/lib/color-transform";
 import { useThemeStore } from "@/stores/theme-store";
 import { Avatar } from "@/components/ui/avatar";
+import { isAuthenticationSpoofed } from "@/lib/email-headers";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatFileSize, cn } from "@/lib/utils";
 import {
@@ -172,8 +173,12 @@ export function ThreadConversationView({
         <div className="space-y-3" style={{ padding: 'var(--density-card-p)' }}>
           {emails.map((email, index) => {
             const senderEmail = email.from?.[0]?.email?.toLowerCase();
+            // A trusted address only counts when the message didn't fail its
+            // sender check, or a forged From would load external content.
+            // Messages without Authentication-Results keep their trust.
             const senderIsTrusted = senderEmail
-              ? isSenderTrusted(senderEmail) || (trustedSendersAddressBook && isTrustedAddressBookSender(senderEmail))
+              ? (isSenderTrusted(senderEmail) || (trustedSendersAddressBook && isTrustedAddressBookSender(senderEmail)))
+                && !isAuthenticationSpoofed(email.authenticationResults)
               : false;
             return (
               <EmailCard

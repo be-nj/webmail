@@ -21,7 +21,7 @@ import { TagPicker } from "./tag-picker";
 import { useMeasuredTagDisplay } from "@/hooks/use-tag-display";
 import { useKeywordFormat } from "@/hooks/use-keyword-format";
 import { getEmailTagIds } from "@/lib/thread-utils";
-import { getSecurityStatus, extractListHeaders } from "@/lib/email-headers";
+import { getSecurityStatus, extractListHeaders, isAuthenticationSpoofed } from "@/lib/email-headers";
 import { emailToReadView } from "@/lib/plugin-projection";
 import { generateEmailSource } from "@/lib/email-source";
 import {
@@ -1744,8 +1744,13 @@ export function EmailViewer({
   const shouldBlockExternal = useMemo(() => {
     if (!email) return false;
     const senderEmail = email.from?.[0]?.email?.toLowerCase();
+    // A trusted address only counts when the message didn't fail its sender
+    // check, or a forged From would load external content unasked. Messages
+    // without Authentication-Results (old archives, own submissions, imports)
+    // keep their trust: isAuthenticationSpoofed is false for them.
     const senderIsTrusted = senderEmail
-      ? isSenderTrusted(senderEmail) || (trustedSendersAddressBook && isTrustedAddressBookSender(senderEmail))
+      ? (isSenderTrusted(senderEmail) || (trustedSendersAddressBook && isTrustedAddressBookSender(senderEmail)))
+        && !isAuthenticationSpoofed(email.authenticationResults)
       : false;
     return !senderIsTrusted && (
       externalContentPolicy === 'block' ||
