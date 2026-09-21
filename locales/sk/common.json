@@ -586,6 +586,10 @@
       "copy": "Kopírovať kód {code}",
       "copied": "Kód skopírovaný",
       "copy_failed": "Kód sa nepodarilo skopírovať"
+    },
+    "impersonation_warning": {
+      "title": "Nie je od vášho dôveryhodného odosielateľa",
+      "description": "Táto správa tvrdí, že pochádza od {address}, jedného z vašich dôveryhodných odosielateľov, ale neprešla overením odosielateľa. S najväčšou pravdepodobnosťou ju neodoslal."
     }
   },
   "email_composer": {

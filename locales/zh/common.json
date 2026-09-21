@@ -586,6 +586,10 @@
       "copy": "复制验证码 {code}",
       "copied": "验证码已复制",
       "copy_failed": "无法复制验证码"
+    },
+    "impersonation_warning": {
+      "title": "并非来自您信任的发件人",
+      "description": "此邮件声称来自您信任的发件人 {address}，但未通过发件人验证。它很可能不是由对方发送的。"
     }
   },
   "email_composer": {

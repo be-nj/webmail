@@ -586,6 +586,10 @@
       "copy": "{code} kód másolása",
       "copied": "Kód másolva",
       "copy_failed": "Nem sikerült másolni a kódot"
+    },
+    "impersonation_warning": {
+      "title": "Nem a megbízható feladódtól",
+      "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
     }
   },
   "email_composer": {

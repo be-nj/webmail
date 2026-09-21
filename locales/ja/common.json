@@ -586,6 +586,10 @@
       "copy": "コード {code} をコピー",
       "copied": "コードをコピーしました",
       "copy_failed": "コードをコピーできませんでした"
+    },
+    "impersonation_warning": {
+      "title": "信頼済み送信者からではありません",
+      "description": "このメッセージは信頼済み送信者の {address} からと称していますが、送信者認証に失敗しました。本人が送信したものではない可能性が高いです。"
     }
   },
   "email_composer": {

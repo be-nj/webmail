@@ -586,6 +586,10 @@
       "copy": "Kopēt kodu {code}",
       "copied": "Kods nokopēts",
       "copy_failed": "Neizdevās nokopēt kodu"
+    },
+    "impersonation_warning": {
+      "title": "Nav no jūsu uzticamā sūtītāja",
+      "description": "Šis ziņojums apgalvo, ka ir no {address}, viena no jūsu uzticamajiem sūtītājiem, taču nav izturējis sūtītāja pārbaudi. Visticamāk, to nav sūtījis viņš."
     }
   },
   "email_composer": {

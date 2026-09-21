@@ -586,6 +586,10 @@
       "copy": "Copia codice {code}",
       "copied": "Codice copiato",
       "copy_failed": "Impossibile copiare il codice"
+    },
+    "impersonation_warning": {
+      "title": "Non proviene dal tuo mittente attendibile",
+      "description": "Questo messaggio afferma di provenire da {address}, uno dei tuoi mittenti attendibili, ma non ha superato la verifica del mittente. Molto probabilmente non è stato inviato da lui."
     }
   },
   "email_composer": {

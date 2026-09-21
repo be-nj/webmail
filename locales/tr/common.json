@@ -586,6 +586,10 @@
       "copy": "{code} kodunu kopyala",
       "copied": "Kod kopyalandı",
       "copy_failed": "Kod kopyalanamadı"
+    },
+    "impersonation_warning": {
+      "title": "Güvenilir göndericinizden değil",
+      "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."
     }
   },
   "email_composer": {

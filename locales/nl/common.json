@@ -586,6 +586,10 @@
       "copy": "Code {code} kopiëren",
       "copied": "Code gekopieerd",
       "copy_failed": "Kan de code niet kopiëren"
+    },
+    "impersonation_warning": {
+      "title": "Niet van je vertrouwde afzender",
+      "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
     }
   },
   "email_composer": {

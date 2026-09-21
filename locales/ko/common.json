@@ -586,6 +586,10 @@
       "copy": "코드 {code} 복사",
       "copied": "코드를 복사했습니다",
       "copy_failed": "코드를 복사할 수 없습니다"
+    },
+    "impersonation_warning": {
+      "title": "신뢰하는 발신자가 보낸 메일이 아닙니다",
+      "description": "이 메시지는 신뢰하는 발신자인 {address}에서 보낸 것처럼 보이지만 발신자 인증에 실패했습니다. 해당 발신자가 보낸 것이 아닐 가능성이 높습니다."
     }
   },
   "email_composer": {
