@@ -565,7 +565,7 @@ const DEFAULT_SETTINGS = {
   deleteAction: 'trash' as DeleteAction,
   permanentlyDeleteJunk: false,
   returnToListAfterAction: true,
-  clearSearchOnFolderChange: false,
+  clearSearchOnFolderChange: true, // fork: leaving a folder leaves the search (upstream default: false)
   showPreview: true,
   mailLayout: 'split' as MailLayout,
   emailsPerPage: 50,
