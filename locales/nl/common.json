@@ -590,6 +590,11 @@
     "impersonation_warning": {
       "title": "Niet van je vertrouwde afzender",
       "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
+    },
+    "sender_trust": {
+      "label": "Vertrouwde afzender",
+      "trusted": "Vertrouwde afzender – afzendercontrole geslaagd",
+      "impersonated": "Doet zich voor als vertrouwde afzender – afzendercontrole mislukt"
     }
   },
   "email_composer": {

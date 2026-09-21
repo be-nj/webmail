@@ -590,6 +590,11 @@
     "impersonation_warning": {
       "title": "Nem a megbízható feladódtól",
       "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
+    },
+    "sender_trust": {
+      "label": "Megbízható feladó",
+      "trusted": "Megbízható feladó – a feladó-ellenőrzés sikeres",
+      "impersonated": "Megbízható feladónak adja ki magát – a feladó-ellenőrzés sikertelen"
     }
   },
   "email_composer": {

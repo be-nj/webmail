@@ -590,6 +590,11 @@
     "impersonation_warning": {
       "title": "Güvenilir göndericinizden değil",
       "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."
+    },
+    "sender_trust": {
+      "label": "Güvenilir gönderen",
+      "trusted": "Güvenilir gönderen – gönderen doğrulaması başarılı",
+      "impersonated": "Güvenilir gönderen gibi davranıyor – gönderen doğrulaması başarısız"
     }
   },
   "email_composer": {

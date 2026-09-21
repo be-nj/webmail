@@ -58,6 +58,7 @@ import {
   X,
   Check,
   AlertTriangle,
+  HeartHandshake,
   Minus,
   ShieldCheck,
   ShieldAlert,
@@ -4061,6 +4062,7 @@ export function EmailViewer({
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
                 dmarcPass={hasAlignedDmarcPass(email)}
                 senderTrust={trustSignal}
+                senderTrustLabel={trustSignal ? t(`sender_trust.${trustSignal}`) : undefined}
               />
             </button>
 
@@ -4341,6 +4343,7 @@ export function EmailViewer({
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
                 dmarcPass={hasAlignedDmarcPass(email)}
                 senderTrust={trustSignal}
+                senderTrustLabel={trustSignal ? t(`sender_trust.${trustSignal}`) : undefined}
               />
             </button>
             <div className="flex-1 min-w-0">
@@ -4624,6 +4627,26 @@ export function EmailViewer({
                       )}
                       {auth?.iprev && (
                         <AuthChip name={t('details.iprev')} result={auth.iprev.result} extra={auth.iprev.ip} />
+                      )}
+                      {trustSignal && (
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs cursor-help",
+                            trustSignal === 'trusted' ? "bg-primary/[0.07] border-primary/30" : "bg-red-500/[0.07] border-red-500/30",
+                          )}
+                          title={t(`sender_trust.${trustSignal}`)}
+                        >
+                          {trustSignal === 'trusted'
+                            ? <HeartHandshake className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
+                            : <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-red-700 dark:text-red-400" />}
+                          <span className="font-medium text-foreground">{t('sender_trust.label')}</span>
+                          <span className={cn(
+                            "text-[10px] uppercase tracking-wider",
+                            trustSignal === 'trusted' ? "text-primary" : "text-red-700 dark:text-red-400",
+                          )}>
+                            {translateAuthResult(trustSignal === 'trusted' ? 'pass' : 'fail')}
+                          </span>
+                        </span>
                       )}
                       {email.spamScore !== undefined && (
                         <span className={cn(
