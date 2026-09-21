@@ -9,6 +9,7 @@ import {
   extractListHeaders,
   isAuthenticationSpoofed,
   getSenderVerification,
+  hasAlignedDmarcPass,
 } from '../email-headers';
 
 describe('parseAuthenticationResults', () => {
@@ -450,5 +451,47 @@ describe('getSenderVerification', () => {
     expect(getSenderVerification({}, 'a@b.example')).toBeNull();
     expect(getSenderVerification({ iprev: { result: 'fail' } }, 'a@b.example')).toBeNull();
     expect(getSenderVerification(phish, undefined)).toBeNull();
+  });
+});
+
+describe('DMARC parsing for BIMI', () => {
+  it('reads header.from past a comment', () => {
+    const result = parseAuthenticationResults('mx.example; dmarc=pass (p=REJECT sp=REJECT) header.from=brand.example policy.dmarc=reject');
+    expect(result.dmarc).toEqual({ result: 'pass', domain: 'brand.example', policy: 'reject' });
+  });
+
+  it('keeps the first (topmost) DMARC result when several headers are joined', () => {
+    const joined = 'mx.example; dmarc=fail header.from=brand.example; forged.example; dmarc=pass header.from=brand.example';
+    expect(parseAuthenticationResults(joined).dmarc?.result).toBe('fail');
+  });
+
+  it('does not take header.from from a later result', () => {
+    const result = parseAuthenticationResults('dmarc=pass; dkim=pass header.d=x.example header.from=brand.example');
+    expect(result.dmarc?.domain).toBeUndefined();
+  });
+});
+
+describe('hasAlignedDmarcPass', () => {
+  const from = (email: string) => [{ email }];
+
+  it('is true for a DMARC pass naming the From domain', () => {
+    expect(hasAlignedDmarcPass({
+      from: from('news@Brand.Example'),
+      authenticationResults: { dmarc: { result: 'pass', domain: 'brand.example' } },
+    })).toBe(true);
+  });
+
+  it('is false for a pass recorded for another domain', () => {
+    expect(hasAlignedDmarcPass({
+      from: from('news@brand.example'),
+      authenticationResults: { dmarc: { result: 'pass', domain: 'attacker.example' } },
+    })).toBe(false);
+  });
+
+  it('is false without header.from, a failing result, or no results', () => {
+    expect(hasAlignedDmarcPass({ from: from('a@brand.example'), authenticationResults: { dmarc: { result: 'pass' } } })).toBe(false);
+    expect(hasAlignedDmarcPass({ from: from('a@brand.example'), authenticationResults: { dmarc: { result: 'fail', domain: 'brand.example' } } })).toBe(false);
+    expect(hasAlignedDmarcPass({ from: from('a@brand.example') })).toBe(false);
+    expect(hasAlignedDmarcPass({ authenticationResults: { dmarc: { result: 'pass', domain: 'brand.example' } } })).toBe(false);
   });
 });

@@ -2130,6 +2130,10 @@
           "delivered": "Lliurats",
           "mistakes": "Errors"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Logotips de marca dels remitents (BIMI)",
+        "description": "Mostra el logotip de marca que publica el domini del remitent (BIMI), només en missatges que han superat la verificació del remitent"
       }
     },
     "sidebar_apps": {

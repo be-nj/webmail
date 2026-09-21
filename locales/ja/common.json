@@ -2123,6 +2123,10 @@
           "delivered": "配信",
           "mistakes": "ミス"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "送信者のブランドロゴ (BIMI)",
+        "description": "送信者ドメインが公開しているブランドロゴ (BIMI) を、送信者認証に合格したメッセージにのみ表示します"
       }
     },
     "sidebar_apps": {

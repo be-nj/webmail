@@ -2123,6 +2123,10 @@
           "delivered": "Piegādātas",
           "mistakes": "Kļūdas"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Sūtītāju zīmolu logotipi (BIMI)",
+        "description": "Rādīt sūtītāja domēna publicēto zīmola logotipu (BIMI) tikai ziņojumos, kas izturējuši sūtītāja pārbaudi"
       }
     },
     "sidebar_apps": {

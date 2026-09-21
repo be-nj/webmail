@@ -2123,6 +2123,10 @@
           "delivered": "Teslim edilen",
           "mistakes": "Hatalar"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Gönderen marka logoları (BIMI)",
+        "description": "Gönderen alan adının yayımladığı marka logosunu (BIMI) yalnızca gönderen doğrulamasını geçen iletilerde göster"
       }
     },
     "sidebar_apps": {

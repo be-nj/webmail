@@ -89,6 +89,22 @@ export function getSenderVerification(
   return { status: 'unverified', domain, sentFrom };
 }
 
+/**
+ * Whether this message passed DMARC for the domain in its visible From - the
+ * condition for showing a BIMI logo. Requires the DMARC result to name that
+ * domain (`header.from=`), so a result recorded for some other domain can't
+ * lend its pass to this From.
+ */
+export function hasAlignedDmarcPass(email: {
+  from?: Array<{ email?: string | null }> | null;
+  authenticationResults?: AuthenticationResults;
+}): boolean {
+  const dmarc = email.authenticationResults?.dmarc;
+  if (dmarc?.result !== 'pass' || !dmarc.domain) return false;
+  const fromDomain = email.from?.[0]?.email?.split('@').pop()?.toLowerCase();
+  return !!fromDomain && dmarc.domain.toLowerCase() === fromDomain;
+}
+
 interface ResInfo {
   method: string;
   result: string;

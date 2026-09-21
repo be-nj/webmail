@@ -2123,6 +2123,10 @@
           "delivered": "Zugestellt",
           "mistakes": "Fehler"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Absender-Markenlogos (BIMI)",
+        "description": "Markenlogo der Absenderdomain (BIMI) anzeigen, nur bei Nachrichten mit bestandener Absenderprüfung"
       }
     },
     "sidebar_apps": {

@@ -2123,6 +2123,10 @@
           "delivered": "已送达",
           "mistakes": "失误"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "发件人品牌徽标 (BIMI)",
+        "description": "显示发件人域名发布的品牌徽标 (BIMI)，仅用于通过发件人验证的邮件"
       }
     },
     "sidebar_apps": {

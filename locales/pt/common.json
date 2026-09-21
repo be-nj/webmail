@@ -2123,6 +2123,10 @@
           "delivered": "Entregues",
           "mistakes": "Erros"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Logótipos de marca dos remetentes (BIMI)",
+        "description": "Mostrar o logótipo da marca publicado pelo domínio do remetente (BIMI), apenas em mensagens que passaram a verificação do remetente"
       }
     },
     "sidebar_apps": {

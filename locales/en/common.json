@@ -2130,6 +2130,10 @@
           "delivered": "Delivered",
           "mistakes": "Mistakes"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Sender Brand Logos (BIMI)",
+        "description": "Show the brand logo a sender domain publishes (BIMI), only on messages that passed sender verification"
       }
     },
     "sidebar_apps": {

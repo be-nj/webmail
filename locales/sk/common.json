@@ -2130,6 +2130,10 @@
           "delivered": "Doručené",
           "mistakes": "Chyby"
         }
+      },
+      "sender_bimi_logos": {
+        "label": "Logá značiek odosielateľov (BIMI)",
+        "description": "Zobraziť logo značky zverejnené doménou odosielateľa (BIMI), len pri správach, ktoré prešli overením odosielateľa"
       }
     },
     "sidebar_apps": {
