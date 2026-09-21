@@ -1852,6 +1852,10 @@
         "label": "Gönderici Favorikonları",
         "description": "İş göndericileri için profil resmi olarak web sitesi simgelerini göster"
       },
+      "sender_bimi_logos": {
+        "label": "Gönderen marka logoları (BIMI)",
+        "description": "Gönderen alan adının yayımladığı marka logosunu (BIMI) yalnızca gönderen doğrulamasını geçen iletilerde göster"
+      },
       "show_avatars_in_junk": {
         "label": "İstem Dışı Klasöründe Avatarları Göster",
         "description": "İstem dışı klasöründeki göndericiler için profil resimleri ve favorikonları göster. Kimlik avı girişimlerine görsel meşruiyet kazandırmamak için varsayılan olarak kapalıdır."

@@ -1855,6 +1855,10 @@
         "label": "Feladó faviconok",
         "description": "Weboldal ikonok megjelenítése profilképekként az üzleti feladók számára"
       },
+      "sender_bimi_logos": {
+        "label": "Feladók márkalogói (BIMI)",
+        "description": "A feladó domainje által közzétett márkalogó (BIMI) megjelenítése, csak a feladó-ellenőrzésen átment üzeneteknél"
+      },
       "show_avatars_in_junk": {
         "label": "Avatárok mutatása a Spam mappában",
         "description": "Profilképek és faviconok megjelenítése a feladókhoz a spam mappában. Alapértelmezés szerint letiltva, hogy ne adjon vizuális legitimitást az adathalász kísérleteknek."

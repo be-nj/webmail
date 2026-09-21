@@ -1859,6 +1859,10 @@
         "label": "Icones dels remitents",
         "description": "Mostra icones de llocs web com a imatges de perfil per als remitents d'empresa"
       },
+      "sender_bimi_logos": {
+        "label": "Logotips de marca dels remitents (BIMI)",
+        "description": "Mostra el logotip de marca que publica el domini del remitent (BIMI), només en missatges que han superat la verificació del remitent"
+      },
       "show_avatars_in_junk": {
         "label": "Mostra els avatars a la carpeta de brossa",
         "description": "Mostra imatges de perfil i icones dels remitents a la carpeta de brossa. Desactivat per defecte per evitar donar aparença de legitimitat a intents de pesca electrònica."

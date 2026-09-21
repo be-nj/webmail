@@ -1852,6 +1852,10 @@
         "label": "Favikony nadawców",
         "description": "Pokazuj ikony stron internetowych jako zdjęcia profilowe nadawców firmowych"
       },
+      "sender_bimi_logos": {
+        "label": "Logo marek nadawców (BIMI)",
+        "description": "Pokazuj logo marki publikowane przez domenę nadawcy (BIMI), tylko w wiadomościach, które przeszły weryfikację nadawcy"
+      },
       "show_avatars_in_junk": {
         "label": "Pokazuj awatary w folderze spam",
         "description": "Pokazuj zdjęcia profilowe i favikony nadawców w folderze spam. Domyślnie wyłączone, aby próby phishingu nie wyglądały na wiarygodne."

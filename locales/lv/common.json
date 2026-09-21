@@ -1833,6 +1833,10 @@
         "label": "Sūtītāju ikonas",
         "description": "Rādīt vietņu ikonas kā sūtītāju avatarus"
       },
+      "sender_bimi_logos": {
+        "label": "Sūtītāju zīmolu logotipi (BIMI)",
+        "description": "Rādīt sūtītāja domēna publicēto zīmola logotipu (BIMI) tikai ziņojumos, kas izturējuši sūtītāja pārbaudi"
+      },
       "show_avatars_in_junk": {
         "label": "Rādīt avatarus mēstuļu mapē",
         "description": "Rādīt sūtītāju profila attēlus un ikonas mēstuļu mapē. Pēc noklusējuma izslēgts, lai pikšķerēšanas mēģinājumi neizskatītos uzticami."

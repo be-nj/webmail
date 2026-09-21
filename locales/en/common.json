@@ -1859,6 +1859,10 @@
         "label": "Sender Favicons",
         "description": "Show website icons as profile pictures for business senders"
       },
+      "sender_bimi_logos": {
+        "label": "Sender Brand Logos (BIMI)",
+        "description": "Show the brand logo a sender domain publishes (BIMI), only on messages that passed sender verification"
+      },
       "show_avatars_in_junk": {
         "label": "Show Avatars in Junk Folder",
         "description": "Show profile images and favicons for senders in the junk folder. Disabled by default to avoid lending visual legitimacy to phishing attempts."

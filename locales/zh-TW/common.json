@@ -1859,6 +1859,10 @@
         "label": "寄件者圖示",
         "description": "使用企業寄件者的網站圖示作為頭像"
       },
+      "sender_bimi_logos": {
+        "label": "寄件者品牌標誌 (BIMI)",
+        "description": "顯示寄件者網域發布的品牌標誌 (BIMI)，僅用於通過寄件者驗證的郵件"
+      },
       "show_avatars_in_junk": {
         "label": "在垃圾郵件信件匣顯示頭像",
         "description": "在垃圾郵件信件匣中顯示寄件者的頭像與網站圖示。預設停用，以免釣魚郵件因熟悉的圖示而顯得可信。"

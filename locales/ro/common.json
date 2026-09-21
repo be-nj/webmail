@@ -1859,6 +1859,10 @@
         "label": "Favicon-uri ale expeditorului",
         "description": "Afișați pictogramele site-urilor web ca imagini de profil pentru expeditorii de afaceri"
       },
+      "sender_bimi_logos": {
+        "label": "Logouri de marcă ale expeditorilor (BIMI)",
+        "description": "Afișează logoul de marcă publicat de domeniul expeditorului (BIMI), doar la mesajele care au trecut verificarea expeditorului"
+      },
       "show_avatars_in_junk": {
         "label": "Afișați avatarurile din folderul „Junk”",
         "description": "Afișați imaginile de profil și faviconurile expeditorilor din folderul de mesaje nedorite. Această opțiune este dezactivată în mod implicit pentru a evita conferirea unei aparențe de legitimitate încercărilor de phishing."

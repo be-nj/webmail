@@ -1855,6 +1855,10 @@
         "label": "Afsender-favicons",
         "description": "Vis hjemmesideikoner som profilbilleder for forretningsafsendere"
       },
+      "sender_bimi_logos": {
+        "label": "Afsenderes brandlogoer (BIMI)",
+        "description": "Vis det brandlogo, som afsenderens domæne offentliggør (BIMI), kun på beskeder, der har bestået afsenderbekræftelse"
+      },
       "show_avatars_in_junk": {
         "label": "Vis avatarer i spam-mappe",
         "description": "Vis profilbilleder og favicons for afsendere i spam-mappen. Deaktiveret som standard for at undgå at give visuel legitimitet til phishing-forsøg."

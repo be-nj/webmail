@@ -1852,6 +1852,10 @@
         "label": "Afzender-favicons",
         "description": "Toon websitepictogrammen als profielfoto's voor zakelijke afzenders"
       },
+      "sender_bimi_logos": {
+        "label": "Merklogo's van afzenders (BIMI)",
+        "description": "Toon het merklogo dat het domein van de afzender publiceert (BIMI), alleen bij berichten die de afzendercontrole hebben doorstaan"
+      },
       "show_avatars_in_junk": {
         "label": "Avatars tonen in de map ongewenst",
         "description": "Toon profielfoto's en favicons van afzenders in de map ongewenst. Standaard uitgeschakeld zodat phishingpogingen geen vertrouwd uiterlijk krijgen."

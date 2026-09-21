@@ -38,6 +38,22 @@ export function isAuthenticationSpoofed(auth?: AuthenticationResults): boolean {
 }
 
 /**
+ * Whether this message passed DMARC for the domain in its visible From - the
+ * condition for showing a BIMI logo. Requires the DMARC result to name that
+ * domain (`header.from=`), so a result recorded for some other domain can't
+ * lend its pass to this From.
+ */
+export function hasAlignedDmarcPass(email: {
+  from?: Array<{ email?: string | null }> | null;
+  authenticationResults?: AuthenticationResults;
+}): boolean {
+  const dmarc = email.authenticationResults?.dmarc;
+  if (dmarc?.result !== 'pass' || !dmarc.domain) return false;
+  const fromDomain = email.from?.[0]?.email?.split('@').pop()?.toLowerCase();
+  return !!fromDomain && dmarc.domain.toLowerCase() === fromDomain;
+}
+
+/**
  * Parse Authentication-Results header to extract SPF, DKIM, DMARC results
  */
 export function parseAuthenticationResults(header: string): AuthenticationResults {
@@ -92,13 +108,17 @@ export function parseAuthenticationResults(header: string): AuthenticationResult
     };
   }
 
-  // Parse DMARC
-  const dmarcMatch = header.match(/dmarc=(\w+)(?:\s+header\.from=([^\s]+))?(?:\s+policy\.dmarc=(\w+))?/);
+  // Parse DMARC. The first result wins: headers arrive top to bottom, and the
+  // topmost Authentication-Results is the one our own server added. Properties
+  // are read from the rest of that result (up to the next ';'), so a comment
+  // like "(p=REJECT)" between them doesn't hide header.from.
+  const dmarcMatch = header.match(/dmarc=(\w+)([^;]*)/);
   if (dmarcMatch) {
+    const props = dmarcMatch[2];
     results.dmarc = {
       result: dmarcMatch[1] as DmarcResult,
-      domain: dmarcMatch[2],
-      policy: dmarcMatch[3] as DmarcPolicy | undefined
+      domain: props.match(/header\.from=([^\s;]+)/)?.[1],
+      policy: props.match(/policy\.dmarc=(\w+)/)?.[1] as DmarcPolicy | undefined
     };
   }
 

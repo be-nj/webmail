@@ -8,6 +8,7 @@ import { batched, itemsPerRequest } from "./request-limits";
 import { keywordPointer } from "./patch-pointer";
 import { FirstTouchGate } from "./first-touch-gate";
 import { debug } from "@/lib/debug";
+import { parseAuthenticationResults } from "@/lib/email-headers";
 import { normalizeCalendarEventLike } from "@/lib/calendar-event-normalization";
 import { SYNTHETIC_ID_PROBE, RECURRENCE_BASE_PROPERTIES, hydrateRecurrenceInstances, isServerRecurrenceInstance } from "@/lib/recurrence-instances";
 import { findTasksOnlyCalendarIds, isTaskLikeObject, type ScannedCalendarObject } from "@/lib/calendar-component-detection";
@@ -191,6 +192,8 @@ const DEFAULT_MAILBOX_RIGHTS = {
   maySubmit: true,
 } as const;
 
+const AUTH_RESULTS_LIST_PROPERTY = "header:Authentication-Results:asText:all";
+
 const EMAIL_LIST_PROPERTIES = [
   "id",
   "threadId",
@@ -209,7 +212,28 @@ const EMAIL_LIST_PROPERTIES = [
   "attachments",
   // Needed so list rows can serve drag-out to the file system as .eml.
   "blobId",
+  // The DMARC verdict for list rows (BIMI logos, trusted senders) without
+  // fetching every header. Turned into `authenticationResults` by
+  // applyListAuthenticationResults.
+  AUTH_RESULTS_LIST_PROPERTY,
 ] as const;
+
+/**
+ * Parse the Authentication-Results values fetched through
+ * AUTH_RESULTS_LIST_PROPERTY into `authenticationResults`, the same shape
+ * getEmail derives from the full header list, and drop the raw property.
+ */
+function applyListAuthenticationResults(emails: Email[]): void {
+  for (const email of emails) {
+    const record = email as Email & { [AUTH_RESULTS_LIST_PROPERTY]?: string[] | null };
+    const values = record[AUTH_RESULTS_LIST_PROPERTY];
+    if (values === undefined) continue;
+    delete record[AUTH_RESULTS_LIST_PROPERTY];
+    if (values && values.length > 0 && !email.authenticationResults) {
+      email.authenticationResults = parseAuthenticationResults(values.join('; '));
+    }
+  }
+}
 
 /**
  * How many messages `discoverKeywords` walks before it gives up and reports an
@@ -791,6 +815,7 @@ export class JMAPClient implements IJMAPClient {
         }
       }
 
+      applyListAuthenticationResults(emails);
       emails.sort((a: Email, b: Email) =>
         new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
       );
@@ -1697,6 +1722,7 @@ export class JMAPClient implements IJMAPClient {
 
       if (response.methodResponses?.[1]?.[0] === "Email/get" && getResponse) {
         const emails = (getResponse.list || []) as Email[];
+        applyListAuthenticationResults(emails);
         // Sort client-side as safety net - some servers may not honour
         // the query sort for large mailboxes without additional filters.
         // Must mirror the query sort, or it would undo the configured order.
@@ -2887,6 +2913,7 @@ export class JMAPClient implements IJMAPClient {
 
       const queryResponse = response.methodResponses?.[0]?.[1];
       const emails = (response.methodResponses?.[1]?.[1]?.list || []) as Email[];
+      applyListAuthenticationResults(emails);
       emails.sort((a: Email, b: Email) =>
         new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
       );
@@ -2968,6 +2995,7 @@ export class JMAPClient implements IJMAPClient {
 
       const queryResponse = response.methodResponses?.[0]?.[1];
       const emails = (response.methodResponses?.[1]?.[1]?.list || []) as Email[];
+      applyListAuthenticationResults(emails);
       emails.sort((a: Email, b: Email) =>
         new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
       );
@@ -3116,6 +3144,7 @@ export class JMAPClient implements IJMAPClient {
       }
 
       if (emails.length > 0) {
+        applyListAuthenticationResults(emails);
         // One batched refetch for the whole thread rather than per-message,
         // to avoid an N+1 request pattern on threads with several oversized
         // messages (#884).

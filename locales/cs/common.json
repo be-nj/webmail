@@ -1852,6 +1852,10 @@
         "label": "Favikony odesílatelů",
         "description": "Zobrazovat ikony webových stránek jako profilové obrázky firemních odesílatelů"
       },
+      "sender_bimi_logos": {
+        "label": "Loga značek odesílatelů (BIMI)",
+        "description": "Zobrazit logo značky zveřejněné doménou odesílatele (BIMI), pouze u zpráv, které prošly ověřením odesílatele"
+      },
       "show_avatars_in_junk": {
         "label": "Zobrazovat avatary ve spamu",
         "description": "Zobrazovat profilové fotky a ikony odesílatelů ve spamu. Ve výchozím stavu vypnuto, aby phishingové e-maily nepůsobily důvěryhodně."

@@ -1852,6 +1852,10 @@
         "label": "Favicons de remetente",
         "description": "Exibir ícones de sites como fotos de perfil para remetentes empresariais"
       },
+      "sender_bimi_logos": {
+        "label": "Logótipos de marca dos remetentes (BIMI)",
+        "description": "Mostrar o logótipo da marca publicado pelo domínio do remetente (BIMI), apenas em mensagens que passaram a verificação do remetente"
+      },
       "show_avatars_in_junk": {
         "label": "Mostrar avatares na pasta de spam",
         "description": "Exibir imagens de perfil e favicons dos remetentes na pasta de spam. Desativado por padrão para não dar aparência legítima a tentativas de phishing."

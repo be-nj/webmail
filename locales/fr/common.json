@@ -1852,6 +1852,10 @@
         "label": "Favicons des expéditeurs",
         "description": "Afficher les icônes de sites web comme photos de profil pour les expéditeurs professionnels"
       },
+      "sender_bimi_logos": {
+        "label": "Logos de marque des expéditeurs (BIMI)",
+        "description": "Afficher le logo de marque publié par le domaine de l'expéditeur (BIMI), uniquement pour les messages ayant passé la vérification de l'expéditeur"
+      },
       "show_avatars_in_junk": {
         "label": "Afficher les avatars dans le dossier indésirable",
         "description": "Afficher les photos de profil et favicons des expéditeurs dans le dossier indésirable. Désactivé par défaut pour éviter de donner une apparence légitime aux tentatives d'hameçonnage."

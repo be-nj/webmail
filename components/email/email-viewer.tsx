@@ -21,7 +21,7 @@ import { TagPicker } from "./tag-picker";
 import { useMeasuredTagDisplay } from "@/hooks/use-tag-display";
 import { useKeywordFormat } from "@/hooks/use-keyword-format";
 import { getEmailTagIds } from "@/lib/thread-utils";
-import { getSecurityStatus, extractListHeaders, isAuthenticationSpoofed } from "@/lib/email-headers";
+import { getSecurityStatus, extractListHeaders, hasAlignedDmarcPass, isAuthenticationSpoofed } from "@/lib/email-headers";
 import { emailToReadView } from "@/lib/plugin-projection";
 import { generateEmailSource } from "@/lib/email-source";
 import {
@@ -3970,6 +3970,7 @@ export function EmailViewer({
                 email={sender?.email}
                 size="lg"
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
+                dmarcPass={hasAlignedDmarcPass(email)}
               />
             </button>
 
@@ -4248,6 +4249,7 @@ export function EmailViewer({
                 email={sender?.email}
                 size="lg"
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
+                dmarcPass={hasAlignedDmarcPass(email)}
               />
             </button>
             <div className="flex-1 min-w-0">

@@ -11,7 +11,7 @@ import { fitEmailBodyWidth } from "@/lib/email-fit-width";
 import { transformInlineStyles, transformColorForDarkMode, transformBgColorForDarkMode } from "@/lib/color-transform";
 import { useThemeStore } from "@/stores/theme-store";
 import { Avatar } from "@/components/ui/avatar";
-import { isAuthenticationSpoofed } from "@/lib/email-headers";
+import { hasAlignedDmarcPass, isAuthenticationSpoofed } from "@/lib/email-headers";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatFileSize, cn } from "@/lib/utils";
 import {
@@ -546,6 +546,7 @@ function EmailCard({
             email={sender?.email}
             size="md"
             className="flex-shrink-0"
+            dmarcPass={hasAlignedDmarcPass(email)}
           />
         )}
         <div className="flex-1 min-w-0">

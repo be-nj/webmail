@@ -1852,6 +1852,10 @@
         "label": "Absender-Favicons",
         "description": "Website-Symbole als Profilbilder für geschäftliche Absender anzeigen"
       },
+      "sender_bimi_logos": {
+        "label": "Absender-Markenlogos (BIMI)",
+        "description": "Markenlogo der Absenderdomain (BIMI) anzeigen, nur bei Nachrichten mit bestandener Absenderprüfung"
+      },
       "show_avatars_in_junk": {
         "label": "Avatare im Spam-Ordner anzeigen",
         "description": "Profilbilder und Favicons für Absender im Spam-Ordner anzeigen. Standardmäßig deaktiviert, damit Phishing-Versuche nicht durch vertraute Logos legitim wirken."

@@ -1859,6 +1859,10 @@
         "label": "Nettstedsikoner for avsendere",
         "description": "Vis nettstedsikoner som profilbilder for bedriftsavsendere"
       },
+      "sender_bimi_logos": {
+        "label": "Avsenderes merkevarelogoer (BIMI)",
+        "description": "Vis merkevarelogoen som avsenderens domene publiserer (BIMI), bare på meldinger som har bestått avsenderbekreftelse"
+      },
       "show_avatars_in_junk": {
         "label": "Vis profilbilder i søppelpostmappen",
         "description": "Vis profilbilder og nettstedsikoner for avsendere i søppelpostmappen. Dette er deaktivert som standard for å unngå at svindelforsøk virker mer troverdige."
