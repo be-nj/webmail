@@ -269,6 +269,11 @@
     "reschedule_prompt": "Ievadiet jaunu datumu/laiku, piem. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Uzticams sūtītājs",
+      "trusted": "Uzticams sūtītājs – sūtītāja pārbaude izturēta",
+      "impersonated": "Uzdodas par uzticamu sūtītāju – sūtītāja pārbaude neizdevās"
+    },
     "impersonation_warning": {
       "title": "Nav no jūsu uzticamā sūtītāja",
       "description": "Šis ziņojums apgalvo, ka ir no {address}, viena no jūsu uzticamajiem sūtītājiem, taču nav izturējis sūtītāja pārbaudi. Visticamāk, to nav sūtījis viņš."

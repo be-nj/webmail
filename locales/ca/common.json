@@ -269,6 +269,11 @@
     "reschedule_prompt": "Introduïu una data i hora noves, p. ex. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Remitent de confiança",
+      "trusted": "Remitent de confiança – verificació del remitent superada",
+      "impersonated": "Diu ser un remitent de confiança – la verificació del remitent ha fallat"
+    },
     "impersonation_warning": {
       "title": "No és del teu remitent de confiança",
       "description": "Aquest missatge diu que ve de {address}, un dels teus remitents de confiança, però no ha superat la verificació del remitent. Molt probablement no l'ha enviat."

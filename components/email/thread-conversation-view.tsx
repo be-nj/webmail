@@ -553,6 +553,7 @@ function EmailCard({
             className="flex-shrink-0"
             dmarcPass={hasAlignedDmarcPass(email)}
             senderTrust={trustSignal}
+            senderTrustLabel={trustSignal ? t(`email_viewer.sender_trust.${trustSignal}`) : undefined}
           />
         )}
         <div className="flex-1 min-w-0">

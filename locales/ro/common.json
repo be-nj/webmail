@@ -269,6 +269,11 @@
     "reschedule_prompt": "Introduceți o nouă dată/oră, de exemplu 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Expeditor de încredere",
+      "trusted": "Expeditor de încredere – verificarea expeditorului a reușit",
+      "impersonated": "Se dă drept expeditor de încredere – verificarea expeditorului a eșuat"
+    },
     "impersonation_warning": {
       "title": "Nu este de la expeditorul tău de încredere",
       "description": "Acest mesaj pretinde că vine de la {address}, unul dintre expeditorii tăi de încredere, dar nu a trecut verificarea expeditorului. Cel mai probabil nu a fost trimis de acesta."

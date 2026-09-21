@@ -269,6 +269,11 @@
     "reschedule_prompt": "Skriv inn ny dato og klokkeslett, for eksempel 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Betrodd avsender",
+      "trusted": "Betrodd avsender – avsenderbekreftelse bestått",
+      "impersonated": "Utgir seg for å være en betrodd avsender – avsenderbekreftelse mislyktes"
+    },
     "impersonation_warning": {
       "title": "Ikke fra din betrodde avsender",
       "description": "Denne meldingen utgir seg for å komme fra {address}, en av dine betrodde avsendere, men besto ikke avsenderbekreftelsen. Den er sannsynligvis ikke sendt av dem."

@@ -269,6 +269,11 @@
     "reschedule_prompt": "輸入新的日期與時間，例如 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "信任的寄件者",
+      "trusted": "信任的寄件者 – 寄件者驗證通過",
+      "impersonated": "冒充信任的寄件者 – 寄件者驗證失敗"
+    },
     "impersonation_warning": {
       "title": "並非來自您信任的寄件者",
       "description": "此郵件聲稱來自您信任的寄件者 {address}，但未通過寄件者驗證。它很可能不是由對方寄出的。"

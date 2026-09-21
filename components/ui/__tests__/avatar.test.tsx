@@ -102,8 +102,11 @@ describe('Avatar Brand Logo', () => {
 
 describe('Avatar sender trust badges', () => {
   it('shows the Trusted Mark for a trusted sender', () => {
-    const { container } = render(<Avatar name="Max" email="max.musterl@web.de" senderTrust="trusted" />);
-    expect(container.querySelector('[data-testid="trusted-mark"]')).not.toBeNull();
+    const { container } = render(<Avatar name="Max" email="max.musterl@web.de" senderTrust="trusted" senderTrustLabel="Trusted sender" />);
+    const mark = container.querySelector('[data-testid="trusted-mark"]');
+    expect(mark).not.toBeNull();
+    expect(mark!.getAttribute('title')).toBe('Trusted sender');
+    expect(mark!.querySelector('.lucide-handshake')).not.toBeNull();
     expect(container.querySelector('[data-testid="impersonation-mark"]')).toBeNull();
   });
 

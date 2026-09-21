@@ -269,6 +269,11 @@
     "reschedule_prompt": "Neues Datum/Uhrzeit eingeben, z. B. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Vertrauter Absender",
+      "trusted": "Vertrauter Absender – Absenderprüfung bestanden",
+      "impersonated": "Gibt sich als vertrauter Absender aus – Absenderprüfung fehlgeschlagen"
+    },
     "impersonation_warning": {
       "title": "Nicht von deinem vertrauten Absender",
       "description": "Diese Nachricht gibt vor, von {address} zu kommen – einem deiner vertrauten Absender –, hat aber die Absenderprüfung nicht bestanden. Sie stammt sehr wahrscheinlich nicht von dort."

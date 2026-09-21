@@ -269,6 +269,11 @@
     "reschedule_prompt": "Adj meg egy új dátumot/időpontot, pl. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Megbízható feladó",
+      "trusted": "Megbízható feladó – a feladó-ellenőrzés sikeres",
+      "impersonated": "Megbízható feladónak adja ki magát – a feladó-ellenőrzés sikertelen"
+    },
     "impersonation_warning": {
       "title": "Nem a megbízható feladódtól",
       "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."

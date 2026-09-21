@@ -31,8 +31,8 @@ An exact address the reader has personally marked as trusted, either in the loca
 _Avoid_: Whitelisted sender, safe sender, known sender
 
 **Trusted Mark**:
-The check badge on an avatar; it means the From address is a **Trusted Sender** and the message passed its **Sender Check**.
-_Avoid_: Verified badge, blue check
+The handshake badge on an avatar (and the matching chip in the message's authentication details); it means the From address is a **Trusted Sender** and the message passed its **Sender Check**.
+_Avoid_: Verified badge, check mark, blue check
 
 **Impersonation Warning**:
 The red warning shown when the From address is a **Trusted Sender** but the message failed its **Sender Check** (DMARC fail, or a hard SPF fail without a valid DKIM signature).
@@ -56,5 +56,5 @@ _Avoid_: Spoof alert, phishing warning (unqualified)
 
 ## Flagged ambiguities
 
-- The check badge first meant "the domain's **Verified Mark Certificate** checked out". Resolved: that is a statement about the domain and read as "this person is verified"; the badge is now the **Trusted Mark**, and the **Brand Logo** carries no badge.
+- The check badge first meant "the domain's **Verified Mark Certificate** checked out". Resolved: that is a statement about the domain and read as "this person is verified"; the badge is now the **Trusted Mark**, drawn as a handshake so it can't read as platform verification, and the **Brand Logo** carries no badge.
 - "Logo" covered the favicon, a BIMI logo fetched from the record's URL, and the certificate's logo. Resolved: only the certificate's logo is a **Brand Logo**; the other two prove nothing about the domain and are not shown.

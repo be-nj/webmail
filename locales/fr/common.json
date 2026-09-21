@@ -269,6 +269,11 @@
     "reschedule_prompt": "Saisissez une nouvelle date/heure, p. ex. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Expéditeur de confiance",
+      "trusted": "Expéditeur de confiance – vérification de l'expéditeur réussie",
+      "impersonated": "Se fait passer pour un expéditeur de confiance – échec de la vérification de l'expéditeur"
+    },
     "impersonation_warning": {
       "title": "Ne vient pas de votre expéditeur de confiance",
       "description": "Ce message prétend venir de {address}, l'un de vos expéditeurs de confiance, mais a échoué à la vérification de l'expéditeur. Il n'a très probablement pas été envoyé par lui."

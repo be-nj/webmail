@@ -269,6 +269,11 @@
     "reschedule_prompt": "Inserisci una nuova data/ora, ad es. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Mittente attendibile",
+      "trusted": "Mittente attendibile – verifica del mittente superata",
+      "impersonated": "Si spaccia per un mittente attendibile – verifica del mittente non riuscita"
+    },
     "impersonation_warning": {
       "title": "Non proviene dal tuo mittente attendibile",
       "description": "Questo messaggio afferma di provenire da {address}, uno dei tuoi mittenti attendibili, ma non ha superato la verifica del mittente. Molto probabilmente non è stato inviato da lui."

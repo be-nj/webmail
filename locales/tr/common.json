@@ -269,6 +269,11 @@
     "reschedule_prompt": "Yeni tarih/saat girin, ör. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Güvenilir gönderen",
+      "trusted": "Güvenilir gönderen – gönderen doğrulaması başarılı",
+      "impersonated": "Güvenilir gönderen gibi davranıyor – gönderen doğrulaması başarısız"
+    },
     "impersonation_warning": {
       "title": "Güvenilir göndericinizden değil",
       "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."

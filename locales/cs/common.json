@@ -269,6 +269,11 @@
     "reschedule_prompt": "Zadejte nové datum/čas, např. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Důvěryhodný odesílatel",
+      "trusted": "Důvěryhodný odesílatel – ověření odesílatele prošlo",
+      "impersonated": "Vydává se za důvěryhodného odesílatele – ověření odesílatele selhalo"
+    },
     "impersonation_warning": {
       "title": "Není od vašeho důvěryhodného odesílatele",
       "description": "Tato zpráva tvrdí, že pochází od {address}, jednoho z vašich důvěryhodných odesílatelů, ale neprošla ověřením odesílatele. S největší pravděpodobností ji neodeslal."

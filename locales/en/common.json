@@ -269,6 +269,11 @@
     "reschedule_prompt": "Enter a new date/time, e.g. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Trusted sender",
+      "trusted": "Trusted sender – sender verification passed",
+      "impersonated": "Claims to be a trusted sender – sender verification failed"
+    },
     "impersonation_warning": {
       "title": "Not from your trusted sender",
       "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."

@@ -269,6 +269,11 @@
     "reschedule_prompt": "Indtast en ny dato/tid, f.eks. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "sender_trust": {
+      "label": "Betroet afsender",
+      "trusted": "Betroet afsender – afsenderbekræftelse bestået",
+      "impersonated": "Udgiver sig for at være en betroet afsender – afsenderbekræftelse mislykkedes"
+    },
     "impersonation_warning": {
       "title": "Ikke fra din betroede afsender",
       "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
