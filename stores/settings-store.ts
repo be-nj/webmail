@@ -940,7 +940,7 @@ const DEFAULT_SETTINGS = {
   permanentlyDeleteJunk: false,
   confirmBulkDelete: true,
   returnToListAfterAction: true,
-  clearSearchOnFolderChange: false,
+  clearSearchOnFolderChange: true, // fork: leaving a folder leaves the search (upstream default: false)
   searchDefaultScope: 'all' as SearchDefaultScope,
   showPreview: true,
   showVerificationCodes: true,
