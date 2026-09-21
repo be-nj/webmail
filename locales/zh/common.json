@@ -657,7 +657,11 @@
     "mv_position": "第 {index} 封，共 {total} 封",
     "plugin_panel_show": "显示插件面板",
     "plugin_panel_hide": "隐藏插件面板",
-    "copy": "复制"
+    "copy": "复制",
+    "impersonation_warning": {
+      "title": "并非来自您信任的发件人",
+      "description": "此邮件声称来自您信任的发件人 {address}，但未通过发件人验证。它很可能不是由对方发送的。"
+    }
   },
   "email_composer": {
     "select_from_directory": "从目录中选择",

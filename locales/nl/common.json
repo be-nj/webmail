@@ -657,7 +657,11 @@
     "mv_position": "{index} van {total}",
     "plugin_panel_show": "Plug-inpaneel tonen",
     "plugin_panel_hide": "Plug-inpaneel verbergen",
-    "copy": "Kopiëren"
+    "copy": "Kopiëren",
+    "impersonation_warning": {
+      "title": "Niet van je vertrouwde afzender",
+      "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
+    }
   },
   "email_composer": {
     "select_from_directory": "Kiezen uit adresboek van de organisatie",

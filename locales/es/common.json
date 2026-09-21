@@ -657,7 +657,11 @@
     "mv_position": "{index} de {total}",
     "plugin_panel_show": "Mostrar el panel del complemento",
     "plugin_panel_hide": "Ocultar el panel del complemento",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "impersonation_warning": {
+      "title": "No es de tu remitente de confianza",
+      "description": "Este mensaje dice venir de {address}, uno de tus remitentes de confianza, pero no superó la verificación del remitente. Lo más probable es que no lo haya enviado."
+    }
   },
   "email_composer": {
     "select_from_directory": "Seleccionar del directorio",

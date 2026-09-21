@@ -657,7 +657,11 @@
     "mv_position": "{index} z {total}",
     "plugin_panel_show": "Zobrazit panel pluginu",
     "plugin_panel_hide": "Skrýt panel pluginu",
-    "copy": "Kopírovat"
+    "copy": "Kopírovat",
+    "impersonation_warning": {
+      "title": "Není od vašeho důvěryhodného odesílatele",
+      "description": "Tato zpráva tvrdí, že pochází od {address}, jednoho z vašich důvěryhodných odesílatelů, ale neprošla ověřením odesílatele. S největší pravděpodobností ji neodeslal."
+    }
   },
   "email_composer": {
     "select_from_directory": "Vybrat z adresáře",

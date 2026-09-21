@@ -657,7 +657,11 @@
     "mv_position": "{index} af {total}",
     "plugin_panel_show": "Vis pluginpanel",
     "plugin_panel_hide": "Skjul pluginpanel",
-    "copy": "Kopiér"
+    "copy": "Kopiér",
+    "impersonation_warning": {
+      "title": "Ikke fra din betroede afsender",
+      "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
+    }
   },
   "email_composer": {
     "select_from_directory": "Vælg fra adressefortegnelse",

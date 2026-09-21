@@ -657,7 +657,11 @@
     "mv_position": "{index} di {total}",
     "plugin_panel_show": "Mostra il pannello del plugin",
     "plugin_panel_hide": "Nascondi il pannello del plugin",
-    "copy": "Copia"
+    "copy": "Copia",
+    "impersonation_warning": {
+      "title": "Non proviene dal tuo mittente attendibile",
+      "description": "Questo messaggio afferma di provenire da {address}, uno dei tuoi mittenti attendibili, ma non ha superato la verifica del mittente. Molto probabilmente non è stato inviato da lui."
+    }
   },
   "email_composer": {
     "select_from_directory": "Seleziona dalla rubrica aziendale",
