@@ -6,9 +6,11 @@
  * BIMI record?". Whether a message may show that logo at all is decided on the
  * client, which only asks once the message passed DMARC for this domain.
  *
- * The VMC/CMC evidence document (`a=`) is not verified. A logo here means "the
- * domain that passed DMARC publishes this image", not "a trademark office
- * confirmed the brand belongs to this domain".
+ * Two tiers. Where the record names a verified mark certificate (`a=`) and it
+ * checks out (lib/vmc.ts), the logo is read out of that certificate and is
+ * "verified": a mark authority tied the brand to the domain. Otherwise the
+ * logo comes from the `l=` URL and means no more than "the domain that passed
+ * DMARC publishes this image", which a look-alike domain can do as well.
  */
 
 import { isIP } from 'node:net';
@@ -19,7 +21,7 @@ export const BIMI_MAX_SVG_BYTES = 32 * 1024;
 export interface BimiRecord {
   /** HTTPS URL of the SVG logo. */
   logoUrl: string;
-  /** URL of the VMC/CMC, if published. Recorded, not verified. */
+  /** URL of the VMC/CMC, if published; checked by lib/vmc.ts. */
   evidenceUrl?: string;
 }
 
@@ -156,6 +158,8 @@ export function validateBimiSvg(bytes: Uint8Array): string | null {
     /<script/i,
     /<foreignObject/i,
     /<iframe/i,
+    /<audio/i,
+    /<video/i,
     /<embed/i,
     /<object/i,
     /<image/i, // raster or external images; SVG Tiny PS has none
@@ -170,7 +174,7 @@ export function validateBimiSvg(bytes: Uint8Array): string | null {
   if (forbidden.some((re) => re.test(body))) return null;
 
   // Only same-document references: href="#id", url(#id).
-  for (const m of body.matchAll(/(?:xlink:)?href\s*=\s*(["'])(.*?)\1/gi)) {
+  for (const m of body.matchAll(/(?:xlink:)?(?:href|src)\s*=\s*(["'])(.*?)\1/gi)) {
     if (!m[2].trim().startsWith('#')) return null;
   }
   for (const m of body.matchAll(/url\(\s*(["']?)(.*?)\1\s*\)/gi)) {
