@@ -87,6 +87,8 @@ describe('validateBimiSvg', () => {
     ['raster image', '<image href="#x"/>'],
     ['animation', '<animate attributeName="href" to="https://evil.example"/>'],
     ['css import', '<style>@import "https://evil.example/a.css";</style>'],
+    ['external src', '<rect src="https://evil.example/p"/>'],
+    ['audio', '<audio/>'],
   ])('refuses %s', (_, inner) => {
     expect(validateBimiSvg(svg(inner))).toBeNull();
   });
