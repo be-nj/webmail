@@ -804,7 +804,7 @@ const DEFAULT_SETTINGS = {
   permanentlyDeleteJunk: false,
   confirmBulkDelete: true,
   returnToListAfterAction: true,
-  clearSearchOnFolderChange: false,
+  clearSearchOnFolderChange: true, // fork: leaving a folder leaves the search (upstream default: false)
   showPreview: true,
   showVerificationCodes: true,
   mailLayout: 'split' as MailLayout,
