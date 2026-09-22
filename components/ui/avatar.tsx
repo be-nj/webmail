@@ -67,18 +67,28 @@ function getRootDomain(domain: string): string {
 // Brand Logos (CONTEXT.md) by exact From domain: one request per domain per
 // page load, shared by every Avatar. `settledBrandLogos` holds the answers
 // already in, so a row scrolled back into view draws its logo without a flash.
-// The value is a data: URI of the SVG out of the domain's verified mark
-// certificate, or null when the domain has none.
-const pendingBrandLogos = new Map<string, Promise<string | null>>();
-const settledBrandLogos = new Map<string, string | null>();
+interface BrandLogo {
+  /** data: URI of the SVG. */
+  src: string;
+  /**
+   * From the domain's verified mark certificate. Otherwise it is the picture
+   * the domain's BIMI record points at, which any domain can set to someone
+   * else's logo - shown only for a Trusted Sender (docs/adr/0001).
+   */
+  verified: boolean;
+}
+const pendingBrandLogos = new Map<string, Promise<BrandLogo | null>>();
+const settledBrandLogos = new Map<string, BrandLogo | null>();
 
-function loadBrandLogo(domain: string): Promise<string | null> {
+function loadBrandLogo(domain: string): Promise<BrandLogo | null> {
   let pending = pendingBrandLogos.get(domain);
   if (!pending) {
     pending = fetch(withBasePath(`/api/bimi?domain=${encodeURIComponent(domain)}`))
       .then((response) => (response.ok ? response.json() : null))
-      .then((data: { svg?: string | null } | null) =>
-        data?.svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(data.svg)}` : null,
+      .then((data: { svg?: string | null; verified?: boolean } | null) =>
+        data?.svg
+          ? { src: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(data.svg)}`, verified: data.verified === true }
+          : null,
       )
       .catch(() => null)
       .then((logo) => {
@@ -195,7 +205,7 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
   const [imgError, setImgError] = useState(false);
   // Start from what this page already knows, so a row scrolled back into view
   // draws its logo on the first render.
-  const [brandLogo, setBrandLogo] = useState<string | null | undefined>(() => {
+  const [brandLogo, setBrandLogo] = useState<BrandLogo | null | undefined>(() => {
     const d = email?.split("@")[1]?.toLowerCase();
     return d ? settledBrandLogos.get(d) : undefined;
   });
@@ -302,7 +312,12 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
   };
 
   const profilePic = email && domain ? getProfilePictureUrl(email, domain, devMode, name) : null;
-  const brandLogoSrc = wantBrandLogo && brandLogo && !brandLogoError ? brandLogo : null;
+  // A certificate's logo for anyone who passed DMARC for the domain; the
+  // record's own picture only when the reader trusts this exact address.
+  const brandLogoSrc =
+    wantBrandLogo && brandLogo && !brandLogoError && (brandLogo.verified || senderTrust === "trusted")
+      ? brandLogo.src
+      : null;
 
   // Priority: contact photo > plugin avatar (e.g. Gravatar) > custom avatar > profile picture > Brand Logo > initials
   const customAvatar = devMode && email ? CUSTOM_AVATARS[email.toLowerCase()] : null;
