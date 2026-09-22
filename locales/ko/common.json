@@ -595,6 +595,11 @@
       "label": "신뢰하는 발신자",
       "trusted": "신뢰하는 발신자 – 발신자 인증 통과",
       "impersonated": "신뢰하는 발신자를 사칭 – 발신자 인증 실패"
+    },
+    "create_event": {
+      "action": "일정 만들기",
+      "open_message": "메일 열기",
+      "from_message": "{sender}의 메일({date})에서"
     }
   },
   "email_composer": {

@@ -595,6 +595,11 @@
       "label": "Zaufany nadawca",
       "trusted": "Zaufany nadawca – weryfikacja nadawcy zaliczona",
       "impersonated": "Podszywa się pod zaufanego nadawcę – weryfikacja nadawcy nieudana"
+    },
+    "create_event": {
+      "action": "Utwórz wydarzenie",
+      "open_message": "Otwórz wiadomość",
+      "from_message": "Z wiadomości od {sender}, {date}"
     }
   },
   "email_composer": {

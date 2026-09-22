@@ -560,6 +560,11 @@
       "label": "שולח מהימן",
       "trusted": "שולח מהימן – אימות השולח עבר",
       "impersonated": "מתחזה לשולח מהימן – אימות השולח נכשל"
+    },
+    "create_event": {
+      "action": "יצירת פגישה",
+      "open_message": "פתיחת ההודעה",
+      "from_message": "מההודעה מ־{sender}, {date}"
     }
   },
   "email_composer": {
