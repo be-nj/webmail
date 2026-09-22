@@ -628,6 +628,11 @@
       "label": "Trusted sender",
       "trusted": "Trusted sender – sender verification passed",
       "impersonated": "Claims to be a trusted sender – sender verification failed"
+    },
+    "create_event": {
+      "action": "Create event",
+      "open_message": "Open message",
+      "from_message": "From the message from {sender}, {date}"
     }
   },
   "email_composer": {

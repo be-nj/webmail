@@ -628,6 +628,11 @@
       "label": "Vertrauter Absender",
       "trusted": "Vertrauter Absender – Absenderprüfung bestanden",
       "impersonated": "Gibt sich als vertrauter Absender aus – Absenderprüfung fehlgeschlagen"
+    },
+    "create_event": {
+      "action": "Termin erstellen",
+      "open_message": "Nachricht öffnen",
+      "from_message": "Aus der Nachricht von {sender}, {date}"
     }
   },
   "email_composer": {

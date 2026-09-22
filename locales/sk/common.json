@@ -628,6 +628,11 @@
       "label": "Dôveryhodný odosielateľ",
       "trusted": "Dôveryhodný odosielateľ – overenie odosielateľa prešlo",
       "impersonated": "Vydáva sa za dôveryhodného odosielateľa – overenie odosielateľa zlyhalo"
+    },
+    "create_event": {
+      "action": "Vytvoriť udalosť",
+      "open_message": "Otvoriť správu",
+      "from_message": "Zo správy od {sender}, {date}"
     }
   },
   "email_composer": {

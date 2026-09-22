@@ -628,6 +628,11 @@
       "label": "Betroet afsender",
       "trusted": "Betroet afsender – afsenderbekræftelse bestået",
       "impersonated": "Udgiver sig for at være en betroet afsender – afsenderbekræftelse mislykkedes"
+    },
+    "create_event": {
+      "action": "Opret begivenhed",
+      "open_message": "Åbn besked",
+      "from_message": "Fra beskeden fra {sender}, {date}"
     }
   },
   "email_composer": {

@@ -628,6 +628,11 @@
       "label": "Remitente de confianza",
       "trusted": "Remitente de confianza – verificación del remitente superada",
       "impersonated": "Dice ser un remitente de confianza – la verificación del remitente falló"
+    },
+    "create_event": {
+      "action": "Crear evento",
+      "open_message": "Abrir mensaje",
+      "from_message": "Del mensaje de {sender}, {date}"
     }
   },
   "email_composer": {
