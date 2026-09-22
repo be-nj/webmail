@@ -57,7 +57,7 @@ describe('Avatar Brand Logo', () => {
   it('uses the Brand Logo when the message passed DMARC, without a badge', async () => {
     const { container } = render(<Avatar name="Brand" email="news@mail.brand.example" dmarcPass />);
     await waitFor(() => expect(imgSrc(container)).toMatch(/^data:image\/svg\+xml/));
-    expect(bimiCalls()).toEqual([expect.stringContaining('/api/bimi?domain=mail.brand.example')]);
+    expect(bimiCalls()).toEqual([expect.stringMatching(/^\/api\/bimi\?v=\d+&domain=mail\.brand\.example$/)]);
     expect(container.querySelector('[data-testid="trusted-mark"]')).toBeNull();
   });
 

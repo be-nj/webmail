@@ -77,13 +77,17 @@ interface BrandLogo {
    */
   verified: boolean;
 }
+// Part of the URL so a browser never reads a cached answer of an older shape:
+// answers are cached for a day, and one without `verified` would demote a
+// certified logo to "trusted senders only". Bump when the answer changes.
+const BRAND_LOGO_API_VERSION = 2;
 const pendingBrandLogos = new Map<string, Promise<BrandLogo | null>>();
 const settledBrandLogos = new Map<string, BrandLogo | null>();
 
 function loadBrandLogo(domain: string): Promise<BrandLogo | null> {
   let pending = pendingBrandLogos.get(domain);
   if (!pending) {
-    pending = fetch(withBasePath(`/api/bimi?domain=${encodeURIComponent(domain)}`))
+    pending = fetch(withBasePath(`/api/bimi?v=${BRAND_LOGO_API_VERSION}&domain=${encodeURIComponent(domain)}`))
       .then((response) => (response.ok ? response.json() : null))
       .then((data: { svg?: string | null; verified?: boolean } | null) =>
         data?.svg
