@@ -650,6 +650,11 @@
       "label": "Uzticams sūtītājs",
       "trusted": "Uzticams sūtītājs – sūtītāja pārbaude izturēta",
       "impersonated": "Uzdodas par uzticamu sūtītāju – sūtītāja pārbaude neizdevās"
+    },
+    "create_event": {
+      "action": "Izveidot notikumu",
+      "open_message": "Atvērt ziņojumu",
+      "from_message": "No {sender} ziņojuma, {date}"
     }
   },
   "email_composer": {

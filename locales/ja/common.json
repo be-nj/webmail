@@ -650,6 +650,11 @@
       "label": "信頼済み送信者",
       "trusted": "信頼済み送信者 – 送信者認証に合格",
       "impersonated": "信頼済み送信者を装っています – 送信者認証に失敗"
+    },
+    "create_event": {
+      "action": "予定を作成",
+      "open_message": "メールを開く",
+      "from_message": "{sender} からのメール（{date}）より"
     }
   },
   "email_composer": {

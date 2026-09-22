@@ -650,6 +650,11 @@
       "label": "Remitent de confiança",
       "trusted": "Remitent de confiança – verificació del remitent superada",
       "impersonated": "Diu ser un remitent de confiança – la verificació del remitent ha fallat"
+    },
+    "create_event": {
+      "action": "Crear esdeveniment",
+      "open_message": "Obrir missatge",
+      "from_message": "Del missatge de {sender}, {date}"
     }
   },
   "email_composer": {

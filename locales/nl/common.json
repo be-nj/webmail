@@ -650,6 +650,11 @@
       "label": "Vertrouwde afzender",
       "trusted": "Vertrouwde afzender – afzendercontrole geslaagd",
       "impersonated": "Doet zich voor als vertrouwde afzender – afzendercontrole mislukt"
+    },
+    "create_event": {
+      "action": "Afspraak maken",
+      "open_message": "Bericht openen",
+      "from_message": "Uit het bericht van {sender}, {date}"
     }
   },
   "email_composer": {

@@ -650,6 +650,11 @@
       "label": "Megbízható feladó",
       "trusted": "Megbízható feladó – a feladó-ellenőrzés sikeres",
       "impersonated": "Megbízható feladónak adja ki magát – a feladó-ellenőrzés sikertelen"
+    },
+    "create_event": {
+      "action": "Esemény létrehozása",
+      "open_message": "Üzenet megnyitása",
+      "from_message": "{sender} üzenetéből, {date}"
     }
   },
   "email_composer": {
