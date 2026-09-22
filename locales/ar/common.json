@@ -666,6 +666,11 @@
       "label": "مرسل موثوق",
       "trusted": "مرسل موثوق – تم اجتياز التحقق من المرسل",
       "impersonated": "يدّعي أنه مرسل موثوق – فشل التحقق من المرسل"
+    },
+    "create_event": {
+      "action": "إنشاء حدث",
+      "open_message": "فتح الرسالة",
+      "from_message": "من الرسالة الواردة من {sender}، {date}"
     }
   },
   "email_composer": {

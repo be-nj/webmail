@@ -666,6 +666,11 @@
       "label": "Expéditeur de confiance",
       "trusted": "Expéditeur de confiance – vérification de l'expéditeur réussie",
       "impersonated": "Se fait passer pour un expéditeur de confiance – échec de la vérification de l'expéditeur"
+    },
+    "create_event": {
+      "action": "Créer un événement",
+      "open_message": "Ouvrir le message",
+      "from_message": "D'après le message de {sender}, {date}"
     }
   },
   "email_composer": {

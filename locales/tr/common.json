@@ -666,6 +666,11 @@
       "label": "Güvenilir gönderen",
       "trusted": "Güvenilir gönderen – gönderen doğrulaması başarılı",
       "impersonated": "Güvenilir gönderen gibi davranıyor – gönderen doğrulaması başarısız"
+    },
+    "create_event": {
+      "action": "Etkinlik oluştur",
+      "open_message": "İletiyi aç",
+      "from_message": "{sender} tarafından gönderilen iletiden, {date}"
     }
   },
   "email_composer": {
