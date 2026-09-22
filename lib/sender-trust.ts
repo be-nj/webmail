@@ -1,5 +1,5 @@
 import type { AuthenticationResults } from '@/lib/jmap/types';
-import { hasAlignedDmarcPass, isAuthenticationSpoofed } from '@/lib/email-headers';
+import { brandIndicatorDomain, isAuthenticationSpoofed } from '@/lib/email-headers';
 
 /**
  * What a message says about a Trusted Sender (see CONTEXT.md).
@@ -28,6 +28,6 @@ export function senderTrustSignal(
   const address = email.from?.[0]?.email?.trim().toLowerCase();
   if (!address || !isTrustedSender(address)) return null;
   if (isAuthenticationSpoofed(email.authenticationResults)) return 'impersonated';
-  if (hasAlignedDmarcPass(email)) return 'trusted';
+  if (brandIndicatorDomain(email)) return 'trusted';
   return null;
 }

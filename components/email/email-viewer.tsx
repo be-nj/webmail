@@ -2,7 +2,7 @@
 
 import { Fragment, useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, useId } from "react";
 import { Email, ContactCard, Mailbox } from "@/lib/jmap/types";
-import { attachmentDownloadFilename, attachmentsBundleFilename, DEFAULT_ATTACHMENT_TEMPLATE } from "@/lib/download-filename";
+import { attachmentDownloadFilename, attachmentsBundleFilename, emailExportFilename, DEFAULT_ATTACHMENT_TEMPLATE, DEFAULT_EMAIL_TEMPLATE } from "@/lib/download-filename";
 import { openMailImport } from "@/stores/mail-transfer-store";
 import { TRANSPARENT_BLOCKED_PIXEL, applyNewTabToAnchor, emailIframeCsp, escapeHtml, isExternalResourceUrl, isOpenableLinkHref, plainTextToSafeHtml, sanitizeEmailBodyForIframe, sanitizeEmailHtml, sanitizePlainTextRenderedHtml } from "@/lib/email-sanitization";
 import { getRenderableHtmlBody } from "@/lib/email-body-selection";
@@ -24,7 +24,9 @@ import { DARK_PENDING_CLASS, applyEmailDarkMode, emailColorScheme, emailDarkMode
 import { fitEmailBodyWidth, type FitOptions } from "@/lib/email-fit-width";
 import { hasFullBleedCanvas } from "@/lib/email-full-bleed";
 import { withBasePath } from "@/lib/browser-navigation";
-import { buildContactsPath } from "@/lib/deep-links";
+import { appUrl, buildCalendarPath, buildContactsPath, buildMailPath } from "@/lib/deep-links";
+import { buildEventDraftFromEmail } from "@/lib/event-from-email";
+import { useCalendarDraftStore } from "@/stores/calendar-draft-store";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Avatar } from "@/components/ui/avatar";
@@ -79,6 +81,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
+  CalendarPlus,
   Mail,
   MailOpen,
   Loader2,
@@ -1120,6 +1123,7 @@ function ReaderMoreMenu({ menu, options, label, mailboxes, selectedMailbox, onMo
       onSetTag={onSetTag}
       copyTargets={copyTargets}
       onCopyToAccount={(accountId, mailboxId) => void copyToAccount([email], accountId, mailboxId)}
+      onCreateEvent={options.onCreateEvent}
       onExport={options.onExport}
       onPrint={options.onPrint}
       onViewSource={options.onViewSource}
@@ -3643,6 +3647,45 @@ export function EmailViewer({
 
   // Export email as .eml file; the row's menu exports the same way.
   const exportEmail = useEmailExport();
+
+  // "Create event": the message becomes a new calendar event - subject as the
+  // title, a line naming sender and date, a link back to the message, and the
+  // message itself where it is small enough to embed (see
+  // buildEventDraftFromEmail). The date is left for the user to pick.
+  const handleCreateEvent = async () => {
+    if (!email) return;
+    let raw: Uint8Array | null = null;
+    if (email.blobId && client) {
+      try {
+        raw = new Uint8Array(await client.fetchBlobArrayBuffer(email.blobId, undefined, 'message/rfc822'));
+      } catch {
+        // No bytes, no attachment - the link back to the message stands.
+        raw = null;
+      }
+    }
+    const sender = email.from?.[0];
+    useCalendarDraftStore.getState().setDraft({
+      ...buildEventDraftFromEmail(email, {
+        messageUrl: appUrl(buildMailPath({ mailboxId: null, emailId: email.id, threadId: null })),
+        sourceLine: t('create_event.from_message', {
+          sender: sender?.name || sender?.email || '',
+          date: formatDateTime(emailDisplayDate(email), timeFormat, { year: 'numeric', month: 'short', day: 'numeric' }),
+        }),
+        messageLinkTitle: t('create_event.open_message'),
+        filename: emailExportFilename(email, {
+          template: useSettingsStore.getState().emailDownloadTemplate || DEFAULT_EMAIL_TEMPLATE,
+          spaceReplacement: useSettingsStore.getState().filenameSpaceReplacement,
+          lowercase: useSettingsStore.getState().filenameLowercase,
+          stripDiacritics: useSettingsStore.getState().filenameStripDiacritics,
+          collapseSeparators: useSettingsStore.getState().filenameCollapseSeparators,
+        }),
+        raw,
+      }),
+      datesUnset: true,
+    });
+    router.push(buildCalendarPath({ view: 'week', date: null, eventId: null }));
+  };
+
   const handleExportEmail = async () => {
     if (!email || devices.noExport) return;
     // With the Archive action off a stored 'archive' keeps the message.
@@ -4122,6 +4165,7 @@ ${printWatermark ? printWatermark.html : ''}
     onRemoveFromFolder,
     onMarkAsSpam,
     onUndoSpam,
+    onCreateEvent: () => void handleCreateEvent(),
     // Hidden by the device policies of the message's account.
     onExport: devices.noExport ? undefined : () => void handleExportEmail(),
     onPrint: devices.noPrint ? undefined : () => handlePrint(),

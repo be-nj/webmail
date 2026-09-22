@@ -854,6 +854,11 @@
       "trusted": "Güvenilir gönderen – gönderen doğrulaması başarılı",
       "impersonated": "Güvenilir gönderen gibi davranıyor – gönderen doğrulaması başarısız"
     },
+    "create_event": {
+      "action": "Etkinlik oluştur",
+      "open_message": "İletiyi aç",
+      "from_message": "{sender} tarafından gönderilen iletiden, {date}"
+    },
     "contact_added": "Kişi eklendi",
     "save_to_files": {
       "title": "Dosyalar'a kaydet",

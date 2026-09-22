@@ -37,7 +37,8 @@ import { onOpenTask } from "@/lib/plugin-sandbox/open-task";
 import { TaskModal } from "@/components/calendar/task-modal";
 import { MiniCalendar } from "@/components/calendar/mini-calendar";
 import { CalendarSidebarPanel } from "@/components/calendar/calendar-sidebar-panel";
-import { EventModal, type PendingEventPreview } from "@/components/calendar/event-modal";
+import { EventModal, type EventDraftPrefill, type PendingEventPreview } from "@/components/calendar/event-modal";
+import { useCalendarDraftStore } from "@/stores/calendar-draft-store";
 import { EventDetailPopover } from "@/components/calendar/event-detail-popover";
 import { EventContextMenu } from "@/components/calendar/event-context-menu";
 import { AppTopBannerSlot } from "@/components/plugins/app-top-banner-slot";
@@ -246,6 +247,8 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
     const accountClient = (editEvent?.localAccountId && getClientByLocalAccountId(editEvent.localAccountId)) || client;
     return accountClient?.getMaxParticipantsPerEvent?.(editEvent?.accountId) ?? null;
   }, [client, editEvent]);
+  // Prefill handed over by "create event from message" (see openDraftModal).
+  const [eventDraft, setEventDraft] = useState<EventDraftPrefill | null>(null);
   const [defaultModalDate, setDefaultModalDate] = useState<Date | undefined>();
   const [defaultModalEndDate, setDefaultModalEndDate] = useState<Date | undefined>();
   const [defaultModalAllDay, setDefaultModalAllDay] = useState(false);
@@ -723,6 +726,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
     setQuickDraft(null);
     setDefaultModalTitle(undefined);
     setEditEvent(null);
+    setEventDraft(null);
     const d = date || selectedDate;
     setDefaultModalDate(d);
     setDefaultModalEndDate(endDate);
@@ -736,11 +740,28 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
   const openEditModal = useCallback((event: CalendarEvent, startInForm = false) => whenEditorsDiscarded(() => {
     setModalStartsInEdit(startInForm);
     setEditEvent(event);
+    setEventDraft(null);
     setDefaultModalDate(undefined);
     setShowTaskModal(false);
     setEditTask(null);
     setShowEventModal(true);
   }), [whenEditorsDiscarded]);
+
+  // A message turned into an event: the mail view left a draft behind and
+  // navigated here. Taking it clears it, so it opens exactly once.
+  useEffect(() => {
+    const draft = useCalendarDraftStore.getState().takeDraft();
+    if (!draft) return;
+    setQuickDraft(null);
+    setDefaultModalTitle(undefined);
+    setModalStartsInEdit(false);
+    setEditEvent(null);
+    setEventDraft(draft);
+    setDefaultModalDate(undefined);
+    setDefaultModalEndDate(undefined);
+    setDefaultModalAllDay(false);
+    setShowEventModal(true);
+  }, []);
 
   // The event and task panels share the space beside the grid; now that
   // tasks open from the month, week and day views (#1107), opening one
@@ -748,6 +769,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
   const closeEventPanelForTask = useCallback(() => {
     setShowEventModal(false);
     setEditEvent(null);
+    setEventDraft(null);
     setPendingPreview(null);
     setDefaultCalendarIdForCreate(undefined);
     setDefaultModalAllDay(false);
@@ -2352,7 +2374,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
           {!isMobile && showEventModal && (
             <div className="w-[400px] border-s border-border flex-shrink-0 overflow-hidden">
               <EventModal
-                key={`${editEvent?.id ?? 'new'}${modalStartsInEdit ? ':edit' : ''}`}
+                key={`${editEvent?.id ?? (eventDraft ? 'draft' : 'new')}${modalStartsInEdit ? ':edit' : ''}`}
                 event={editEvent}
                 calendars={displayCalendars}
                 defaultDate={defaultModalDate}
@@ -2361,13 +2383,14 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
                 defaultTitle={defaultModalTitle}
                 startInEditMode={modalStartsInEdit}
                 defaultCalendarId={defaultCalendarIdForCreate}
+                draft={eventDraft}
                 onSave={handleSaveEvent}
                 onDelete={handleDeleteEvent}
                 onDuplicate={handleDuplicateEvent}
                 onRsvp={handleRsvp}
                 onMore={editEvent ? (anchor) => openEventContextMenuFrom(anchor, editEvent, "end") : undefined}
                 onDirtyChange={setEventEditorDirty}
-                onClose={() => { setShowEventModal(false); setEditEvent(null); setPendingPreview(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
+                onClose={() => { setShowEventModal(false); setEditEvent(null); setEventDraft(null); setPendingPreview(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
                 onPreviewChange={setPendingPreview}
                 currentUserEmails={currentUserEmails}
                 isSubscriptionCalendar={isSubscriptionCalendar}
@@ -2516,7 +2539,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
 
       {showEventModal && isMobile && (
         <EventModal
-          key={`${editEvent?.id ?? 'new'}${modalStartsInEdit ? ':edit' : ''}`}
+          key={`${editEvent?.id ?? (eventDraft ? 'draft' : 'new')}${modalStartsInEdit ? ':edit' : ''}`}
           event={editEvent}
           calendars={displayCalendars}
           defaultDate={defaultModalDate}
@@ -2525,13 +2548,14 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
           defaultTitle={defaultModalTitle}
           startInEditMode={modalStartsInEdit}
           defaultCalendarId={defaultCalendarIdForCreate}
+          draft={eventDraft}
           onSave={handleSaveEvent}
           onDelete={handleDeleteEvent}
           onDuplicate={handleDuplicateEvent}
           onRsvp={handleRsvp}
           onMore={editEvent ? (anchor) => openEventContextMenuFrom(anchor, editEvent, "end") : undefined}
           onDirtyChange={setEventEditorDirty}
-          onClose={() => { setShowEventModal(false); setEditEvent(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
+          onClose={() => { setShowEventModal(false); setEditEvent(null); setEventDraft(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
           currentUserEmails={currentUserEmails}
           isSubscriptionCalendar={isSubscriptionCalendar}
           maxParticipants={maxParticipants}

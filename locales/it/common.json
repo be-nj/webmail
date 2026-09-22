@@ -854,6 +854,11 @@
       "trusted": "Mittente attendibile – verifica del mittente superata",
       "impersonated": "Si spaccia per un mittente attendibile – verifica del mittente non riuscita"
     },
+    "create_event": {
+      "action": "Crea evento",
+      "open_message": "Apri messaggio",
+      "from_message": "Dal messaggio di {sender}, {date}"
+    },
     "contact_added": "Contatto aggiunto",
     "save_to_files": {
       "title": "Salva in File",

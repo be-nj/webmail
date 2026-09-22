@@ -854,6 +854,11 @@
       "trusted": "Expeditor de încredere – verificarea expeditorului a reușit",
       "impersonated": "Se dă drept expeditor de încredere – verificarea expeditorului a eșuat"
     },
+    "create_event": {
+      "action": "Creează eveniment",
+      "open_message": "Deschide mesajul",
+      "from_message": "Din mesajul de la {sender}, {date}"
+    },
     "contact_added": "Contact adăugat",
     "save_to_files": {
       "title": "Salvează în Fișiere",

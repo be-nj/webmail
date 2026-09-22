@@ -862,6 +862,11 @@
       "trusted": "Trusted sender – sender verification passed",
       "impersonated": "Claims to be a trusted sender – sender verification failed"
     },
+    "create_event": {
+      "action": "Create event",
+      "open_message": "Open message",
+      "from_message": "From the message from {sender}, {date}"
+    },
     "plugin_panel": "Plugin panel",
     "frame_title": "Message: {subject}",
     "frame_title_from": "Message from {sender}",

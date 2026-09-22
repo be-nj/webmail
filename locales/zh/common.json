@@ -854,6 +854,11 @@
       "trusted": "受信任的发件人 – 发件人验证通过",
       "impersonated": "冒充受信任的发件人 – 发件人验证失败"
     },
+    "create_event": {
+      "action": "创建日程",
+      "open_message": "打开邮件",
+      "from_message": "来自 {sender} 的邮件，{date}"
+    },
     "contact_added": "已添加联系人",
     "save_to_files": {
       "title": "保存到文件",

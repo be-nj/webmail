@@ -854,6 +854,11 @@
       "trusted": "Vertrauter Absender – Absenderprüfung bestanden",
       "impersonated": "Gibt sich als vertrauter Absender aus – Absenderprüfung fehlgeschlagen"
     },
+    "create_event": {
+      "action": "Termin erstellen",
+      "open_message": "Nachricht öffnen",
+      "from_message": "Aus der Nachricht von {sender}, {date}"
+    },
     "contact_added": "Kontakt hinzugefügt",
     "save_to_files": {
       "title": "In Dateien speichern",

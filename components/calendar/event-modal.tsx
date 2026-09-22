@@ -12,7 +12,7 @@ import { findMeetingLink, locationAction, mapsUrl, primaryLocationName } from "@
 import { descriptionAsText, isHtmlDescription, plainDescriptionFields } from "@/lib/calendar-description";
 import { ParticipantStatusBadge } from "./rsvp-buttons";
 import { format, parseISO, addHours, isSameDay } from "date-fns";
-import type { CalendarEvent, Calendar, CalendarParticipant, CalendarEventAlert, CalendarRecurrenceRule } from "@/lib/jmap/types";
+import type { CalendarEvent, Calendar, CalendarLink, CalendarParticipant, CalendarEventAlert, CalendarRecurrenceRule } from "@/lib/jmap/types";
 import { AlertListEditor, AlertSummary, formatEventAlertsLabel } from "./alert-list-editor";
 import { alertRowToOffset, describeAlert, getCalendarDefaultAlerts, newAlertRow, withOwnAlertIds, type AlertAction, type AlertRow as EditableAlertRow, type AlertUnit } from "@/lib/calendar-alerts";
 import { RecurrenceEditor, buildRecurrenceSummary, isSimpleRecurrenceRule } from "./recurrence-editor";
@@ -64,6 +64,20 @@ export interface PendingEventPreview {
   calendarId: string;
 }
 
+/**
+ * A new event's prefilled content - today only from "create event from
+ * message". `links` are the message's attachments (JSCalendar links), and the
+ * date deliberately starts empty: the mail says what, not when, so the form
+ * opens on the date field rather than guessing an hour.
+ */
+export interface EventDraftPrefill {
+  title?: string;
+  description?: string;
+  links?: Record<string, CalendarLink>;
+  /** Leave start/end empty and focus the start date. */
+  datesUnset?: boolean;
+}
+
 interface EventModalProps {
   event?: CalendarEvent | null;
   calendars: Calendar[];
@@ -75,6 +89,8 @@ interface EventModalProps {
   /** Title to start a new event with (from the quick editor's "More options"). */
   defaultTitle?: string;
   defaultCalendarId?: string;
+  /** Prefill for a new event, e.g. one made from a message. */
+  draft?: EventDraftPrefill | null;
   /**
    * `editor` is what the editor had besides `data`, for a save that covers
    * more than the event it was opened on (every occurrence of a series).
@@ -259,6 +275,7 @@ export function EventModal({
   defaultTitle,
   startInEditMode,
   defaultCalendarId,
+  draft,
   onSave,
   onDelete,
   onDuplicate,
@@ -371,20 +388,31 @@ export function EventModal({
     return addHours(getInitialStart(), 1);
   };
 
-  const [title, setTitle] = useState(event?.title || defaultTitle || "");
+  const [title, setTitle] = useState(event?.title || draft?.title || defaultTitle || "");
   // An HTML description is shown and edited as its text.
   const eventDescription = useMemo(() => (event ? descriptionAsText(event) : ""), [event]);
-  const [description, setDescription] = useState(eventDescription);
+  const [description, setDescription] = useState(eventDescription || draft?.description || "");
   const [location, setLocation] = useState(
     event?.locations ? Object.values(event.locations)[0]?.name || "" : ""
   );
   const [virtualLocation, setVirtualLocation] = useState(
     event?.virtualLocations ? Object.values(event.virtualLocations)[0]?.uri || "" : ""
   );
-  const [startDate, setStartDate] = useState(formatDateInput(getInitialStart()));
-  const [startTime, setStartTime] = useState(formatTimeInput(getInitialStart()));
-  const [endDate, setEndDate] = useState(formatDateInput(getInitialEnd()));
-  const [endTime, setEndTime] = useState(formatTimeInput(getInitialEnd()));
+  // A draft from a message carries no date; the form starts blank there and
+  // Save stays disabled until one is picked.
+  const datesUnset = !event && draft?.datesUnset === true;
+  const [startDate, setStartDate] = useState(datesUnset ? "" : formatDateInput(getInitialStart()));
+  const [startTime, setStartTime] = useState(datesUnset ? "" : formatTimeInput(getInitialStart()));
+  const [endDate, setEndDate] = useState(datesUnset ? "" : formatDateInput(getInitialEnd()));
+  const [endTime, setEndTime] = useState(datesUnset ? "" : formatTimeInput(getInitialEnd()));
+  const startDateRef = useRef<HTMLInputElement>(null);
+  // A draft from a message arrives with everything but the date, so that is
+  // where the cursor belongs.
+  useEffect(() => {
+    if (datesUnset) startDateRef.current?.focus();
+    // Once, on open: re-focusing on every render would fight the user.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [allDay, setAllDay] = useState(event?.showWithoutTime || defaultAllDay || false);
 
   // Editing the start shifts the end with it, preserving the event's current
@@ -399,7 +427,21 @@ export function EventModal({
     setEndDate(formatDateInput(nextEnd));
     if (!allDay) setEndTime(formatTimeInput(nextEnd));
   };
-  const handleStartDateChange = (v: string) => { setStartDate(v); shiftEndKeepingDuration(v, startTime); };
+  const handleStartDateChange = (v: string) => {
+    setStartDate(v);
+    // First date on a blank draft: no duration to preserve, so the event
+    // becomes the standard one hour (or that whole day).
+    if (!endDate) {
+      setEndDate(v);
+      if (!allDay) {
+        const from = startTime || formatTimeInput(displayNow());
+        if (!startTime) setStartTime(from);
+        setEndTime(formatTimeInput(addHours(new Date(`${v}T${from}:00`), 1)));
+      }
+      return;
+    }
+    shiftEndKeepingDuration(v, startTime);
+  };
   const handleStartTimeChange = (v: string) => { setStartTime(v); shiftEndKeepingDuration(startDate, v); };
   const [calendarId, setCalendarId] = useState<string>(() => {
     if (event?.calendarIds) return getPrimaryCalendarId(event) || calendars[0]?.id || "";
@@ -731,7 +773,7 @@ export function EventModal({
 
   const handleSave = useCallback(async () => {
     const trimmedTitle = title.trim();
-    if (!trimmedTitle || isSaving || savingRef.current) return;
+    if (!trimmedTitle || !startDate || isSaving || savingRef.current) return;
     if (trimmedTitle.length > 500 || description.trim().length > 10000 || location.trim().length > 500) {
       // This guard returned silently, so a rejected save was indistinguishable from a dead
       // button. The fields also enforce their limits via maxLength, so this is a backstop —
@@ -800,6 +842,9 @@ export function EventModal({
 
     if (!event) {
       data.uid = generateUUID();
+      // The message this event was made from: a link back to it, and the
+      // message itself where it was small enough to embed.
+      if (draft?.links && Object.keys(draft.links).length > 0) data.links = draft.links;
     }
 
     if (location.trim()) {
@@ -944,7 +989,7 @@ export function EventModal({
       savingRef.current = false;
       setIsSaving(false);
     }
-  }, [title, description, location, virtualLocation, startDate, startTime, endDate, endTime, allDay, calendarId, calendars, recurrence, customRule, useDefaultAlerts, defaultAlerts, alertRows, preservedAlerts, attendees, initialAttendees, sendInvitations, currentUserEmails, userIsOrganizer, resolveContactName, event, eventDescription, onSave, isSaving, t]);
+  }, [title, description, location, virtualLocation, startDate, startTime, endDate, endTime, allDay, calendarId, calendars, recurrence, customRule, useDefaultAlerts, defaultAlerts, alertRows, preservedAlerts, attendees, initialAttendees, sendInvitations, currentUserEmails, userIsOrganizer, resolveContactName, event, draft, eventDescription, onSave, isSaving, t]);
 
   // The user's own answer, and the owner's in a calendar shared with them
   // (lib/calendar-delegate.ts).
@@ -1396,6 +1441,7 @@ export function EventModal({
               <label htmlFor={labelFor("start_date")} className="text-sm font-medium mb-1 block">{t("form.start_date")}</label>
               <input
                 id={labelFor("start_date")}
+                ref={startDateRef}
                 type="date"
                 value={startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
@@ -1601,7 +1647,7 @@ export function EventModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!title.trim() || isSaving}
+            disabled={!title.trim() || !startDate || isSaving}
             className="whitespace-nowrap"
           >
             {/* While a save is in flight the button was disabled with no visible change, so a

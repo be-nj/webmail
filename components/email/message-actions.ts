@@ -34,6 +34,7 @@ import {
   Search,
   Pencil,
   Filter,
+  CalendarPlus,
   Download,
   Printer,
   Code,
@@ -65,6 +66,7 @@ export type MessageActionKey =
   | "spam"
   | "report_phishing"
   | "find_from_sender"
+  | "create_event"
   | "export"
   | "print"
   | "view_source"
@@ -115,6 +117,8 @@ export interface MessageActionOptions {
   onRescheduleScheduled?: () => void;
   onCancelScheduledForEdit?: () => void;
   onCancelScheduledSend?: () => void;
+  /** Fork: turn the message into a new calendar event. */
+  onCreateEvent?: () => void;
   /** Save the message as .eml. */
   onExport?: () => void;
   onPrint?: () => void;
@@ -264,6 +268,7 @@ export function useMessageActionList(o: MessageActionOptions): MessageActionEntr
       : [];
     // Download/Export, Print, View source (R6: after Copy, before the end).
     const file = [
+      ...(o.onCreateEvent ? [item("create_event", CalendarPlus, tViewer("create_event.action"), o.onCreateEvent, { testId: "ctx-create-event" })] : []),
       ...(o.onExport ? [item("export", Download, tViewer("export_email"), o.onExport, { disabled: !email.blobId, testId: "ctx-export" })] : []),
       ...(o.onPrint ? [item("print", Printer, tViewer("print"), o.onPrint, { testId: "ctx-print" })] : []),
       ...(o.onViewSource ? [item("view_source", Code, tViewer("view_source"), o.onViewSource, { disabled: !email.blobId, testId: "ctx-view-source" })] : []),

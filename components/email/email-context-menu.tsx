@@ -123,6 +123,8 @@ interface EmailContextMenuProps {
   copyTargets?: CopyTargetAccount[];
   onCopyToAccount?: (accountId: string, mailboxId: string) => void;
   onBatchForwardAsAttachment?: () => void;
+  /** Fork: turn the message into a calendar event (single message). */
+  onCreateEvent?: () => void;
   /** Save the message as .eml, print it, show its source (single message). */
   onExport?: () => void;
   onPrint?: () => void;
@@ -183,6 +185,7 @@ export function EmailContextMenu({
   onRescheduleScheduled,
   copyTargets,
   onCopyToAccount,
+  onCreateEvent,
   onExport,
   onPrint,
   onViewSource,
@@ -308,6 +311,7 @@ export function EmailContextMenu({
     onRescheduleScheduled,
     onCancelScheduledForEdit,
     onCancelScheduledSend,
+    onCreateEvent,
     onExport,
     onPrint,
     onViewSource,
