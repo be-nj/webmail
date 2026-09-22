@@ -10,7 +10,9 @@ import { collectReferencedCids, isEmbeddedInBody } from "@/lib/attachment-visibi
 import { collapsePlainTextQuotes, setupQuoteCollapse } from "@/lib/quote-collapse";
 import { fitEmailBodyWidth } from "@/lib/email-fit-width";
 import { withBasePath } from "@/lib/browser-navigation";
-import { buildContactsPath, buildMailPath } from "@/lib/deep-links";
+import { appUrl, buildCalendarPath, buildContactsPath, buildMailPath } from "@/lib/deep-links";
+import { buildEventDraftFromEmail } from "@/lib/event-from-email";
+import { useCalendarDraftStore } from "@/stores/calendar-draft-store";
 import { useCopyLink } from "@/hooks/use-copy-link";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -40,6 +42,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
+  CalendarPlus,
   Download,
   Mail,
   MailOpen,
@@ -2666,6 +2669,38 @@ export function EmailViewer({
   }, [emailIframeSrcDoc, handleIframeLoad]);
 
   // Export email as .eml file
+  // "Create event": the message becomes a new calendar event - subject as the
+  // title, a line naming sender and date, a link back to the message, and the
+  // message itself where it is small enough to embed (see
+  // buildEventDraftFromEmail). The date is left for the user to pick.
+  const handleCreateEvent = async () => {
+    if (!email) return;
+    let raw: Uint8Array | null = null;
+    if (email.blobId && client) {
+      try {
+        raw = new Uint8Array(await client.fetchBlobArrayBuffer(email.blobId, undefined, 'message/rfc822'));
+      } catch {
+        // No bytes, no attachment - the link back to the message stands.
+        raw = null;
+      }
+    }
+    const sender = email.from?.[0];
+    useCalendarDraftStore.getState().setDraft({
+      ...buildEventDraftFromEmail(email, {
+        messageUrl: appUrl(buildMailPath({ mailboxId: null, emailId: email.id, threadId: null })),
+        sourceLine: t('create_event.from_message', {
+          sender: sender?.name || sender?.email || '',
+          date: formatDateTime(emailDisplayDate(email), timeFormat, { year: 'numeric', month: 'short', day: 'numeric' }),
+        }),
+        messageLinkTitle: t('create_event.open_message'),
+        filename: emailExportFilename(email, emailFilenameOptions),
+        raw,
+      }),
+      datesUnset: true,
+    });
+    router.push(buildCalendarPath({ view: 'week', date: null, eventId: null }));
+  };
+
   const handleExportEmail = async () => {
     if (!email?.blobId || !client) return;
     try {
@@ -3592,6 +3627,15 @@ export function EmailViewer({
                   {t('forward_as_attachment')}
                 </button>
               )}
+              {/* Create a calendar event from this message */}
+              <button
+                role="menuitem"
+                onClick={() => { void handleCreateEvent(); setMoreMenuOpen(false); setMoreMenuSub(null); }}
+                className="w-full px-3 py-1.5 text-sm text-start hover:bg-muted text-foreground flex items-center gap-2"
+              >
+                <CalendarPlus className="w-4 h-4" />
+                {t('create_event.action')}
+              </button>
               {/* Export email */}
               <button
                 role="menuitem"
@@ -3790,6 +3834,14 @@ export function EmailViewer({
                   {t('forward_as_attachment')}
                 </button>
               )}
+              <button
+                role="menuitem"
+                onClick={() => { void handleCreateEvent(); setMoreMenuOpen(false); }}
+                className="w-full px-4 py-3 min-h-[44px] text-sm text-start hover:bg-muted text-foreground flex items-center gap-3"
+              >
+                <CalendarPlus className="w-5 h-5" />
+                {t('create_event.action')}
+              </button>
               <button
                 role="menuitem"
                 onClick={() => { handleExportEmail(); setMoreMenuOpen(false); }}

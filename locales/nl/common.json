@@ -269,6 +269,11 @@
     "reschedule_prompt": "Voer een nieuwe datum/tijd in, bijv. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Afspraak maken",
+      "open_message": "Bericht openen",
+      "from_message": "Uit het bericht van {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Vertrouwde afzender",
       "trusted": "Vertrouwde afzender – afzendercontrole geslaagd",

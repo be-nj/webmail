@@ -269,6 +269,11 @@
     "reschedule_prompt": "新しい日時を入力してください。例: 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "予定を作成",
+      "open_message": "メールを開く",
+      "from_message": "{sender} からのメール（{date}）より"
+    },
     "sender_trust": {
       "label": "信頼済み送信者",
       "trusted": "信頼済み送信者 – 送信者認証に合格",

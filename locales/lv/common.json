@@ -269,6 +269,11 @@
     "reschedule_prompt": "Ievadiet jaunu datumu/laiku, piem. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Izveidot notikumu",
+      "open_message": "Atvērt ziņojumu",
+      "from_message": "No {sender} ziņojuma, {date}"
+    },
     "sender_trust": {
       "label": "Uzticams sūtītājs",
       "trusted": "Uzticams sūtītājs – sūtītāja pārbaude izturēta",

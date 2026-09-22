@@ -269,6 +269,11 @@
     "reschedule_prompt": "Indtast en ny dato/tid, f.eks. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Opret begivenhed",
+      "open_message": "Åbn besked",
+      "from_message": "Fra beskeden fra {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Betroet afsender",
       "trusted": "Betroet afsender – afsenderbekræftelse bestået",

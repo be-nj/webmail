@@ -269,6 +269,11 @@
     "reschedule_prompt": "Skriv inn ny dato og klokkeslett, for eksempel 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Opprett hendelse",
+      "open_message": "Åpne melding",
+      "from_message": "Fra meldingen fra {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Betrodd avsender",
       "trusted": "Betrodd avsender – avsenderbekreftelse bestått",

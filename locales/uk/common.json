@@ -269,6 +269,11 @@
     "reschedule_prompt": "Введіть нову дату/час, напр. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Створити подію",
+      "open_message": "Відкрити лист",
+      "from_message": "З листа від {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Довірений відправник",
       "trusted": "Довірений відправник – перевірку відправника пройдено",

@@ -269,6 +269,11 @@
     "reschedule_prompt": "Inserisci una nuova data/ora, ad es. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Crea evento",
+      "open_message": "Apri messaggio",
+      "from_message": "Dal messaggio di {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Mittente attendibile",
       "trusted": "Mittente attendibile – verifica del mittente superata",

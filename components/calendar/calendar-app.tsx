@@ -30,7 +30,8 @@ import { TaskToolbar } from "@/components/calendar/task-toolbar";
 import { TaskModal } from "@/components/calendar/task-modal";
 import { MiniCalendar } from "@/components/calendar/mini-calendar";
 import { CalendarSidebarPanel } from "@/components/calendar/calendar-sidebar-panel";
-import { EventModal, type PendingEventPreview } from "@/components/calendar/event-modal";
+import { EventModal, type EventDraftPrefill, type PendingEventPreview } from "@/components/calendar/event-modal";
+import { useCalendarDraftStore } from "@/stores/calendar-draft-store";
 import { EventDetailPopover } from "@/components/calendar/event-detail-popover";
 import { EventContextMenu } from "@/components/calendar/event-context-menu";
 import { AppTopBannerSlot } from "@/components/plugins/app-top-banner-slot";
@@ -162,6 +163,8 @@ export function CalendarApp({ linkSegments }: CalendarAppProps = {}) {
   const { dialogProps: confirmDialogProps, confirm: confirmAction } = useConfirmDialog();
   const tMgmt = useTranslations("calendar.management");
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
+  // Prefill handed over by "create event from message" (see openDraftModal).
+  const [eventDraft, setEventDraft] = useState<EventDraftPrefill | null>(null);
   const [defaultModalDate, setDefaultModalDate] = useState<Date | undefined>();
   const [defaultModalEndDate, setDefaultModalEndDate] = useState<Date | undefined>();
   const [defaultModalAllDay, setDefaultModalAllDay] = useState(false);
@@ -559,6 +562,7 @@ export function CalendarApp({ linkSegments }: CalendarAppProps = {}) {
 
   const openCreateModal = useCallback((date?: Date, endDate?: Date, allDay?: boolean) => {
     setEditEvent(null);
+    setEventDraft(null);
     const d = date || selectedDate;
     setDefaultModalDate(d);
     setDefaultModalEndDate(endDate);
@@ -569,7 +573,21 @@ export function CalendarApp({ linkSegments }: CalendarAppProps = {}) {
 
   const openEditModal = useCallback((event: CalendarEvent) => {
     setEditEvent(event);
+    setEventDraft(null);
     setDefaultModalDate(undefined);
+    setShowEventModal(true);
+  }, []);
+
+  // A message turned into an event: the mail view left a draft behind and
+  // navigated here. Taking it clears it, so it opens exactly once.
+  useEffect(() => {
+    const draft = useCalendarDraftStore.getState().takeDraft();
+    if (!draft) return;
+    setEditEvent(null);
+    setEventDraft(draft);
+    setDefaultModalDate(undefined);
+    setDefaultModalEndDate(undefined);
+    setDefaultModalAllDay(false);
     setShowEventModal(true);
   }, []);
 
@@ -1693,18 +1711,19 @@ export function CalendarApp({ linkSegments }: CalendarAppProps = {}) {
           {!isMobile && showEventModal && (
             <div className="w-[400px] border-s border-border flex-shrink-0 overflow-hidden">
               <EventModal
-                key={editEvent?.id ?? 'new'}
+                key={editEvent?.id ?? (eventDraft ? 'draft' : 'new')}
                 event={editEvent}
                 calendars={displayCalendars}
                 defaultDate={defaultModalDate}
                 defaultEndDate={defaultModalEndDate}
                 defaultAllDay={defaultModalAllDay}
                 defaultCalendarId={defaultCalendarIdForCreate}
+                draft={eventDraft}
                 onSave={handleSaveEvent}
                 onDelete={handleDeleteEvent}
                 onDuplicate={handleDuplicateEvent}
                 onRsvp={handleRsvp}
-                onClose={() => { setShowEventModal(false); setEditEvent(null); setPendingPreview(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
+                onClose={() => { setShowEventModal(false); setEditEvent(null); setEventDraft(null); setPendingPreview(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
                 onPreviewChange={setPendingPreview}
                 currentUserEmails={currentUserEmails}
                 isSubscriptionCalendar={isSubscriptionCalendar}
@@ -1830,18 +1849,19 @@ export function CalendarApp({ linkSegments }: CalendarAppProps = {}) {
 
       {showEventModal && isMobile && (
         <EventModal
-          key={editEvent?.id ?? 'new'}
+          key={editEvent?.id ?? (eventDraft ? 'draft' : 'new')}
           event={editEvent}
           calendars={displayCalendars}
           defaultDate={defaultModalDate}
           defaultEndDate={defaultModalEndDate}
           defaultAllDay={defaultModalAllDay}
           defaultCalendarId={defaultCalendarIdForCreate}
+          draft={eventDraft}
           onSave={handleSaveEvent}
           onDelete={handleDeleteEvent}
           onDuplicate={handleDuplicateEvent}
           onRsvp={handleRsvp}
-          onClose={() => { setShowEventModal(false); setEditEvent(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
+          onClose={() => { setShowEventModal(false); setEditEvent(null); setEventDraft(null); setDefaultCalendarIdForCreate(undefined); setDefaultModalAllDay(false); }}
           currentUserEmails={currentUserEmails}
           isSubscriptionCalendar={isSubscriptionCalendar}
           isMobile={true}

@@ -269,6 +269,11 @@
     "reschedule_prompt": "Introduceți o nouă dată/oră, de exemplu 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Creează eveniment",
+      "open_message": "Deschide mesajul",
+      "from_message": "Din mesajul de la {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Expeditor de încredere",
       "trusted": "Expeditor de încredere – verificarea expeditorului a reușit",

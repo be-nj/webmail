@@ -269,6 +269,11 @@
     "reschedule_prompt": "Saisissez une nouvelle date/heure, p. ex. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Créer un événement",
+      "open_message": "Ouvrir le message",
+      "from_message": "D'après le message de {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Expéditeur de confiance",
       "trusted": "Expéditeur de confiance – vérification de l'expéditeur réussie",

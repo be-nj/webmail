@@ -269,6 +269,11 @@
     "reschedule_prompt": "تاریخ/زمان جدید را وارد کنید"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "ایجاد رویداد",
+      "open_message": "باز کردن پیام",
+      "from_message": "از پیام {sender}، {date}"
+    },
     "sender_trust": {
       "label": "فرستندهٔ مورد اعتماد",
       "trusted": "فرستندهٔ مورد اعتماد – تأیید فرستنده موفق بود",

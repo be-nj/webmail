@@ -269,6 +269,11 @@
     "reschedule_prompt": "Wprowadź nową datę/godzinę, np. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Utwórz wydarzenie",
+      "open_message": "Otwórz wiadomość",
+      "from_message": "Z wiadomości od {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Zaufany nadawca",
       "trusted": "Zaufany nadawca – weryfikacja nadawcy zaliczona",

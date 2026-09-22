@@ -269,6 +269,11 @@
     "reschedule_prompt": "Introduïu una data i hora noves, p. ex. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Crear esdeveniment",
+      "open_message": "Obrir missatge",
+      "from_message": "Del missatge de {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Remitent de confiança",
       "trusted": "Remitent de confiança – verificació del remitent superada",

@@ -269,6 +269,11 @@
     "reschedule_prompt": "輸入新的日期與時間，例如 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "建立行程",
+      "open_message": "開啟郵件",
+      "from_message": "來自 {sender} 的郵件，{date}"
+    },
     "sender_trust": {
       "label": "信任的寄件者",
       "trusted": "信任的寄件者 – 寄件者驗證通過",

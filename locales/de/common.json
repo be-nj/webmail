@@ -269,6 +269,11 @@
     "reschedule_prompt": "Neues Datum/Uhrzeit eingeben, z. B. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Termin erstellen",
+      "open_message": "Nachricht öffnen",
+      "from_message": "Aus der Nachricht von {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Vertrauter Absender",
       "trusted": "Vertrauter Absender – Absenderprüfung bestanden",

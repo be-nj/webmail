@@ -269,6 +269,11 @@
     "reschedule_prompt": "Adj meg egy új dátumot/időpontot, pl. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Esemény létrehozása",
+      "open_message": "Üzenet megnyitása",
+      "from_message": "{sender} üzenetéből, {date}"
+    },
     "sender_trust": {
       "label": "Megbízható feladó",
       "trusted": "Megbízható feladó – a feladó-ellenőrzés sikeres",

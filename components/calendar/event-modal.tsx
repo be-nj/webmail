@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LinkifiedText } from "@/components/ui/linkified-text";
 import { X, Trash2, Check, Users, CalendarDays, Copy, Pencil, Clock, MapPin, Video, Repeat, Bell, AlignLeft, Plus } from "lucide-react";
 import { format, parseISO, addHours, addDays, isSameDay } from "date-fns";
-import type { CalendarEvent, Calendar, CalendarParticipant, CalendarEventAlert, CalendarRecurrenceRule } from "@/lib/jmap/types";
+import type { CalendarEvent, Calendar, CalendarLink, CalendarParticipant, CalendarEventAlert, CalendarRecurrenceRule } from "@/lib/jmap/types";
 import { RecurrenceEditor, buildRecurrenceSummary, isSimpleRecurrenceRule } from "./recurrence-editor";
 import { parseDuration, getEventColor } from "./event-card";
 import { buildAllDayDuration, getEventDisplayEndDate, getEventEndDate, getEventStartDate, getPrimaryCalendarId } from "@/lib/calendar-utils";
@@ -41,6 +41,20 @@ export interface PendingEventPreview {
   calendarId: string;
 }
 
+/**
+ * A new event's prefilled content - today only from "create event from
+ * message". `links` are the message's attachments (JSCalendar links), and the
+ * date deliberately starts empty: the mail says what, not when, so the form
+ * opens on the date field rather than guessing an hour.
+ */
+export interface EventDraftPrefill {
+  title?: string;
+  description?: string;
+  links?: Record<string, CalendarLink>;
+  /** Leave start/end empty and focus the start date. */
+  datesUnset?: boolean;
+}
+
 interface EventModalProps {
   event?: CalendarEvent | null;
   calendars: Calendar[];
@@ -48,6 +62,8 @@ interface EventModalProps {
   defaultEndDate?: Date;
   defaultAllDay?: boolean;
   defaultCalendarId?: string;
+  /** Prefill for a new event, e.g. one made from a message. */
+  draft?: EventDraftPrefill | null;
   onSave: (data: Partial<CalendarEvent>, sendSchedulingMessages?: boolean) => void | Promise<void>;
   onDelete?: (id: string, sendSchedulingMessages?: boolean) => void;
   onDuplicate?: (data: Partial<CalendarEvent>) => void;
@@ -191,6 +207,7 @@ export function EventModal({
   defaultEndDate,
   defaultAllDay,
   defaultCalendarId,
+  draft,
   onSave,
   onDelete,
   onDuplicate,
@@ -297,18 +314,22 @@ export function EventModal({
     return addHours(getInitialStart(), 1);
   };
 
-  const [title, setTitle] = useState(event?.title || "");
-  const [description, setDescription] = useState(event?.description || "");
+  const [title, setTitle] = useState(event?.title || draft?.title || "");
+  const [description, setDescription] = useState(event?.description || draft?.description || "");
   const [location, setLocation] = useState(
     event?.locations ? Object.values(event.locations)[0]?.name || "" : ""
   );
   const [virtualLocation, setVirtualLocation] = useState(
     event?.virtualLocations ? Object.values(event.virtualLocations)[0]?.uri || "" : ""
   );
-  const [startDate, setStartDate] = useState(formatDateInput(getInitialStart()));
-  const [startTime, setStartTime] = useState(formatTimeInput(getInitialStart()));
-  const [endDate, setEndDate] = useState(formatDateInput(getInitialEnd()));
-  const [endTime, setEndTime] = useState(formatTimeInput(getInitialEnd()));
+  // A draft from a message carries no date; the form starts blank there and
+  // Save stays disabled until one is picked.
+  const datesUnset = !event && draft?.datesUnset === true;
+  const [startDate, setStartDate] = useState(datesUnset ? "" : formatDateInput(getInitialStart()));
+  const [startTime, setStartTime] = useState(datesUnset ? "" : formatTimeInput(getInitialStart()));
+  const [endDate, setEndDate] = useState(datesUnset ? "" : formatDateInput(getInitialEnd()));
+  const [endTime, setEndTime] = useState(datesUnset ? "" : formatTimeInput(getInitialEnd()));
+  const startDateRef = useRef<HTMLInputElement>(null);
   const [allDay, setAllDay] = useState(event?.showWithoutTime || defaultAllDay || false);
 
   // Editing the start shifts the end with it, preserving the event's current
@@ -323,7 +344,21 @@ export function EventModal({
     setEndDate(formatDateInput(nextEnd));
     if (!allDay) setEndTime(formatTimeInput(nextEnd));
   };
-  const handleStartDateChange = (v: string) => { setStartDate(v); shiftEndKeepingDuration(v, startTime); };
+  const handleStartDateChange = (v: string) => {
+    setStartDate(v);
+    // First date on a blank draft: no duration to preserve, so the event
+    // becomes the standard one hour (or that whole day).
+    if (!endDate) {
+      setEndDate(v);
+      if (!allDay) {
+        const from = startTime || formatTimeInput(displayNow());
+        if (!startTime) setStartTime(from);
+        setEndTime(formatTimeInput(addHours(new Date(`${v}T${from}:00`), 1)));
+      }
+      return;
+    }
+    shiftEndKeepingDuration(v, startTime);
+  };
   const handleStartTimeChange = (v: string) => { setStartTime(v); shiftEndKeepingDuration(startDate, v); };
   const [calendarId, setCalendarId] = useState<string>(() => {
     if (event?.calendarIds) return getPrimaryCalendarId(event) || calendars[0]?.id || "";
@@ -492,7 +527,7 @@ export function EventModal({
 
   const handleSave = useCallback(async () => {
     const trimmedTitle = title.trim();
-    if (!trimmedTitle || isSaving) return;
+    if (!trimmedTitle || !startDate || isSaving) return;
     if (trimmedTitle.length > 500 || description.trim().length > 10000 || location.trim().length > 500) return;
 
     const pendingAttendee = participantInputRef.current?.flush() ?? null;
@@ -539,6 +574,9 @@ export function EventModal({
 
     if (!event) {
       data.uid = generateUUID();
+      // The message this event was made from: a link back to it, and the
+      // message itself where it was small enough to embed.
+      if (draft?.links && Object.keys(draft.links).length > 0) data.links = draft.links;
     }
 
     if (location.trim()) {
@@ -706,8 +744,12 @@ export function EventModal({
       }
     };
     modal.addEventListener("keydown", handler);
-    firstEl?.focus();
+    // A draft from a message arrives with everything but the date, so that is
+    // where the cursor belongs; otherwise the first field (the title).
+    (datesUnset ? startDateRef.current ?? firstEl : firstEl)?.focus();
     return () => modal.removeEventListener("keydown", handler);
+    // Once, on open: re-focusing on every render would fight the user.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasParticipants = attendees.length > 0 || (event?.participants && Object.keys(event.participants).length > 0);
@@ -1160,6 +1202,7 @@ export function EventModal({
             <div>
               <label className="text-sm font-medium mb-1 block">{t("form.start_date")}</label>
               <input
+                ref={startDateRef}
                 type="date"
                 value={startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
@@ -1433,7 +1476,7 @@ export function EventModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!title.trim() || isSaving}
+            disabled={!title.trim() || !startDate || isSaving}
             className="w-full"
           >
             {t("form.save")}

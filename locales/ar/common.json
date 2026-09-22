@@ -269,6 +269,11 @@
     "reschedule_prompt": "أدخل تاريخًا/وقتًا جديدًا، مثل 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "إنشاء حدث",
+      "open_message": "فتح الرسالة",
+      "from_message": "من الرسالة الواردة من {sender}، {date}"
+    },
     "sender_trust": {
       "label": "مرسل موثوق",
       "trusted": "مرسل موثوق – تم اجتياز التحقق من المرسل",

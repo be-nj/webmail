@@ -269,6 +269,11 @@
     "reschedule_prompt": "Zadejte nové datum/čas, např. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Vytvořit událost",
+      "open_message": "Otevřít zprávu",
+      "from_message": "Ze zprávy od {sender}, {date}"
+    },
     "sender_trust": {
       "label": "Důvěryhodný odesílatel",
       "trusted": "Důvěryhodný odesílatel – ověření odesílatele prošlo",

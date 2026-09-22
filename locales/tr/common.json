@@ -269,6 +269,11 @@
     "reschedule_prompt": "Yeni tarih/saat girin, ör. 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "Etkinlik oluştur",
+      "open_message": "İletiyi aç",
+      "from_message": "{sender} tarafından gönderilen iletiden, {date}"
+    },
     "sender_trust": {
       "label": "Güvenilir gönderen",
       "trusted": "Güvenilir gönderen – gönderen doğrulaması başarılı",

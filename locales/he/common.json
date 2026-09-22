@@ -234,6 +234,11 @@
     "reschedule_prompt": "הזן תאריך/שעה חדש, למשל 2026-05-04T15:30"
   },
   "email_viewer": {
+    "create_event": {
+      "action": "יצירת פגישה",
+      "open_message": "פתיחת ההודעה",
+      "from_message": "מההודעה מ־{sender}, {date}"
+    },
     "sender_trust": {
       "label": "שולח מהימן",
       "trusted": "שולח מהימן – אימות השולח עבר",
