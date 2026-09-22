@@ -169,15 +169,23 @@ async function fetchCapped(target: string, cap: number, accept: string): Promise
  * The logo out of the record's verified mark, or null when there is none or it
  * doesn't check out. Either domain may be the one the mark names; the
  * message's DMARC pass already tied it to both.
+ *
+ * A mark that can't be fetched right now (timeout, 5xx) throws instead: falling
+ * back to the record's picture would cache a certified logo as uncertified for
+ * a week. The caller caches the error for an hour and tries again.
  */
 async function markLogo(record: BimiRecord, domains: string[]): Promise<string | null> {
   if (!record.evidenceUrl) return null;
+  let pem: Uint8Array;
   try {
-    const pem = await fetchCapped(record.evidenceUrl, MAX_PEM_BYTES, 'application/pem-certificate-chain');
-    return verifiedLogo(Buffer.from(pem).toString('latin1'), domains, vmcRoots);
-  } catch {
-    return null;
+    pem = await fetchCapped(record.evidenceUrl, MAX_PEM_BYTES, 'application/pem-certificate-chain');
+  } catch (error) {
+    // Refused by our own rules (non-public host, too big, redirect loop): the
+    // mark is unusable for good, like one that fails verification.
+    if (error instanceof NoBimi) return null;
+    throw error;
   }
+  return verifiedLogo(Buffer.from(pem).toString('latin1'), domains, vmcRoots);
 }
 
 async function fetchLogo(record: BimiRecord, domain: string): Promise<Logo> {
