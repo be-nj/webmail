@@ -875,6 +875,11 @@
       "label": "信任的寄件者",
       "trusted": "信任的寄件者 – 寄件者驗證通過",
       "impersonated": "冒充信任的寄件者 – 寄件者驗證失敗"
+    },
+    "create_event": {
+      "action": "建立行程",
+      "open_message": "開啟郵件",
+      "from_message": "來自 {sender} 的郵件，{date}"
     }
   },
   "external_mail": {

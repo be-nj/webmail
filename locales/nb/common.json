@@ -875,6 +875,11 @@
       "label": "Betrodd avsender",
       "trusted": "Betrodd avsender – avsenderbekreftelse bestått",
       "impersonated": "Utgir seg for å være en betrodd avsender – avsenderbekreftelse mislyktes"
+    },
+    "create_event": {
+      "action": "Opprett hendelse",
+      "open_message": "Åpne melding",
+      "from_message": "Fra meldingen fra {sender}, {date}"
     }
   },
   "external_mail": {

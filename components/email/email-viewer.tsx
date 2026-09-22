@@ -2,7 +2,7 @@
 
 import { Fragment, useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, useId } from "react";
 import { Email, ContactCard, Mailbox } from "@/lib/jmap/types";
-import { attachmentDownloadFilename, attachmentsBundleFilename, DEFAULT_ATTACHMENT_TEMPLATE } from "@/lib/download-filename";
+import { attachmentDownloadFilename, attachmentsBundleFilename, DEFAULT_ATTACHMENT_TEMPLATE, DEFAULT_EMAIL_TEMPLATE, emailExportFilename } from "@/lib/download-filename";
 import { EML_IMPORT_ACCEPT, expandImportableEmails } from "@/lib/eml-import";
 import { TRANSPARENT_BLOCKED_PIXEL, applyNewTabToAnchor, emailIframeCsp, escapeHtml, isExternalResourceUrl, isOpenableLinkHref, plainTextToSafeHtml, sanitizeEmailBodyForIframe, sanitizeEmailHtml, sanitizePlainTextRenderedHtml } from "@/lib/email-sanitization";
 import { getRenderableHtmlBody } from "@/lib/email-body-selection";
@@ -23,7 +23,9 @@ import { DARK_PENDING_CLASS, applyEmailDarkMode, emailColorScheme, emailDarkMode
 import { fitEmailBodyWidth, type FitOptions } from "@/lib/email-fit-width";
 import { hasFullBleedCanvas } from "@/lib/email-full-bleed";
 import { withBasePath } from "@/lib/browser-navigation";
-import { buildContactsPath } from "@/lib/deep-links";
+import { appUrl, buildCalendarPath, buildContactsPath, buildMailPath } from "@/lib/deep-links";
+import { buildEventDraftFromEmail } from "@/lib/event-from-email";
+import { useCalendarDraftStore } from "@/stores/calendar-draft-store";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Avatar } from "@/components/ui/avatar";
@@ -71,6 +73,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
+  CalendarPlus,
   Download,
   Mail,
   MailOpen,
@@ -3645,6 +3648,48 @@ export function EmailViewer({
 
   // Export email as .eml file; the row's menu exports the same way.
   const exportEmail = useEmailExport();
+
+  // "Create event": the message becomes a new calendar event - subject as the
+  // title, a line naming sender and date, a link back to the message, and the
+  // message itself where it is small enough to embed (see
+  // buildEventDraftFromEmail). The date is left for the user to pick.
+  const handleCreateEvent = async () => {
+    if (!email) return;
+    let raw: Uint8Array | null = null;
+    if (email.blobId && client) {
+      try {
+        raw = new Uint8Array(await client.fetchBlobArrayBuffer(email.blobId, undefined, 'message/rfc822'));
+      } catch {
+        // No bytes, no attachment - the link back to the message stands.
+        raw = null;
+      }
+    }
+    const sender = email.from?.[0];
+    // The embedded copy carries the name "Export as .eml" would give it.
+    const settings = useSettingsStore.getState();
+    const filenameOptions = {
+      template: settings.emailDownloadTemplate || DEFAULT_EMAIL_TEMPLATE,
+      spaceReplacement: settings.filenameSpaceReplacement,
+      lowercase: settings.filenameLowercase,
+      stripDiacritics: settings.filenameStripDiacritics,
+      collapseSeparators: settings.filenameCollapseSeparators,
+    };
+    useCalendarDraftStore.getState().setDraft({
+      ...buildEventDraftFromEmail(email, {
+        messageUrl: appUrl(buildMailPath({ mailboxId: null, emailId: email.id, threadId: null })),
+        sourceLine: t('create_event.from_message', {
+          sender: sender?.name || sender?.email || '',
+          date: formatDateTime(emailDisplayDate(email), timeFormat, { year: 'numeric', month: 'short', day: 'numeric' }),
+        }),
+        messageLinkTitle: t('create_event.open_message'),
+        filename: emailExportFilename(email, filenameOptions),
+        raw,
+      }),
+      datesUnset: true,
+    });
+    router.push(buildCalendarPath({ view: 'week', date: null, eventId: null }));
+  };
+
   const handleExportEmail = async () => {
     if (!email) return;
     // With the Archive action off a stored 'archive' keeps the message.
@@ -4178,6 +4223,7 @@ export function EmailViewer({
       ? [{ kind: 'item' as const, key: 'extra:view_mode' as const, icon: isDark ? Sun : Moon, label: isDark ? t('view_in_light_mode') : t('view_in_dark_mode'), run: toggleViewMode }]
       : []),
     { kind: 'item', key: 'extra:import', icon: Upload, label: t('import_email'), run: handleImportEmail },
+    { kind: 'item', key: 'extra:create_event', icon: CalendarPlus, label: t('create_event.action'), run: () => void handleCreateEvent() },
     ...(onShowShortcuts && !isMobile
       ? [{ kind: 'item' as const, key: 'extra:shortcuts' as const, icon: Keyboard, label: t('keyboard_shortcuts'), run: onShowShortcuts }]
       : []),
