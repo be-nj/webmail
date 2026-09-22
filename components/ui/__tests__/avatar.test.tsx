@@ -43,7 +43,9 @@ describe('Avatar Brand Logo', () => {
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const domain = new URL(String(input), 'http://x').searchParams.get('domain');
-      const body = { svg: domain?.startsWith('none.') ? null : LOGO };
+      const body = domain?.startsWith('none.')
+        ? { svg: null, verified: false }
+        : { svg: LOGO, verified: !domain?.startsWith('plain.') };
       return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
     });
   });
@@ -71,6 +73,19 @@ describe('Avatar Brand Logo', () => {
     await waitFor(() => expect(bimiCalls()).toHaveLength(1));
     await waitFor(() => expect(container.textContent).toBe('SH'));
     expect(imgSrc(container)).toBeNull();
+  });
+
+  it('hides a certificate-less logo from a sender the reader does not trust', async () => {
+    const { container } = render(<Avatar name="Shop" email="noreply@plain.example" dmarcPass />);
+    await waitFor(() => expect(bimiCalls()).toHaveLength(1));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(imgSrc(container)).toBeNull();
+    expect(container.textContent).toBe('SH');
+  });
+
+  it('shows a certificate-less logo for a trusted sender', async () => {
+    const { container } = render(<Avatar name="Shop" email="noreply@plain2.example" dmarcPass senderTrust="trusted" />);
+    await waitFor(() => expect(imgSrc(container)).toMatch(/^data:image\/svg\+xml/));
   });
 
   it.each(['someone@gmail.com', 'max.musterl@web.de', 'a@mail.gmx.net', 'x@t-online.de'])(
