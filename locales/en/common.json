@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# event found} other {# events found}}"
     },
     "mini_has_events": "has events",
-    "mini_week_number": "Week {week}"
+    "mini_week_number": "Week {week}",
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Someone",

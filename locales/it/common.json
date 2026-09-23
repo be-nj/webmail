@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# evento trovato} other {# eventi trovati}}"
     },
     "mini_has_events": "ha eventi",
-    "mini_week_number": "Settimana {week}"
+    "mini_week_number": "Settimana {week}",
+    "attachments": {
+      "title": "Allegati",
+      "file": "Allegato",
+      "download": "Scarica {name}"
+    }
   },
   "advanced_search": {
     "title": "Ricerca avanzata",

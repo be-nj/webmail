@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {Найдено # событие} few {Найдено # события} many {Найдено # событий} other {Найдено # события}}"
     },
     "mini_has_events": "есть события",
-    "mini_week_number": "Неделя {week}"
+    "mini_week_number": "Неделя {week}",
+    "attachments": {
+      "title": "Вложения",
+      "file": "Вложение",
+      "download": "Скачать {name}"
+    }
   },
   "advanced_search": {
     "title": "Расширенный поиск",

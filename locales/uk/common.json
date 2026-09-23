@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {Знайдено # подію} few {Знайдено # події} many {Знайдено # подій} other {Знайдено # події}}"
     },
     "mini_has_events": "є події",
-    "mini_week_number": "Тиждень {week}"
+    "mini_week_number": "Тиждень {week}",
+    "attachments": {
+      "title": "Вкладення",
+      "file": "Вкладення",
+      "download": "Завантажити {name}"
+    }
   },
   "advanced_search": {
     "title": "Розширений пошук",

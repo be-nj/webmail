@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# رویداد پیدا شد} other {# رویداد پیدا شد}}"
     },
     "mini_has_events": "رویداد دارد",
-    "mini_week_number": "هفته {week}"
+    "mini_week_number": "هفته {week}",
+    "attachments": {
+      "title": "پیوست‌ها",
+      "file": "پیوست",
+      "download": "دانلود {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "کسی",

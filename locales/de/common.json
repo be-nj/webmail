@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# Termin gefunden} other {# Termine gefunden}}"
     },
     "mini_has_events": "hat Termine",
-    "mini_week_number": "Woche {week}"
+    "mini_week_number": "Woche {week}",
+    "attachments": {
+      "title": "Anhänge",
+      "file": "Anhang",
+      "download": "{name} herunterladen"
+    }
   },
   "advanced_search": {
     "title": "Erweiterte Suche",

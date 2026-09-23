@@ -4752,7 +4752,12 @@
       "results": "{count, plural, one {נמצא אירוע אחד} two {נמצאו שני אירועים} other {נמצאו # אירועים}}"
     },
     "mini_has_events": "יש אירועים",
-    "mini_week_number": "שבוע {week}"
+    "mini_week_number": "שבוע {week}",
+    "attachments": {
+      "title": "קבצים מצורפים",
+      "file": "קובץ מצורף",
+      "download": "הורדת {name}"
+    }
   },
   "advanced_search": {
     "title": "חיפוש מתקדם",

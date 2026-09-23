@@ -4834,7 +4834,12 @@
       "results": "{count, plural, other {일정 #개를 찾았습니다}}"
     },
     "mini_has_events": "일정 있음",
-    "mini_week_number": "{week}주차"
+    "mini_week_number": "{week}주차",
+    "attachments": {
+      "title": "첨부 파일",
+      "file": "첨부 파일",
+      "download": "{name} 다운로드"
+    }
   },
   "advanced_search": {
     "title": "상세 검색",

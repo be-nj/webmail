@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# evento encontrado} other {# eventos encontrados}}"
     },
     "mini_has_events": "tem eventos",
-    "mini_week_number": "Semana {week}"
+    "mini_week_number": "Semana {week}",
+    "attachments": {
+      "title": "Anexos",
+      "file": "Anexo",
+      "download": "Transferir {name}"
+    }
   },
   "advanced_search": {
     "title": "Pesquisa avançada",

@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# үйл явдал олдлоо} other {# үйл явдал олдлоо}}"
     },
     "mini_has_events": "үйл явдалтай",
-    "mini_week_number": "{week}-р долоо хоног"
+    "mini_week_number": "{week}-р долоо хоног",
+    "attachments": {
+      "title": "Хавсралтууд",
+      "file": "Хавсралт",
+      "download": "{name} татах"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Хэн нэгэн",

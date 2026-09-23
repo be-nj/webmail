@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# esemény található} other {# esemény található}}"
     },
     "mini_has_events": "vannak események",
-    "mini_week_number": "{week}. hét"
+    "mini_week_number": "{week}. hét",
+    "attachments": {
+      "title": "Mellékletek",
+      "file": "Melléklet",
+      "download": "{name} letöltése"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Valaki",

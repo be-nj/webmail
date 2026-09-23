@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# hendelse funnet} other {# hendelser funnet}}"
     },
     "mini_has_events": "har hendelser",
-    "mini_week_number": "Uke {week}"
+    "mini_week_number": "Uke {week}",
+    "attachments": {
+      "title": "Vedlegg",
+      "file": "Vedlegg",
+      "download": "Last ned {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Noen",

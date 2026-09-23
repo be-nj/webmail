@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# afspraak gevonden} other {# afspraken gevonden}}"
     },
     "mini_has_events": "heeft afspraken",
-    "mini_week_number": "Week {week}"
+    "mini_week_number": "Week {week}",
+    "attachments": {
+      "title": "Bijlagen",
+      "file": "Bijlage",
+      "download": "{name} downloaden"
+    }
   },
   "advanced_search": {
     "title": "Geavanceerd zoeken",

@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# etkinlik bulundu} other {# etkinlik bulundu}}"
     },
     "mini_has_events": "etkinlik var",
-    "mini_week_number": "{week}. hafta"
+    "mini_week_number": "{week}. hafta",
+    "attachments": {
+      "title": "Ekler",
+      "file": "Ek",
+      "download": "{name} indir"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Birisi",

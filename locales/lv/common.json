@@ -4834,7 +4834,12 @@
       "results": "{count, plural, zero {Atrasti # notikumi} one {Atrasts # notikums} other {Atrasti # notikumi}}"
     },
     "mini_has_events": "ir notikumi",
-    "mini_week_number": "{week}. nedēļa"
+    "mini_week_number": "{week}. nedēļa",
+    "attachments": {
+      "title": "Pielikumi",
+      "file": "Pielikums",
+      "download": "Lejupielādēt {name}"
+    }
   },
   "advanced_search": {
     "title": "Izvērstā meklēšana",

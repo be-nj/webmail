@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# esdeveniment trobat} other {# esdeveniments trobats}}"
     },
     "mini_has_events": "té esdeveniments",
-    "mini_week_number": "Setmana {week}"
+    "mini_week_number": "Setmana {week}",
+    "attachments": {
+      "title": "Adjunts",
+      "file": "Adjunt",
+      "download": "Baixa {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Algú",

@@ -4834,7 +4834,12 @@
       "results": "{count, plural, one {# begivenhed fundet} other {# begivenheder fundet}}"
     },
     "mini_has_events": "har begivenheder",
-    "mini_week_number": "Uge {week}"
+    "mini_week_number": "Uge {week}",
+    "attachments": {
+      "title": "Vedhæftninger",
+      "file": "Vedhæftning",
+      "download": "Hent {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Nogen",

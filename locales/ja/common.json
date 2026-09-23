@@ -4834,7 +4834,12 @@
       "results": "{count, plural, other {# 件の予定が見つかりました}}"
     },
     "mini_has_events": "イベントあり",
-    "mini_week_number": "第{week}週"
+    "mini_week_number": "第{week}週",
+    "attachments": {
+      "title": "添付ファイル",
+      "file": "添付ファイル",
+      "download": "{name} をダウンロード"
+    }
   },
   "advanced_search": {
     "title": "詳細検索",

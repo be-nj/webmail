@@ -4834,7 +4834,12 @@
       "results": "{count, plural, other {找到 # 个活动}}"
     },
     "mini_has_events": "有事件",
-    "mini_week_number": "第 {week} 周"
+    "mini_week_number": "第 {week} 周",
+    "attachments": {
+      "title": "附件",
+      "file": "附件",
+      "download": "下载 {name}"
+    }
   },
   "advanced_search": {
     "title": "高级搜索",
