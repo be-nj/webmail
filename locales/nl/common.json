@@ -3756,7 +3756,12 @@
       "select_view": "Weergave wijzigen, nu {view}"
     },
     "other_calendars": "Andere agenda's",
-    "calendar_options": "Opties voor {name}"
+    "calendar_options": "Opties voor {name}",
+    "attachments": {
+      "title": "Bijlagen",
+      "file": "Bijlage",
+      "download": "{name} downloaden"
+    }
   },
   "advanced_search": {
     "title": "Geavanceerd zoeken",

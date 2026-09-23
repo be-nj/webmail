@@ -3756,7 +3756,12 @@
       "select_view": "تغییر نما، نمای فعلی: {view}"
     },
     "other_calendars": "تقویم‌های دیگر",
-    "calendar_options": "گزینه‌های {name}"
+    "calendar_options": "گزینه‌های {name}",
+    "attachments": {
+      "title": "پیوست‌ها",
+      "file": "پیوست",
+      "download": "دانلود {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "کسی",

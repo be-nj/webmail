@@ -3756,7 +3756,12 @@
       "select_view": "Změnit zobrazení, nyní {view}"
     },
     "other_calendars": "Další kalendáře",
-    "calendar_options": "Možnosti pro {name}"
+    "calendar_options": "Možnosti pro {name}",
+    "attachments": {
+      "title": "Přílohy",
+      "file": "Příloha",
+      "download": "Stáhnout {name}"
+    }
   },
   "advanced_search": {
     "title": "Pokročilé hledání",
