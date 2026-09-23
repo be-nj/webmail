@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Mellékletek",
+      "file": "Melléklet",
+      "download": "{name} letöltése"
+    },
     "title": "Naptár",
     "back_to_email": "Vissza az e-mailekhez",
     "back_to_month": "Vissza a hónaphoz",

@@ -2781,6 +2781,11 @@
     "open_categories": "Открыть категории"
   },
   "calendar": {
+    "attachments": {
+      "title": "Вложения",
+      "file": "Вложение",
+      "download": "Скачать {name}"
+    },
     "title": "Календарь",
     "back_to_email": "Вернуться к почте",
     "back_to_month": "Вернуться к месяцу",

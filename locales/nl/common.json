@@ -2781,6 +2781,11 @@
     "open_categories": "Categorieën openen"
   },
   "calendar": {
+    "attachments": {
+      "title": "Bijlagen",
+      "file": "Bijlage",
+      "download": "{name} downloaden"
+    },
     "title": "Agenda",
     "back_to_email": "Terug naar e-mail",
     "back_to_month": "Terug naar maand",

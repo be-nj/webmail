@@ -2781,6 +2781,11 @@
     "open_categories": "Åbn kategorier"
   },
   "calendar": {
+    "attachments": {
+      "title": "Vedhæftninger",
+      "file": "Vedhæftning",
+      "download": "Hent {name}"
+    },
     "title": "Kalender",
     "back_to_email": "Tilbage til e-mail",
     "back_to_month": "Tilbage til måned",

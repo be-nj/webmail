@@ -2781,6 +2781,11 @@
     "open_categories": "Otevřít kategorie"
   },
   "calendar": {
+    "attachments": {
+      "title": "Přílohy",
+      "file": "Příloha",
+      "download": "Stáhnout {name}"
+    },
     "title": "Kalendář",
     "back_to_email": "Zpět na poštu",
     "back_to_month": "Zpět na měsíc",

@@ -2781,6 +2781,11 @@
     "open_categories": "Kategorileri aç"
   },
   "calendar": {
+    "attachments": {
+      "title": "Ekler",
+      "file": "Ek",
+      "download": "{name} indir"
+    },
     "title": "Takvim",
     "back_to_email": "E-postaya geri dön",
     "back_to_month": "Aya geri dön",

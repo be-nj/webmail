@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Prílohy",
+      "file": "Príloha",
+      "download": "Stiahnuť {name}"
+    },
     "title": "Kalendár",
     "back_to_email": "Späť na poštu",
     "back_to_month": "Späť na mesiac",

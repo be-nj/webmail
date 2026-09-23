@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "پیوست‌ها",
+      "file": "پیوست",
+      "download": "دانلود {name}"
+    },
     "title": "تقویم",
     "back_to_email": "بازگشت به ایمیل",
     "back_to_month": "بازگشت به ماه",

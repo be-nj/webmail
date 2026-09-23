@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Vedlegg",
+      "file": "Vedlegg",
+      "download": "Last ned {name}"
+    },
     "title": "Kalender",
     "back_to_email": "Tilbake til e-post",
     "back_to_month": "Tilbake til måneden",

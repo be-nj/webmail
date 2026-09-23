@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Хавсралтууд",
+      "file": "Хавсралт",
+      "download": "{name} татах"
+    },
     "title": "Хуанли",
     "back_to_email": "Имэйл рүү буцах",
     "back_to_month": "Сар руу буцах",

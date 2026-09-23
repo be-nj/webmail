@@ -33,6 +33,12 @@ describe('EventModal with a draft from a message', () => {
     expect(endDate.value).toBe('');
   });
 
+  it('shows what the event will carry', () => {
+    renderModal();
+    expect(screen.getByText('Open message')).toBeTruthy();
+    expect(screen.getByText('mail.eml')).toBeTruthy();
+  });
+
   it('focuses the start date, since that is what the message does not say', () => {
     const { startDate } = renderModal();
     expect(document.activeElement).toBe(startDate);

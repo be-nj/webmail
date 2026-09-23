@@ -2781,6 +2781,11 @@
     "open_categories": "打开分类"
   },
   "calendar": {
+    "attachments": {
+      "title": "附件",
+      "file": "附件",
+      "download": "下载 {name}"
+    },
     "title": "日历",
     "back_to_email": "返回邮件",
     "back_to_month": "返回月份",

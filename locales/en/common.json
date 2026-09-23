@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    },
     "title": "Calendar",
     "back_to_email": "Back to email",
     "back_to_month": "Back to month",

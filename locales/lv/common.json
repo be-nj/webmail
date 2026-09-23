@@ -2781,6 +2781,11 @@
     "open_categories": "Atvērt kategorijas"
   },
   "calendar": {
+    "attachments": {
+      "title": "Pielikumi",
+      "file": "Pielikums",
+      "download": "Lejupielādēt {name}"
+    },
     "title": "Kalendārs",
     "back_to_email": "Atgriezties pie pasta",
     "back_to_month": "Atpakaļ uz mēneša skatu",

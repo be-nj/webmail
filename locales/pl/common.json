@@ -2781,6 +2781,11 @@
     "open_categories": "Otwórz kategorie"
   },
   "calendar": {
+    "attachments": {
+      "title": "Załączniki",
+      "file": "Załącznik",
+      "download": "Pobierz {name}"
+    },
     "title": "Kalendarz",
     "back_to_email": "Powrót do poczty",
     "back_to_month": "Powrót do miesiąca",

@@ -2781,6 +2781,11 @@
     "open_categories": "カテゴリを開く"
   },
   "calendar": {
+    "attachments": {
+      "title": "添付ファイル",
+      "file": "添付ファイル",
+      "download": "{name} をダウンロード"
+    },
     "title": "カレンダー",
     "back_to_email": "メールに戻る",
     "back_to_month": "月表示に戻る",

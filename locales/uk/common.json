@@ -2781,6 +2781,11 @@
     "open_categories": "Відкрити категорії"
   },
   "calendar": {
+    "attachments": {
+      "title": "Вкладення",
+      "file": "Вкладення",
+      "download": "Завантажити {name}"
+    },
     "title": "Календар",
     "back_to_email": "Повернутися до електронної пошти",
     "back_to_month": "Назад до місяця",

@@ -1,5 +1,6 @@
 "use client";
 
+import { EventAttachments } from "@/components/calendar/event-attachments";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -1028,6 +1029,9 @@ export function EventModal({
                 </p>
               </div>
             )}
+
+            {/* Attachments and links */}
+            <EventAttachments links={event.links} />
           </div>
         </div>
 
@@ -1115,6 +1119,9 @@ export function EventModal({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
+
+          {/* What a new event from a message will carry: the link back and the message itself. */}
+          {!event && draft?.links && <EventAttachments links={draft.links} />}
 
           <div>
             <label className="text-sm font-medium mb-1 block">{t("form.location")}</label>

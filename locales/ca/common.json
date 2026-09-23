@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Adjunts",
+      "file": "Adjunt",
+      "download": "Baixa {name}"
+    },
     "title": "Calendari",
     "back_to_email": "Torna al correu",
     "back_to_month": "Torna al mes",

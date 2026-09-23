@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "المرفقات",
+      "file": "مرفق",
+      "download": "تنزيل {name}"
+    },
     "title": "التقويم",
     "back_to_email": "العودة إلى البريد",
     "back_to_month": "العودة إلى الشهر",

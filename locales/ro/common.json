@@ -2781,6 +2781,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Atașamente",
+      "file": "Atașament",
+      "download": "Descarcă {name}"
+    },
     "title": "Calendar",
     "back_to_email": "Înapoi la e-mail",
     "back_to_month": "Înapoi la lună",
