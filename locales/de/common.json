@@ -3544,7 +3544,12 @@
       "select_view": "Ansicht wechseln, aktuell {view}"
     },
     "other_calendars": "Weitere Kalender",
-    "calendar_options": "Optionen für {name}"
+    "calendar_options": "Optionen für {name}",
+    "attachments": {
+      "title": "Anhänge",
+      "file": "Anhang",
+      "download": "{name} herunterladen"
+    }
   },
   "advanced_search": {
     "title": "Erweiterte Suche",

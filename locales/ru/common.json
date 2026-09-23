@@ -3544,7 +3544,12 @@
       "select_view": "Сменить вид, сейчас {view}"
     },
     "other_calendars": "Другие календари",
-    "calendar_options": "Параметры: {name}"
+    "calendar_options": "Параметры: {name}",
+    "attachments": {
+      "title": "Вложения",
+      "file": "Вложение",
+      "download": "Скачать {name}"
+    }
   },
   "advanced_search": {
     "title": "Расширенный поиск",

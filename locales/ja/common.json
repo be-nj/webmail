@@ -3544,7 +3544,12 @@
       "select_view": "表示を切り替え（現在: {view}）"
     },
     "other_calendars": "他のカレンダー",
-    "calendar_options": "{name} のオプション"
+    "calendar_options": "{name} のオプション",
+    "attachments": {
+      "title": "添付ファイル",
+      "file": "添付ファイル",
+      "download": "{name} をダウンロード"
+    }
   },
   "advanced_search": {
     "title": "詳細検索",

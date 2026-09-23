@@ -3544,7 +3544,12 @@
       "select_view": "Nézet váltása, jelenleg {view}"
     },
     "other_calendars": "Egyéb naptárak",
-    "calendar_options": "{name} beállításai"
+    "calendar_options": "{name} beállításai",
+    "attachments": {
+      "title": "Mellékletek",
+      "file": "Melléklet",
+      "download": "{name} letöltése"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Valaki",

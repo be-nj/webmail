@@ -3544,7 +3544,12 @@
       "select_view": "Canvia la vista, actualment {view}"
     },
     "other_calendars": "Altres calendaris",
-    "calendar_options": "Opcions de {name}"
+    "calendar_options": "Opcions de {name}",
+    "attachments": {
+      "title": "Adjunts",
+      "file": "Adjunt",
+      "download": "Baixa {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Algú",

@@ -3544,7 +3544,12 @@
       "select_view": "切换视图，当前为{view}"
     },
     "other_calendars": "其他日历",
-    "calendar_options": "{name} 的选项"
+    "calendar_options": "{name} 的选项",
+    "attachments": {
+      "title": "附件",
+      "file": "附件",
+      "download": "下载 {name}"
+    }
   },
   "advanced_search": {
     "title": "高级搜索",
