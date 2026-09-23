@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Andre kalendere",
     "calendar_options": "Indstillinger for {name}",
+    "attachments": {
+      "title": "Vedhæftninger",
+      "file": "Vedhæftning",
+      "download": "Hent {name}"
+    },
     "search": {
       "title": "Søg i begivenheder",
       "clear": "Ryd søgning",

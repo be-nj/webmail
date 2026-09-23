@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Інші календарі",
     "calendar_options": "Параметри: {name}",
+    "attachments": {
+      "title": "Вкладення",
+      "file": "Вкладення",
+      "download": "Завантажити {name}"
+    },
     "search": {
       "title": "Пошук подій",
       "clear": "Очистити пошук",

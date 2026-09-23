@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "其他日历",
     "calendar_options": "{name} 的选项",
+    "attachments": {
+      "title": "附件",
+      "file": "附件",
+      "download": "下载 {name}"
+    },
     "search": {
       "title": "搜索活动",
       "clear": "清除搜索",

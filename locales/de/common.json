@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Weitere Kalender",
     "calendar_options": "Optionen für {name}",
+    "attachments": {
+      "title": "Anhänge",
+      "file": "Anhang",
+      "download": "{name} herunterladen"
+    },
     "search": {
       "title": "Termine durchsuchen",
       "clear": "Suche löschen",

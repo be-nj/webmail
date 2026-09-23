@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Altres calendaris",
     "calendar_options": "Opcions de {name}",
+    "attachments": {
+      "title": "Adjunts",
+      "file": "Adjunt",
+      "download": "Baixa {name}"
+    },
     "search": {
       "title": "Cerca esdeveniments",
       "clear": "Esborra la cerca",

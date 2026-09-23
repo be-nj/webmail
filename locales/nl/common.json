@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Andere agenda's",
     "calendar_options": "Opties voor {name}",
+    "attachments": {
+      "title": "Bijlagen",
+      "file": "Bijlage",
+      "download": "{name} downloaden"
+    },
     "search": {
       "title": "Afspraken zoeken",
       "clear": "Zoekopdracht wissen",

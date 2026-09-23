@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Další kalendáře",
     "calendar_options": "Možnosti pro {name}",
+    "attachments": {
+      "title": "Přílohy",
+      "file": "Příloha",
+      "download": "Stáhnout {name}"
+    },
     "search": {
       "title": "Hledat události",
       "clear": "Vymazat hledání",

@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Outros calendários",
     "calendar_options": "Opções de {name}",
+    "attachments": {
+      "title": "Anexos",
+      "file": "Anexo",
+      "download": "Transferir {name}"
+    },
     "search": {
       "title": "Pesquisar eventos",
       "clear": "Limpar pesquisa",

@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "다른 캘린더",
     "calendar_options": "{name} 옵션",
+    "attachments": {
+      "title": "첨부 파일",
+      "file": "첨부 파일",
+      "download": "{name} 다운로드"
+    },
     "search": {
       "title": "일정 검색",
       "clear": "검색어 지우기",

@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "تقويمات أخرى",
     "calendar_options": "خيارات {name}",
+    "attachments": {
+      "title": "المرفقات",
+      "file": "مرفق",
+      "download": "تنزيل {name}"
+    },
     "search": {
       "title": "البحث في الأحداث",
       "clear": "مسح البحث",

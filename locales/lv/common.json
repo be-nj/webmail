@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Citi kalendāri",
     "calendar_options": "{name} opcijas",
+    "attachments": {
+      "title": "Pielikumi",
+      "file": "Pielikums",
+      "download": "Lejupielādēt {name}"
+    },
     "search": {
       "title": "Meklēt notikumus",
       "clear": "Notīrīt meklēšanu",

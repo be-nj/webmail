@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Бусад хуанли",
     "calendar_options": "{name}-ийн тохиргоо",
+    "attachments": {
+      "title": "Хавсралтууд",
+      "file": "Хавсралт",
+      "download": "{name} татах"
+    },
     "search": {
       "title": "Үйл явдал хайх",
       "clear": "Хайлтыг арилгах",

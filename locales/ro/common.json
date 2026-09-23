@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Alte calendare",
     "calendar_options": "Opțiuni pentru {name}",
+    "attachments": {
+      "title": "Atașamente",
+      "file": "Atașament",
+      "download": "Descarcă {name}"
+    },
     "search": {
       "title": "Caută evenimente",
       "clear": "Șterge căutarea",

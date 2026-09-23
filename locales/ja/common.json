@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "他のカレンダー",
     "calendar_options": "{name} のオプション",
+    "attachments": {
+      "title": "添付ファイル",
+      "file": "添付ファイル",
+      "download": "{name} をダウンロード"
+    },
     "search": {
       "title": "予定を検索",
       "clear": "検索をクリア",

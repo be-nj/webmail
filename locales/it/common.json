@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Altri calendari",
     "calendar_options": "Opzioni per {name}",
+    "attachments": {
+      "title": "Allegati",
+      "file": "Allegato",
+      "download": "Scarica {name}"
+    },
     "search": {
       "title": "Cerca eventi",
       "clear": "Cancella ricerca",

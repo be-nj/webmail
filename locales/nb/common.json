@@ -4339,6 +4339,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Vedlegg",
+      "file": "Vedlegg",
+      "download": "Last ned {name}"
+    },
     "print": {
       "calendars": "Kalendere: {names}",
       "time_zone": "Tidssone: {zone}",

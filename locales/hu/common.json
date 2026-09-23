@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Egyéb naptárak",
     "calendar_options": "{name} beállításai",
+    "attachments": {
+      "title": "Mellékletek",
+      "file": "Melléklet",
+      "download": "{name} letöltése"
+    },
     "search": {
       "title": "Események keresése",
       "clear": "Keresés törlése",

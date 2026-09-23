@@ -4828,6 +4828,11 @@
     },
     "other_calendars": "יומנים אחרים",
     "calendar_options": "אפשרויות עבור {name}",
+    "attachments": {
+      "title": "קבצים מצורפים",
+      "file": "קובץ מצורף",
+      "download": "הורדת {name}"
+    },
     "search": {
       "title": "חיפוש אירועים",
       "clear": "ניקוי החיפוש",

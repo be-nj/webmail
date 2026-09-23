@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Other calendars",
     "calendar_options": "Options for {name}",
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    },
     "search": {
       "title": "Search events",
       "clear": "Clear search",

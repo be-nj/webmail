@@ -4909,6 +4909,11 @@
     },
     "other_calendars": "Другие календари",
     "calendar_options": "Параметры: {name}",
+    "attachments": {
+      "title": "Вложения",
+      "file": "Вложение",
+      "download": "Скачать {name}"
+    },
     "search": {
       "title": "Поиск событий",
       "clear": "Очистить поиск",
