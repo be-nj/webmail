@@ -3690,7 +3690,12 @@
       "select_view": "Schimbă vizualizarea, acum {view}"
     },
     "other_calendars": "Alte calendare",
-    "calendar_options": "Opțiuni pentru {name}"
+    "calendar_options": "Opțiuni pentru {name}",
+    "attachments": {
+      "title": "Atașamente",
+      "file": "Atașament",
+      "download": "Descarcă {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Cineva",

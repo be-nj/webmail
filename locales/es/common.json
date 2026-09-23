@@ -3690,7 +3690,12 @@
       "select_view": "Cambiar vista, actualmente {view}"
     },
     "other_calendars": "Otros calendarios",
-    "calendar_options": "Opciones de {name}"
+    "calendar_options": "Opciones de {name}",
+    "attachments": {
+      "title": "Adjuntos",
+      "file": "Adjunto",
+      "download": "Descargar {name}"
+    }
   },
   "advanced_search": {
     "title": "Búsqueda avanzada",

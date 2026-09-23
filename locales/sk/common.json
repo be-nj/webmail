@@ -3690,7 +3690,12 @@
       "select_view": "Zmeniť zobrazenie, teraz {view}"
     },
     "other_calendars": "Ďalšie kalendáre",
-    "calendar_options": "Možnosti pre {name}"
+    "calendar_options": "Možnosti pre {name}",
+    "attachments": {
+      "title": "Prílohy",
+      "file": "Príloha",
+      "download": "Stiahnuť {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Niekto",

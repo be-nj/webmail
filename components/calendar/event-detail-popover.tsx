@@ -1,5 +1,6 @@
 "use client";
 
+import { EventAttachments } from "@/components/calendar/event-attachments";
 import { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { createPortal } from "react-dom";
@@ -603,6 +604,9 @@ export function EventDetailPopover({
         )}
 
         <PluginSlot name="calendar-event-detail" className="w-full" extraProps={pluginProps} />
+
+        {/* Attachments and links */}
+        <EventAttachments links={event.links} />
       </div>
 
       {/* Quick Note */}

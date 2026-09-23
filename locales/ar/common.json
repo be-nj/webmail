@@ -3690,7 +3690,12 @@
       "select_view": "تغيير العرض، الحالي: {view}"
     },
     "other_calendars": "تقويمات أخرى",
-    "calendar_options": "خيارات {name}"
+    "calendar_options": "خيارات {name}",
+    "attachments": {
+      "title": "المرفقات",
+      "file": "مرفق",
+      "download": "تنزيل {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "شخص ما",

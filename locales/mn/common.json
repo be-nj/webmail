@@ -3690,7 +3690,12 @@
       "select_view": "Харагдац солих, одоо {view}"
     },
     "other_calendars": "Бусад хуанли",
-    "calendar_options": "{name}-ийн тохиргоо"
+    "calendar_options": "{name}-ийн тохиргоо",
+    "attachments": {
+      "title": "Хавсралтууд",
+      "file": "Хавсралт",
+      "download": "{name} татах"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Хэн нэгэн",
