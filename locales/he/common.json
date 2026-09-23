@@ -3268,6 +3268,11 @@
       "subscribe_title": "הירשם",
       "subscribe_description": "שמור את הלוח שנה הזה בסנכרון אוטומטי כלוח שנה נפרד.",
       "cancel": "בטל"
+    },
+    "attachments": {
+      "title": "קבצים מצורפים",
+      "file": "קובץ מצורף",
+      "download": "הורדת {name}"
     }
   },
   "advanced_search": {

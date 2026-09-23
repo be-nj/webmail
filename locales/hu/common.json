@@ -3344,6 +3344,11 @@
       "due_today": "Ma",
       "due_tomorrow": "Holnap",
       "overdue": "Lejárt"
+    },
+    "attachments": {
+      "title": "Mellékletek",
+      "file": "Melléklet",
+      "download": "{name} letöltése"
     }
   },
   "calendar_event_notifications": {

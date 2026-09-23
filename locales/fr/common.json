@@ -3344,7 +3344,12 @@
       "due_tomorrow": "Échéance demain",
       "overdue": "En retard"
     },
-    "nav_open_menu": "Ouvrir le menu"
+    "nav_open_menu": "Ouvrir le menu",
+    "attachments": {
+      "title": "Pièces jointes",
+      "file": "Pièce jointe",
+      "download": "Télécharger {name}"
+    }
   },
   "advanced_search": {
     "title": "Recherche avancée",

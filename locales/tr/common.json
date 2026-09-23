@@ -3344,7 +3344,12 @@
       "due_tomorrow": "Yarın",
       "overdue": "Gecikmiş"
     },
-    "nav_open_menu": "Menüyü aç"
+    "nav_open_menu": "Menüyü aç",
+    "attachments": {
+      "title": "Ekler",
+      "file": "Ek",
+      "download": "{name} indir"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Birisi",

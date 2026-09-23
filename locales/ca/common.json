@@ -3344,6 +3344,11 @@
       "due_today": "Avui",
       "due_tomorrow": "Demà",
       "overdue": "Vençuda"
+    },
+    "attachments": {
+      "title": "Adjunts",
+      "file": "Adjunt",
+      "download": "Baixa {name}"
     }
   },
   "calendar_event_notifications": {

@@ -3344,7 +3344,12 @@
       "bah": "Bahman",
       "esf": "Esfand"
     },
-    "nav_open_menu": "Відкрити меню"
+    "nav_open_menu": "Відкрити меню",
+    "attachments": {
+      "title": "Вкладення",
+      "file": "Вкладення",
+      "download": "Завантажити {name}"
+    }
   },
   "advanced_search": {
     "title": "Розширений пошук",

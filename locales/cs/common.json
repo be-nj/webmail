@@ -3344,7 +3344,12 @@
       "bah": "Bahman",
       "esf": "Esfand"
     },
-    "nav_open_menu": "Otevřít nabídku"
+    "nav_open_menu": "Otevřít nabídku",
+    "attachments": {
+      "title": "Přílohy",
+      "file": "Příloha",
+      "download": "Stáhnout {name}"
+    }
   },
   "advanced_search": {
     "title": "Pokročilé hledání",

@@ -3344,7 +3344,12 @@
       "bah": "Bahman",
       "esf": "Esfand"
     },
-    "nav_open_menu": "Menü öffnen"
+    "nav_open_menu": "Menü öffnen",
+    "attachments": {
+      "title": "Anhänge",
+      "file": "Anhang",
+      "download": "{name} herunterladen"
+    }
   },
   "advanced_search": {
     "title": "Erweiterte Suche",

@@ -3344,6 +3344,11 @@
       "due_today": "امروز",
       "due_tomorrow": "فردا",
       "overdue": "عقب‌افتاده"
+    },
+    "attachments": {
+      "title": "پیوست‌ها",
+      "file": "پیوست",
+      "download": "دانلود {name}"
     }
   },
   "calendar_event_notifications": {

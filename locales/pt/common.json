@@ -3344,7 +3344,12 @@
       "due_tomorrow": "Vence amanhã",
       "overdue": "Atrasada"
     },
-    "nav_open_menu": "Abrir menu"
+    "nav_open_menu": "Abrir menu",
+    "attachments": {
+      "title": "Anexos",
+      "file": "Anexo",
+      "download": "Transferir {name}"
+    }
   },
   "advanced_search": {
     "title": "Pesquisa avançada",

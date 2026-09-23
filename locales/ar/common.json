@@ -3344,6 +3344,11 @@
       "due_today": "اليوم",
       "due_tomorrow": "غدًا",
       "overdue": "متأخرة"
+    },
+    "attachments": {
+      "title": "المرفقات",
+      "file": "مرفق",
+      "download": "تنزيل {name}"
     }
   },
   "calendar_event_notifications": {

@@ -3344,6 +3344,11 @@
       "due_today": "Өнөөдөр",
       "due_tomorrow": "Маргааш",
       "overdue": "Хугацаа хэтэрсэн"
+    },
+    "attachments": {
+      "title": "Хавсралтууд",
+      "file": "Хавсралт",
+      "download": "{name} татах"
     }
   },
   "calendar_event_notifications": {

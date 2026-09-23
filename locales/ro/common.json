@@ -3344,6 +3344,11 @@
       "due_today": "Astăzi",
       "due_tomorrow": "Mâine",
       "overdue": "Restant"
+    },
+    "attachments": {
+      "title": "Atașamente",
+      "file": "Atașament",
+      "download": "Descarcă {name}"
     }
   },
   "calendar_event_notifications": {

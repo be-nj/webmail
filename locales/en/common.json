@@ -3344,6 +3344,11 @@
       "due_today": "Today",
       "due_tomorrow": "Tomorrow",
       "overdue": "Overdue"
+    },
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
     }
   },
   "calendar_event_notifications": {

@@ -3344,6 +3344,11 @@
       "due_today": "Dnes",
       "due_tomorrow": "Zajtra",
       "overdue": "Po termíne"
+    },
+    "attachments": {
+      "title": "Prílohy",
+      "file": "Príloha",
+      "download": "Stiahnuť {name}"
     }
   },
   "calendar_event_notifications": {

@@ -3344,7 +3344,12 @@
       "due_tomorrow": "I morgen",
       "overdue": "Forfalden"
     },
-    "nav_open_menu": "Åbn menu"
+    "nav_open_menu": "Åbn menu",
+    "attachments": {
+      "title": "Vedhæftninger",
+      "file": "Vedhæftning",
+      "download": "Hent {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Nogen",
