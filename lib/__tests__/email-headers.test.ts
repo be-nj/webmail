@@ -9,6 +9,7 @@ import {
   extractListHeaders,
   isAuthenticationSpoofed,
   getSenderVerification,
+  brandIndicatorDomain,
 } from '../email-headers';
 
 describe('parseAuthenticationResults', () => {
@@ -497,5 +498,19 @@ describe('DMARC parsing for BIMI', () => {
   it('does not take header.from from a later result', () => {
     const result = parseAuthenticationResults('dmarc=pass; dkim=pass header.d=x.example header.from=brand.example');
     expect(result.dmarc?.domain).toBeUndefined();
+  });
+});
+
+describe('envelope and forged-header tricks against the BIMI gate', () => {
+  it('ignores dmarc=pass hidden in the envelope address of our own header', () => {
+    const header = 'mx.example; spf=pass smtp.mailfrom="dmarc=pass header.from=paypal.de x"@evil.example; dmarc=fail header.from=paypal.de policy.dmarc=reject';
+    const auth = parseAuthenticationResults([header]);
+    expect(auth.dmarc?.result).toBe('fail');
+    expect(brandIndicatorDomain({ from: [{ email: 'service@paypal.de' }], authenticationResults: auth })).toBeUndefined();
+  });
+
+  it('does not let a lower header supply DMARC when ours has none', () => {
+    const auth = parseAuthenticationResults(['mx.example; spf=none smtp.mailfrom=bank.example', 'spoofer.example; dmarc=pass header.from=bank.example']);
+    expect(brandIndicatorDomain({ from: [{ email: 'a@bank.example' }], authenticationResults: auth })).toBeUndefined();
   });
 });
