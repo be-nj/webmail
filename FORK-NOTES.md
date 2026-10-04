@@ -1,6 +1,6 @@
 # Fork-Notizen
 
-Stand: 24.09.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
+Stand: 04.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
 upstream (`bulwarkmail/webmail`). Sie beantwortet: *Was ist in diesem Fork
 eigen?* und *Was ist noch offen?*
 
@@ -12,30 +12,35 @@ Begründung für „Logos nur aus geprüften Marken, kein Favicon“ in
 
 ## 1. Stand
 
-Arbeitszweig: **`benj/on-1.10.0`** = Upstream-Tag `1.10.0` plus die Commits
+Arbeitszweig: **`benj/on-1.12.0`** = Upstream-Tag `1.12.0` plus die Commits
 unten. Live auf `webmail.beckm4nn.de` (Komodo-Stack `stalwart`, Dienst
 `bulwark`), Image-Tag = kurzer Commit-Hash.
 
-Der alte Zweig `fix/draft-recipient-roundtrip` (1.9.2) ist überholt. Sein
-dritter Commit `6dcbd24f` (Suche beim Ordnerwechsel verlassen) ist durch die
-upstream-Einstellung `clearSearchOnFolderChange` ersetzt, die hier
-standardmäßig an ist.
+Vorgänger `benj/on-1.10.0` bleibt als Referenz liegen. Beim Rebase auf 1.12.0
+entfiel der eigene DMARC-Parser (`038059c4`): upstream 1.11.1 liest DMARC
+ebenfalls nur aus dem obersten Authentication-Results und zusätzlich nur am
+Anfang eines Eintrags, was auch den `dmarc=pass` im Envelope-Absender abfängt.
+Der Fork behält nur die Tests dazu.
 
 ## 2. Was der Fork gegenüber upstream enthält
 
 | Commit | Was |
 |---|---|
-| `4105b027`, `5247b96e` | Empfänger-Fixes im Composer (keine kaputten Fragmente in Entwürfen, keine Nicht-Adressen) |
-| `3b50e628` | deren Übersetzungen für `nb` und `zh-TW` |
-| `2a7c7dca` | `clearSearchOnFolderChange` standardmäßig an |
-| `520a9ba4` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |
-| `0ec72262`, `038059c4`, `56da4ba2` | BIMI: Route `/api/bimi`, DMARC nur aus dem obersten Authentication-Results, VMC/CMC-Prüfung gegen DigiCert/GlobalSign |
-| `115f5ab3` | Logos nur aus geprüften Marken, nie für Freemail, **kein Favicon mehr**; Trusted-Sender-Badge und Warnung bei gefälschter vertrauter Adresse |
-| `c2c044c4` | Pfad-Präfix-Bug: eine Ordner-ID wie `de` in `/mail/folder/de` galt als Mount-Präfix und legte Branding, Logos und JMAP lahm |
-| `1693767b` | Handschlag statt Haken für Trusted Senders, Tooltip, Chip im Authentifizierungs-Block |
-| `228e41c4` | BIMI-Logo ohne Zertifikat nur für Trusted Senders |
-| `3315ebd5` | Versionsparameter gegen alte Browser-Cache-Antworten; vorübergehende VMC-Fehler nicht als „ungeprüft“ cachen |
-| `3e1752e9` | Termin aus Mail erstellen: Betreff als Titel, Datum leer mit Fokus, Mail als Link und (bis 256 KB) als eingebettete `.eml` |
+| `66851b5a`, `20f704d7` | Empfänger-Fixes im Composer (keine kaputten Fragmente in Entwürfen, keine Nicht-Adressen) |
+| `db0b314e` | deren Übersetzungen für `nb` und `zh-TW` |
+| `3d9cc8ea` | `clearSearchOnFolderChange` standardmäßig an |
+| `cc12c782` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |
+| `087cfb41`, `98a4e553`, `4ce27dfe` | BIMI: Route `/api/bimi`, Auth-Header in Listenabfragen, Tests gegen gefälschte DMARC-Ergebnisse, VMC/CMC-Prüfung gegen DigiCert/GlobalSign |
+| `da8f2f66` | Logos nur aus geprüften Marken, nie für Freemail, **kein Favicon**; Trusted-Sender-Badge und Warnung bei gefälschter vertrauter Adresse |
+| `04b5c487` | Pfad-Präfix-Bug: eine Ordner-ID wie `de` in `/mail/folder/de` galt als Mount-Präfix |
+| `4ec28465` | Handschlag-im-Herz statt Haken für Trusted Senders (Tabler hat keinen schlichten Handschlag), Tooltip, Chip im Authentifizierungs-Block |
+| `fcc54961` | BIMI-Logo ohne Zertifikat nur für Trusted Senders |
+| `4c9a0a4f` | Versionsparameter gegen alte Browser-Cache-Antworten; vorübergehende VMC-Fehler nicht als „ungeprüft“ cachen |
+| `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
+
+In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
+dort sind Markenlogo und Schalter ausgeblendet, wie upstream es mit dem Favicon
+macht.
 
 ## 3. Wissenswertes
 
@@ -47,6 +52,10 @@ standardmäßig an ist.
 - **Entrust-Marken** (z. B. Lieferando) bleiben ungeprüft: Die Root ist nicht
   mitgeliefert, Apple misstraut Entrust-Zertifikaten ab 15.11.2024, und
   Lieferandos Zertifikat ist seit 12.09.2025 abgelaufen.
+- **Upstream-Eigenheiten seit 1.12:** Orte in Terminen öffnen fest
+  **Google Maps** (`lib/event-links.ts`, `mapsUrl`); Bestätigungscodes aus
+  Mails erscheinen als Kopier-Chip auch in der Liste, auch bei Spam und
+  Mails mit gescheiterter Prüfung (abschaltbar: „Show Verification Codes“).
 - **Neue Container ohne Volume** stehen im Setup-Modus (503 auf allen
   API-Routen). Für lokale Smoke-Tests `-e JMAP_SERVER_URL=https://mail.example.com`.
 
