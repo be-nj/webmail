@@ -517,3 +517,17 @@ describe('hasAlignedDmarcPass', () => {
     expect(hasAlignedDmarcPass({ authenticationResults: { dmarc: { result: 'pass', domain: 'brand.example' } } })).toBe(false);
   });
 });
+
+describe('envelope and forged-header tricks against the BIMI gate', () => {
+  it('ignores dmarc=pass hidden in the envelope address of our own header', () => {
+    const header = 'mx.example; spf=pass smtp.mailfrom="dmarc=pass header.from=paypal.de x"@evil.example; dmarc=fail header.from=paypal.de policy.dmarc=reject';
+    const auth = parseAuthenticationResults([header]);
+    expect(auth.dmarc?.result).toBe('fail');
+    expect(hasAlignedDmarcPass({ from: [{ email: 'service@paypal.de' }], authenticationResults: auth })).toBe(false);
+  });
+
+  it('does not let a lower header supply DMARC when ours has none', () => {
+    const auth = parseAuthenticationResults(['mx.example; spf=none smtp.mailfrom=bank.example', 'spoofer.example; dmarc=pass header.from=bank.example']);
+    expect(hasAlignedDmarcPass({ from: [{ email: 'a@bank.example' }], authenticationResults: auth })).toBe(false);
+  });
+});

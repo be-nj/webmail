@@ -48,13 +48,21 @@ describe('list rows carry the DMARC verdict', () => {
                 'forged.example; dmarc=fail header.from=brand.example',
               ],
             },
+            {
+              id: 'e3', threadId: 't3', mailboxIds: { mb1: true }, keywords: {}, receivedAt: '2026-09-01T00:00:00Z',
+              from: [{ email: 'bank@bank.example' }],
+              [AUTH]: [
+                'mx.test; spf=none smtp.mailfrom=bank.example',
+                'spoofer.example; dmarc=pass header.from=bank.example',
+              ],
+            },
             { id: 'e2', threadId: 't2', mailboxIds: { mb1: true }, keywords: {}, receivedAt: '2026-09-01T00:00:00Z', [AUTH]: [] },
           ],
         }, '0'],
       ],
     }));
 
-    const emails = await client.getSomeEmails(['e1', 'e2']);
+    const emails = await client.getSomeEmails(['e1', 'e2', 'e3']);
 
     const request = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
     expect(request.methodCalls[0][1].properties).toContain(AUTH);
@@ -62,6 +70,9 @@ describe('list rows carry the DMARC verdict', () => {
     const e1 = emails.find((e) => e.id === 'e1')!;
     expect(e1.authenticationResults?.dmarc).toEqual({ result: 'pass', domain: 'brand.example', policy: 'reject' });
     expect(e1).not.toHaveProperty(AUTH);
+
+    // A forged header below ours can't supply the DMARC result ours lacks.
+    expect(emails.find((e) => e.id === 'e3')!.authenticationResults?.dmarc).toBeUndefined();
 
     const e2 = emails.find((e) => e.id === 'e2')!;
     expect(e2.authenticationResults).toBeUndefined();
