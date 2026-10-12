@@ -31,6 +31,9 @@ interface EmailHoverActionsProps {
   spamApplicable?: boolean;
   /** Role of the folder the row is listed in; plugin buttons can be limited to some. */
   mailboxRole?: string | null;
+  // Mountain View: cover only the row's first, 40px line, so a row with
+  // attachment chips under it keeps the actions beside the subject.
+  firstLineOnly?: boolean;
 }
 
 const ACTION_CONFIG: Record<HoverAction, {
@@ -107,6 +110,7 @@ export function EmailHoverActions({
   onSetTag,
   onMarkAsSpam,
   isInJunk = false,
+  firstLineOnly = false,
   onUndoSpam,
   spamApplicable = true,
   mailboxRole = null,
@@ -323,7 +327,7 @@ export function EmailHoverActions({
 
   return (
     <div
-      className={cn("absolute end-0 top-0 bottom-0 z-10 items-center", visibilityClass)}
+      className={cn("absolute end-0 top-0 z-10 items-center", firstLineOnly ? "h-10" : "bottom-0", visibilityClass)}
     >
       <div
         className={cn(
