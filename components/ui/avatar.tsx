@@ -285,7 +285,9 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
       // name, and "Wolf, Daniela" is surname-first, so it reads "DW".
       let cleaned = name.replace(/[([{][^)\]}]*[)\]}]/g, " ").trim();
       const commaParts = cleaned.split(",");
-      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part))) {
+      // A legal form after the comma ("Acme, Inc.") keeps a company name in order.
+      const legalForm = /^\s*(inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?\s*$/i;
+      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part)) && !legalForm.test(commaParts[1])) {
         cleaned = `${commaParts[1]} ${commaParts[0]}`;
       }
       const words = cleaned
