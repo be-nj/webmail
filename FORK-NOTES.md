@@ -39,6 +39,7 @@ Hashes mit derselben Betreffzeile.
 | `3d9cc8ea` | `clearSearchOnFolderChange` standardmäßig an |
 | `cc12c782` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |
 | (1.14.2) | dieselbe Regel für Bilder im zitierten Original beim Antworten (neu in upstream 1.13) |
+| (1.14.2) | Trusted Sender ohne SPF- und DKIM-Pass gilt als nicht vertraut und bekommt die Warnung |
 | `087cfb41`, `98a4e553`, `4ce27dfe` | BIMI: Route `/api/bimi`, Auth-Header in Listenabfragen, Tests gegen gefälschte DMARC-Ergebnisse, VMC/CMC-Prüfung gegen DigiCert/GlobalSign |
 | `da8f2f66` | Logos nur aus geprüften Marken, nie für Freemail, **kein Favicon**; Trusted-Sender-Badge und Warnung bei gefälschter vertrauter Adresse |
 | `04b5c487` | Pfad-Präfix-Bug: eine Ordner-ID wie `de` in `/mail/folder/de` galt als Mount-Präfix |
@@ -68,10 +69,11 @@ macht.
   Mails mit gescheiterter Prüfung (abschaltbar: „Show Verification Codes“).
 - **Upstream-Absenderprüfung seit 1.13** (`getSenderVerification`): Hinweis
   „Absender nicht bestätigt“, wenn weder SPF noch DKIM bestehen, und
-  „Absenderprüfung fehlgeschlagen“ bei DMARC-Fail. Er steht neben der
-  fork-eigenen Impersonation-Warnung, die nur für Trusted Senders gilt. Eine
-  vertraute Adresse ohne SPF/DKIM-Pass („nicht bestätigt“) zählt im Fork
-  weiterhin als vertraut, weil `isAuthenticationSpoofed` dafür nicht anschlägt.
+  „Absenderprüfung fehlgeschlagen“ bei DMARC-Fail. Der Fork nutzt sie für
+  Trusted Senders mit (`failsSenderCheck`): Eine vertraute Adresse auf einer
+  Nachricht ohne SPF- und DKIM-Pass bekommt die Impersonation-Warnung und
+  lädt keine externen Inhalte. Ohne Authentication-Results bleibt das
+  Vertrauen.
 - **Neue Container ohne Volume** stehen im Setup-Modus (503 auf allen
   API-Routen). Für lokale Smoke-Tests `-e JMAP_SERVER_URL=https://mail.example.com`.
 
