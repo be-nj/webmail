@@ -295,6 +295,14 @@ export function isFilterEmpty(filters: SearchFilters): boolean {
   );
 }
 
+/**
+ * Whether the search is starred mail and nothing else: what Mountain View's
+ * "Starred" row runs when there is no cross-account starred view to open.
+ */
+export function isStarredOnlySearch(query: string, filters: SearchFilters): boolean {
+  return !query.trim() && filters.isStarred === true && isFilterEmpty({ ...filters, isStarred: null });
+}
+
 export function activeFilterCount(filters: SearchFilters): number {
   let count = 0;
   if (filters.from) count++;

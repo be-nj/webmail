@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   buildJMAPFilter,
   isFilterEmpty,
+  isStarredOnlySearch,
   activeFilterCount,
   splitSearchText,
   textConditions,
@@ -506,6 +507,26 @@ describe('isFilterEmpty', () => {
 // ---------------------------------------------------------------------------
 // activeFilterCount
 // ---------------------------------------------------------------------------
+describe('isStarredOnlySearch', () => {
+  const starred = { ...DEFAULT_SEARCH_FILTERS, isStarred: true };
+
+  it('is true for starred mail and nothing else', () => {
+    expect(isStarredOnlySearch('', starred)).toBe(true);
+    expect(isStarredOnlySearch('  ', starred)).toBe(true);
+  });
+
+  it('is false with a text query or another filter', () => {
+    expect(isStarredOnlySearch('invoice', starred)).toBe(false);
+    expect(isStarredOnlySearch('', { ...starred, from: 'bob' })).toBe(false);
+    expect(isStarredOnlySearch('', { ...starred, isUnread: true })).toBe(false);
+  });
+
+  it('is false without the starred filter', () => {
+    expect(isStarredOnlySearch('', DEFAULT_SEARCH_FILTERS)).toBe(false);
+    expect(isStarredOnlySearch('', { ...DEFAULT_SEARCH_FILTERS, isStarred: false })).toBe(false);
+  });
+});
+
 describe('activeFilterCount', () => {
   it('returns 0 for default filters', () => {
     expect(activeFilterCount(DEFAULT_SEARCH_FILTERS)).toBe(0);

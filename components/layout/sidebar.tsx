@@ -71,6 +71,7 @@ import { useVacationStore } from "@/stores/vacation-store";
 import { useSettingsStore, getKeywordVisibility } from "@/stores/settings-store";
 import { usePolicyStore } from "@/stores/policy-store";
 import { useEmailStore } from "@/stores/email-store";
+import { isStarredOnlySearch } from "@/lib/jmap/search-utils";
 import { toast } from "@/stores/toast-store";
 import { debug } from "@/lib/debug";
 import { AccountSwitcher } from "./account-switcher";
@@ -1145,6 +1146,12 @@ function SidebarImpl({
   // it is: it shows icons only, and hiding half of them behind a word would
   // leave a control with no room to put it.
   const mvFlat = mvShell && !isCollapsed;
+  // Without a cross-account starred view, the Starred row runs a search for
+  // starred mail and the open folder stays the Inbox. Show the row as the
+  // active one then, and the Inbox not.
+  const starredSearchActive = useEmailStore((s) => isStarredOnlySearch(s.searchQuery, s.searchFilters));
+  const mvStarredSelected = !selectedKeyword
+    && (selectedMailbox === CROSS_VIEW_IDS.starred || (mvFlat && !!onOpenStarred && starredSearchActive));
   const isPrimaryFolder = (node: MailboxNode) =>
     node.role === 'inbox' || node.role === 'sent' || node.role === 'drafts';
   // Everywhere else the folders the user made sit in a "Your folders" section
@@ -1733,7 +1740,7 @@ function SidebarImpl({
                       <Fragment key={node.id}>
                         <MailboxTreeItem
                           node={node}
-                          selectedMailbox={selectedKeyword ? "" : selectedMailbox}
+                          selectedMailbox={selectedKeyword || mvStarredSelected ? "" : selectedMailbox}
                           expandedFolders={expandedFolders}
                           onMailboxSelect={onMailboxSelect}
                           onToggleExpand={handleToggleExpand}
@@ -1747,11 +1754,11 @@ function SidebarImpl({
                         {mvFlat && node.role === 'inbox' && onOpenStarred && (
                           <SidebarRow
                             // Drawn like the "All starred" row it stands in for.
-                            icon={<Star className={getIconClass(!selectedKeyword && selectedMailbox === CROSS_VIEW_IDS.starred, false, colorfulSidebarIcons)} />}
+                            icon={<Star className={getIconClass(mvStarredSelected, false, colorfulSidebarIcons)} />}
                             label={t("mailboxes.starred")}
                             testName="mv-starred"
                             depth={0}
-                            isSelected={!selectedKeyword && selectedMailbox === CROSS_VIEW_IDS.starred}
+                            isSelected={mvStarredSelected}
                             onClick={onOpenStarred}
                             isCollapsed={false}
                           />
