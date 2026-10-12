@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getLocaleDirection } from "@/i18n/direction";
-import { Geist, Geist_Mono, Hanken_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono, Hanken_Grotesk, Roboto } from "next/font/google";
 import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
@@ -40,6 +40,14 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// The app's UI family (fork choice), self-hosted like the others. Scripts
+// Roboto does not cover fall through to the system stack in globals.css.
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin", "latin-ext", "cyrillic", "greek", "vietnamese"],
+  display: "swap",
 });
 
 // The "Flat fields" theme's family. Not preloaded and no metric-adjusted
@@ -318,7 +326,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${hankenGrotesk.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${hankenGrotesk.variable} ${roboto.variable} antialiased`}
       >
         <ServiceWorkerRegistration />
         {!themeColorConfigured && <ThemeColorSync />}
