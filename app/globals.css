@@ -8,6 +8,7 @@
    typography.fontSans (compiled to --font-sans on :root) restyles both. */
 @theme {
   --font-sans:
+    var(--font-roboto),
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
