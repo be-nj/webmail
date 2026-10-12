@@ -47,6 +47,7 @@ Hashes mit derselben Betreffzeile.
 | `fcc54961` | BIMI-Logo ohne Zertifikat nur für Trusted Senders |
 | `4c9a0a4f` | Versionsparameter gegen alte Browser-Cache-Antworten; vorübergehende VMC-Fehler nicht als „ungeprüft“ cachen |
 | (1.14.2) | BIMI-Logo und Trust-Badge auch auf den eingeklappten Nachrichten in Mountain View |
+| (1.14.2) | Mountain View: Zeilen mit Anhang-Chips (Checkbox/Stern/Hover-Aktionen auf Zeile 1, Chips unter dem Betreff), Suchfeld bündig mit der Inhaltskarte, Handy-Avatar oben |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
