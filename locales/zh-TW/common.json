@@ -1195,6 +1195,12 @@
         "default": "預設",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "清單列",
+        "description": "Mountain View：像 Gmail 一樣主旨與預覽在同一行，或預覽獨立一行",
+        "two": "兩行",
+        "one": "一行"
+      },
       "animations": {
         "label": "啟用動畫",
         "description": "顯示平順的轉場與效果"

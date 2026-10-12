@@ -1195,6 +1195,12 @@
         "default": "پیش‌فرض",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "ردیف‌های فهرست",
+        "description": "Mountain View: موضوع و پیش‌نمایش در یک خط مانند Gmail، یا پیش‌نمایش در خط جداگانه",
+        "two": "دو خط",
+        "one": "یک خط"
+      },
       "animations": {
         "label": "فعال کردن انیمیشن‌ها",
         "description": "نمایش transitions و افکت‌های نرم"

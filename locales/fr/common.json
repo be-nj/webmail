@@ -1192,6 +1192,12 @@
         "default": "Par défaut",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Lignes de la liste",
+        "description": "Mountain View : objet et aperçu sur une ligne comme dans Gmail, ou l'aperçu sur sa propre ligne",
+        "two": "Deux lignes",
+        "one": "Une ligne"
+      },
       "animations": {
         "label": "Activer les animations",
         "description": "Afficher les transitions et effets fluides"

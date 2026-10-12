@@ -1195,6 +1195,12 @@
         "default": "Default",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "List rows",
+        "description": "Mountain View: subject and preview on one line like Gmail, or the preview on its own line",
+        "two": "Two lines",
+        "one": "One line"
+      },
       "animations": {
         "label": "Enable Animations",
         "description": "Show smooth transitions and effects"

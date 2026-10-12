@@ -1195,6 +1195,12 @@
         "default": "Standard",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Listerader",
+        "description": "Mountain View: emne og forhåndsvisning på én linje som i Gmail, eller forhåndsvisningen på egen linje",
+        "two": "To linjer",
+        "one": "Én linje"
+      },
       "animations": {
         "label": "Aktiver animasjoner",
         "description": "Vis jevne overganger og effekter"

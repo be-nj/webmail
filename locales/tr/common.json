@@ -1192,6 +1192,12 @@
         "default": "Varsayılan",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Liste satırları",
+        "description": "Mountain View: konu ve önizleme Gmail'deki gibi tek satırda ya da önizleme ayrı bir satırda",
+        "two": "İki satır",
+        "one": "Tek satır"
+      },
       "animations": {
         "label": "Animasyonları Etkinleştir",
         "description": "Akıcı geçişler ve efektler göster"

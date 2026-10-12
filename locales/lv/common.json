@@ -1192,6 +1192,12 @@
         "default": "Noklusējuma",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Saraksta rindas",
+        "description": "Mountain View: temats un priekšskatījums vienā rindā kā Gmail, vai priekšskatījums atsevišķā rindā",
+        "two": "Divas rindas",
+        "one": "Viena rinda"
+      },
       "animations": {
         "label": "Iespējot animācijas",
         "description": "Rādīt plūstošas pārejas un efektus"

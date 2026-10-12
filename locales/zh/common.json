@@ -1192,6 +1192,12 @@
         "default": "默认",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "列表行",
+        "description": "Mountain View：像 Gmail 一样主题和预览在同一行，或预览单独一行",
+        "two": "两行",
+        "one": "一行"
+      },
       "animations": {
         "label": "启用动画",
         "description": "显示平滑的过渡和效果"
