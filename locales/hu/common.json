@@ -1160,6 +1160,12 @@
         "default": "Alapértelmezett",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Listasorok",
+        "description": "Mountain View: tárgy és előnézet egy sorban, mint a Gmailben, vagy az előnézet külön sorban",
+        "two": "Két sor",
+        "one": "Egy sor"
+      },
       "animations": {
         "label": "Animációk engedélyezése",
         "description": "Simább átmenetek és effektek megjelenítése"

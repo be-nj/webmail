@@ -1160,6 +1160,12 @@
         "default": "Implicit",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Rândurile listei",
+        "description": "Mountain View: subiectul și previzualizarea pe un rând ca în Gmail sau previzualizarea pe un rând separat",
+        "two": "Două rânduri",
+        "one": "Un rând"
+      },
       "animations": {
         "label": "Activați animațiile",
         "description": "Prezentați tranziții și efecte fluide"

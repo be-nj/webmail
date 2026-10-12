@@ -1157,6 +1157,12 @@
         "default": "Standard",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Listenzeilen",
+        "description": "Mountain View: Betreff und Vorschau in einer Zeile wie bei Gmail oder die Vorschau in eigener Zeile darunter",
+        "two": "Zweizeilig",
+        "one": "Einzeilig"
+      },
       "animations": {
         "label": "Animationen aktivieren",
         "description": "Weiche Übergänge und Effekte anzeigen"

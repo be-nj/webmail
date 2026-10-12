@@ -1122,6 +1122,12 @@
         "default": "ברירת מחדל",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "שורות הרשימה",
+        "description": "Mountain View: נושא ותצוגה מקדימה בשורה אחת כמו ב-Gmail, או התצוגה המקדימה בשורה נפרדת",
+        "two": "שתי שורות",
+        "one": "שורה אחת"
+      },
       "animations": {
         "label": "הפעל אנימציות",
         "description": "הצג מעברים ואפקטים חלקים"

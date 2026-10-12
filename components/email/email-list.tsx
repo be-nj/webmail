@@ -386,10 +386,16 @@ export function EmailList({
   useEffect(() => () => setListRows(null), [setListRows]);
 
   // The virtualizer's guesses follow the rows' shape (see useListRowShape).
+  const mvTwoLines = useSettingsStore((state) => state.interfaceLayout === 'mountain-view' && state.mvRowLines === 'two') && isFocusedMailLayout;
 
   const estimateSize = useCallback((index: number) => {
     if (isFocusedMailLayout) {
-      return { 'extra-compact': 28, compact: 40, regular: 56, comfortable: 64 }[density];
+      const base = { 'extra-compact': 28, compact: 40, regular: 56, comfortable: 64 }[density];
+      // Mountain View's two-line rows put the preview on a line of its own.
+      const latestPreview = threadGroups[index]?.latestEmail;
+      const previewLine = mvTwoLines && showPreview && !!latestPreview
+        && (!!cleanPreview(latestPreview.preview) || !!latestPreview.searchSnippet?.preview);
+      return base + (previewLine ? 18 : 0);
     }
     // Rows the list has not measured yet are placed by this guess, and each
     // one it gets wrong shifts the list when it is measured on the way back
@@ -406,7 +412,7 @@ export function EmailList({
     const hasCode = !!latest && showVerificationCodes && !!listVerificationCode(latest);
     if (latest && (hasCode || (onOpenAttachment && listRowShowsChips(latest, loadAttachments)))) size += 28;
     return size;
-  }, [density, isFocusedMailLayout, showPreview, showVerificationCodes, threadGroups, onOpenAttachment, loadAttachments]);
+  }, [density, isFocusedMailLayout, mvTwoLines, showPreview, showVerificationCodes, threadGroups, onOpenAttachment, loadAttachments]);
 
   // Stable per list, so the virtualizer does not rebuild every row's
   // measurement on each scroll render.

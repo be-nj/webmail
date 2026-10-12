@@ -1157,6 +1157,12 @@
         "default": "Výchozí",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Řádky seznamu",
+        "description": "Mountain View: předmět a náhled na jednom řádku jako v Gmailu, nebo náhled na vlastním řádku",
+        "two": "Dva řádky",
+        "one": "Jeden řádek"
+      },
       "animations": {
         "label": "Povolit animace",
         "description": "Zobrazovat plynulé přechody a efekty"

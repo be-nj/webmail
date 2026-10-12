@@ -1157,6 +1157,12 @@
         "default": "Standaard",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Lijstregels",
+        "description": "Mountain View: onderwerp en voorbeeld op één regel zoals in Gmail, of het voorbeeld op een eigen regel",
+        "two": "Twee regels",
+        "one": "Eén regel"
+      },
       "animations": {
         "label": "Animaties inschakelen",
         "description": "Vloeiende overgangen en effecten tonen"

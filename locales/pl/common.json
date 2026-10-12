@@ -1157,6 +1157,12 @@
         "default": "Domyślny",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Wiersze listy",
+        "description": "Mountain View: temat i podgląd w jednym wierszu jak w Gmailu albo podgląd w osobnym wierszu",
+        "two": "Dwa wiersze",
+        "one": "Jeden wiersz"
+      },
       "animations": {
         "label": "Włącz animacje",
         "description": "Pokazuj płynne przejścia i efekty"

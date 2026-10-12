@@ -1160,6 +1160,12 @@
         "default": "Predvolené",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Riadky zoznamu",
+        "description": "Mountain View: predmet a náhľad na jednom riadku ako v Gmaili, alebo náhľad na samostatnom riadku",
+        "two": "Dva riadky",
+        "one": "Jeden riadok"
+      },
       "animations": {
         "label": "Povoliť animácie",
         "description": "Zobrazovať plynulé prechody a efekty"
