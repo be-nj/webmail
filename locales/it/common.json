@@ -1138,6 +1138,12 @@
         "default": "Predefinito",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Righe dell'elenco",
+        "description": "Mountain View: oggetto e anteprima su una riga come in Gmail, oppure l'anteprima su una riga propria",
+        "two": "Due righe",
+        "one": "Una riga"
+      },
       "animations": {
         "label": "Abilita animazioni",
         "description": "Mostra transizioni ed effetti fluidi"

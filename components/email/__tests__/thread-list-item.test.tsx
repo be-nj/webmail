@@ -515,9 +515,17 @@ describe('ThreadListItem Mountain View desktop row', () => {
     useEmailStore.setState({ selectedEmailKeys: new Set<string>(), selectedMailbox: 'inbox' });
   });
 
-  it('runs the snippet on from the subject after a dash', () => {
+  it('runs the snippet on from the subject after a dash on one-line rows', () => {
+    useSettingsStore.setState({ mvRowLines: 'one' });
     const { container } = renderRow(makeEmail({ preview: 'See you there' }));
     expect(container.textContent).toContain('Test Subject - See you there');
+  });
+
+  it('puts the snippet on a line of its own on two-line rows', () => {
+    useSettingsStore.setState({ mvRowLines: 'two' });
+    const { container } = renderRow(makeEmail({ preview: 'See you there' }));
+    expect(container.textContent).not.toContain('Test Subject - See you there');
+    expect(screen.getByText('See you there').textContent).toBe('See you there');
   });
 
   it('counts a thread after the names instead of in a pill, and opens it without unfolding', () => {

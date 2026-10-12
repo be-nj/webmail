@@ -1138,6 +1138,12 @@
         "default": "По умолчанию",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Строки списка",
+        "description": "Mountain View: тема и предпросмотр в одной строке, как в Gmail, или предпросмотр в отдельной строке",
+        "two": "Две строки",
+        "one": "Одна строка"
+      },
       "animations": {
         "label": "Включить анимации",
         "description": "Показывать плавные переходы и эффекты"

@@ -1141,6 +1141,12 @@
         "default": "Predeterminat",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Files de la llista",
+        "description": "Mountain View: assumpte i previsualització en una línia com a Gmail, o la previsualització en una línia pròpia",
+        "two": "Dues línies",
+        "one": "Una línia"
+      },
       "animations": {
         "label": "Activa les animacions",
         "description": "Mostra transicions i efectes suaus"

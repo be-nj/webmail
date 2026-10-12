@@ -1138,6 +1138,12 @@
         "default": "デフォルト",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "リストの行",
+        "description": "Mountain View: Gmail のように件名とプレビューを 1 行に表示、またはプレビューを別の行に表示",
+        "two": "2 行",
+        "one": "1 行"
+      },
       "animations": {
         "label": "アニメーションを有効にする",
         "description": "スムーズな遷移とエフェクトを表示"

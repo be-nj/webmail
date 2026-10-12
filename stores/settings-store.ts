@@ -192,6 +192,8 @@ export type AttachmentPosition = 'beside-sender' | 'below-header';
 export type ToolbarPosition = 'top' | 'below-subject';
 export type ArchiveMode = 'single' | 'year' | 'month';
 export type MailLayout = 'split' | 'focus' | 'horizontal';
+/** Mountain View's list rows: Gmail's single line, or the preview on a line of its own under the subject. */
+export type MvRowLines = 'one' | 'two';
 
 /**
  * The mail layout the mail view actually uses.
@@ -429,6 +431,7 @@ interface SettingsState {
   showPreview: boolean;
   showVerificationCodes: boolean; // Offer the one-time code of a sign-in mail as a copy chip in the list and the reader
   mailLayout: MailLayout;
+  mvRowLines: MvRowLines;
   emailsPerPage: number;
   externalContentPolicy: ExternalContentPolicy;
   messageSpacing: MessageSpacing; // Gutter around the message body in the reader
@@ -697,6 +700,8 @@ const DEFAULT_SETTINGS = {
   showPreview: true,
   showVerificationCodes: true,
   mailLayout: 'split' as MailLayout,
+  // Fork: two lines, so subject and preview do not run into each other.
+  mvRowLines: 'two' as MvRowLines,
   emailsPerPage: 50,
   externalContentPolicy: 'ask' as ExternalContentPolicy,
   messageSpacing: 'auto' as MessageSpacing,
@@ -968,6 +973,7 @@ export const useSettingsStore = create<SettingsState>()(
           showPreview: state.showPreview,
           showVerificationCodes: state.showVerificationCodes,
           mailLayout: state.mailLayout,
+          mvRowLines: state.mvRowLines,
           emailsPerPage: state.emailsPerPage,
           externalContentPolicy: state.externalContentPolicy,
           messageSpacing: state.messageSpacing,

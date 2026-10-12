@@ -1141,6 +1141,12 @@
         "default": "افتراضي",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "صفوف القائمة",
+        "description": "Mountain View: الموضوع والمعاينة في سطر واحد مثل Gmail، أو المعاينة في سطر خاص بها",
+        "two": "سطران",
+        "one": "سطر واحد"
+      },
       "animations": {
         "label": "تفعيل الحركات",
         "description": "إظهار الانتقالات والتأثيرات السلسة"

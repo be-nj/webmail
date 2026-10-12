@@ -1138,6 +1138,12 @@
         "default": "Predeterminado",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "Filas de la lista",
+        "description": "Mountain View: asunto y vista previa en una línea como en Gmail, o la vista previa en su propia línea",
+        "two": "Dos líneas",
+        "one": "Una línea"
+      },
       "animations": {
         "label": "Habilitar Animaciones",
         "description": "Mostrar transiciones y efectos suaves"

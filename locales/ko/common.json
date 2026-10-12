@@ -1138,6 +1138,12 @@
         "default": "기본",
         "mountain_view": "Mountain View"
       },
+      "mv_row_lines": {
+        "label": "목록 행",
+        "description": "Mountain View: Gmail처럼 제목과 미리보기를 한 줄에 표시하거나 미리보기를 별도 줄에 표시",
+        "two": "두 줄",
+        "one": "한 줄"
+      },
       "animations": {
         "label": "애니메이션 켜기",
         "description": "부드러운 전환 효과를 사용해요"
