@@ -52,6 +52,7 @@ Hashes mit derselben Betreffzeile.
 | (1.14.2) | Mountain View ist Standard-Layout für neue Nutzer und Geräte (gespeicherte oder synchronisierte Wahl bleibt). Die Admin-Policy kann das Layout nur sperren oder ausblenden, `policy.defaults` wird upstream nirgends angewendet |
 | (1.14.2) | Mountain View: Anhänge der geöffneten Mail als Karten unter dem Text wie bei Gmail (Bildvorschau, Name, beim Hover Größe und Aktionen); die Einstellung „Anhang-Position“ gilt dort nicht mehr |
 | (1.14.2) | Mountain View: Einstellung „Listenzeilen“ (Darstellung), Standard zweizeilig: Vorschau in eigener Zeile unter dem Betreff statt mit „-“ dahinter; einzeilig bleibt wie Gmail |
+| (1.14.2) | Mountain View: „Mit Stern“ ist als aktiver Eintrag markiert, auch wenn er ohne „Alle mit Stern“-Ansicht nur eine Stern-Suche ist; ein Ordnerklick verlässt diese Suche immer |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:

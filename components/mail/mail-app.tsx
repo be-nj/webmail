@@ -90,7 +90,7 @@ import { ContextMenuItem } from "@/components/ui/context-menu";
 import { PromptDialog } from "@/components/ui/prompt-dialog";
 import { DragDropProvider } from "@/contexts/drag-drop-context";
 import { jmapErrorType } from "@/lib/jmap/jmap-error";
-import { isFilterEmpty, activeFilterCount, DEFAULT_SEARCH_FILTERS } from "@/lib/jmap/search-utils";
+import { isFilterEmpty, isStarredOnlySearch, activeFilterCount, DEFAULT_SEARCH_FILTERS } from "@/lib/jmap/search-utils";
 import { SearchBox, type ContactSearchField } from "@/components/search/search-box";
 import { FilterPanelHost } from "@/components/search/filter-panel-host";
 import { SearchFilterPanel, SELECT_CLASS } from "@/components/search/search-filter-panel";
@@ -3286,7 +3286,10 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   // rather than re-searching. Reads the current query/filters from the
   // closure to decide whether there was anything to clear.
   const clearSearchIfFolderChangeResets = (): boolean => {
-    if (!useSettingsStore.getState().clearSearchOnFolderChange) return false;
+    // Mountain View's Starred row is a place you leave like a folder, even
+    // when it is only a search for starred mail underneath (goToStarred).
+    const leavingStarredRow = mvShell && isStarredOnlySearch(searchQuery, searchFilters);
+    if (!useSettingsStore.getState().clearSearchOnFolderChange && !leavingStarredRow) return false;
     if (isFilterEmpty(searchFilters) && !searchQuery) return false;
     setSearchQuery("");
     clearSearchFilters();
