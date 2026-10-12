@@ -682,6 +682,9 @@ function mvSenderDate(date: Date | string, timeFormat: '12h' | '24h'): string {
 function MvConversationCard({ email, onOpen, timeFormat }: { email: Email; onOpen?: (email: Email) => void; timeFormat: '12h' | '24h' }) {
   const sender = email.from?.[0];
   const unread = !email.keywords?.$seen;
+  const t = useTranslations('email_viewer');
+  const isTrustedSender = useIsTrustedSender();
+  const trustSignal = senderTrustSignal(email, isTrustedSender);
   return (
     <button
       type="button"
@@ -690,7 +693,15 @@ function MvConversationCard({ email, onOpen, timeFormat }: { email: Email; onOpe
       data-email-id={email.id}
       className="w-full flex items-start gap-4 px-6 py-3 border-t border-border text-start hover:bg-muted/40 transition-colors"
     >
-      <Avatar name={sender?.name} email={sender?.email} size="md" className="w-10 h-10 flex-shrink-0" />
+      <Avatar
+        name={sender?.name}
+        email={sender?.email}
+        size="md"
+        className="w-10 h-10 flex-shrink-0"
+        dmarcPass={hasAlignedDmarcPass(email)}
+        senderTrust={trustSignal}
+        senderTrustLabel={trustSignal ? t(`sender_trust.${trustSignal}`) : undefined}
+      />
       <span className="flex-1 min-w-0">
         <span className="flex items-baseline gap-2">
           <span className={cn("text-sm truncate", unread ? "font-bold" : "font-semibold")}>
