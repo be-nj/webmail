@@ -5186,8 +5186,9 @@ export function EmailViewer({
 
 
               </div>
-              {/* Attachments on the right (beside-sender mode) */}
-              {attachmentPosition === 'beside-sender' && effectiveAttachments.length > 0 && (
+              {/* Attachments on the right (beside-sender mode). Mountain View
+                  lists them as cards under the body instead. */}
+              {attachmentPosition === 'beside-sender' && !mvViewer && effectiveAttachments.length > 0 && (
                 <div className="relative flex flex-col items-end justify-start gap-1 flex-shrink-0 max-w-[50%]">
                   {effectiveAttachments.slice(0, 2).map((attachment) => {
                     const FileIcon = getFileIcon(attachment.name || undefined, attachment.type);
@@ -6004,7 +6005,7 @@ export function EmailViewer({
         <PluginSlot name="email-banner" extraProps={pluginEmailProps} />
 
       {/* === ATTACHMENTS below header (below-header mode, desktop only) === */}
-      {attachmentPosition === 'below-header' && effectiveAttachments.length > 0 && (
+      {attachmentPosition === 'below-header' && !mvViewer && effectiveAttachments.length > 0 && (
         <div className="hidden lg:block bg-background border-b border-border px-4 lg:px-6 py-2">
           <div className="relative flex items-center gap-2">
           <div ref={belowHeaderRowRef} className="relative flex items-center gap-2 overflow-hidden flex-1 min-w-0">
@@ -6400,6 +6401,97 @@ export function EmailViewer({
               />
             )}
           </div>
+
+          {/* Mountain View: attachments as cards under the body, as Gmail does. */}
+          {mvViewer && effectiveAttachments.length > 0 && (
+            <div className="hidden lg:block pe-6 ps-[80px] pt-2 pb-4" data-mv-attachments="">
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-foreground">
+                    {t('details.attachments_summary', {
+                      count: effectiveAttachments.length,
+                      size: formatFileSize(effectiveAttachments.reduce((sum, a) => sum + (a.size || 0), 0)),
+                    })}
+                  </span>
+                  <span className="ms-auto">{downloadAllButton}</span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {effectiveAttachments.map((attachment) => {
+                    const FileIcon = getFileIcon(attachment.name || undefined, attachment.type);
+                    const isPreviewable = isAttachmentPreviewable(attachment);
+                    const opensPreview = isPreviewable && mailAttachmentAction === 'preview';
+                    const thumbUrl = imageThumbUrls[attachment.id];
+                    const displayName = getAttachmentDisplayName(attachment.name, attachment.type);
+                    return (
+                      <DraggableAttachmentChip key={attachment.id} attachment={attachment} client={blobClient} accountId={blobAccountId} enabled={dragOutActive} downloadName={resolveAttachmentName(attachment)}>
+                        {(dragProps) => (
+                      <div
+                        className="group relative flex flex-col w-44 h-32 rounded-lg border border-border bg-muted/40 overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
+                        title={`${opensPreview ? tFiles('preview') : t('download')} ${displayName}`}
+                        onClick={() => handleEffectiveAttachmentOpen(attachment)}
+                        data-testid="attachment"
+                        data-attachment-name={attachment.name}
+                        draggable={dragProps.draggable}
+                        onPointerEnter={dragProps.onPointerEnter}
+                        onDragStart={dragProps.onDragStart}
+                        onDragEnd={dragProps.onDragEnd}
+                      >
+                        <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden bg-background/40">
+                          {thumbUrl
+                            ? <img src={thumbUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                            : <FileIcon className="w-10 h-10 text-muted-foreground/70" />}
+                        </div>
+                        <div className="flex items-center gap-1.5 h-10 px-2.5 border-t border-border bg-background">
+                          <FileIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-xs text-foreground truncate flex-1 min-w-0">{displayName}</span>
+                        </div>
+                        {/* Hover: name, size and actions over the preview, like Gmail's card overlay. */}
+                        <div className="absolute inset-x-0 top-0 bottom-10 flex flex-col justify-between p-2 bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="min-w-0">
+                            <div className="text-xs font-medium line-clamp-2 break-all">{displayName}</div>
+                            <div className="text-[11px] text-white/80">{formatFileSize(attachment.size)}</div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              className="p-1.5 rounded-full bg-white/15 hover:bg-white/30 transition-colors"
+                              title={t('download')}
+                              onClick={(e) => { e.stopPropagation(); handleEffectiveAttachmentDownload(attachment); }}
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                            {opensPreview && (
+                              <button
+                                className="p-1.5 rounded-full bg-white/15 hover:bg-white/30 transition-colors"
+                                title={tFiles('preview')}
+                                onClick={(e) => { e.stopPropagation(); handleEffectiveAttachmentOpen(attachment); }}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            )}
+                            <PluginSlot
+                              name="attachment-actions"
+                              className="contents"
+                              extraProps={{
+                                attachment: {
+                                  name: attachment.name || '',
+                                  type: attachment.type,
+                                  size: attachment.size,
+                                  blobId: attachment.blobId,
+                                  emailId: email?.id,
+                                } satisfies AttachmentInfo,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                        )}
+                      </DraggableAttachmentChip>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           <PluginSlot name="email-footer" extraProps={pluginFooterProps} />
 
