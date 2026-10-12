@@ -104,7 +104,7 @@ beforeEach(() => {
     getClientForAccount: (id) => (id === 'login-primary' ? asClient(primary) : id === 'login-other' ? asClient(other) : undefined) as never,
     getAllConnectedClients: () => new Map([['login-primary', asClient(primary)], ['login-other', asClient(other)]]) as never,
   });
-  useSettingsStore.setState({ enableUnifiedMailbox: false, mailAttachmentAction: 'download', mailLayout: 'split', attachmentImagePreviewsEnabled: false, postExportAction: 'none', attachmentDownloadTemplate: '{filename}', filenameLowercase: false } as never);
+  useSettingsStore.setState({ interfaceLayout: 'default', enableUnifiedMailbox: false, mailAttachmentAction: 'download', mailLayout: 'split', attachmentImagePreviewsEnabled: false, postExportAction: 'none', attachmentDownloadTemplate: '{filename}', filenameLowercase: false } as never);
   useEmailStore.setState({
     emails: [message()], selectedEmail: message(), selectedMailbox: sharedMailbox.id,
     mailboxes: [primaryMailbox, sharedMailbox], viewingAccountId: null, accountMailboxes: {},
