@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Check, Folder } from '@/components/icons';
-import { useSettingsStore, type ToolbarPosition, type MailLayout, type InterfaceLayout } from '@/stores/settings-store';
+import { useSettingsStore, type ToolbarPosition, type MailLayout, type MvRowLines, type InterfaceLayout } from '@/stores/settings-store';
 import { SettingsSection, SettingItem, RadioGroup, ToggleSwitch } from './settings-section';
 import { cn } from '@/lib/utils';
 import { usePolicyStore } from '@/stores/policy-store';
@@ -123,7 +123,7 @@ function MailLayoutPreview({
 export function LayoutSection() {
   const t = useTranslations('settings.appearance');
   const tEmail = useTranslations('settings.email_behavior');
-  const { toolbarPosition, showToolbarLabels, mailLayout, interfaceLayout, updateSetting } = useSettingsStore();
+  const { toolbarPosition, showToolbarLabels, mailLayout, mvRowLines, interfaceLayout, updateSetting } = useSettingsStore();
   const { isSettingLocked, isSettingHidden } = usePolicyStore();
   const mountainView = interfaceLayout === 'mountain-view';
 
@@ -139,6 +139,18 @@ export function LayoutSection() {
           options={[
             { value: 'default', label: t('interface_layout.default') },
             { value: 'mountain-view', label: t('interface_layout.mountain_view') },
+          ]}
+        />
+      </SettingItem>
+      )}
+      {mountainView && (
+      <SettingItem label={t('mv_row_lines.label')} description={t('mv_row_lines.description')}>
+        <RadioGroup
+          value={mvRowLines}
+          onChange={(value) => updateSetting('mvRowLines', value as MvRowLines)}
+          options={[
+            { value: 'two', label: t('mv_row_lines.two') },
+            { value: 'one', label: t('mv_row_lines.one') },
           ]}
         />
       </SettingItem>
