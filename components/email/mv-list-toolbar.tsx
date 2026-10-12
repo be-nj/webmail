@@ -255,6 +255,11 @@ export function MvListToolbar({
     });
 
   const selectedEmails = resolveSelectedEmails(useEmailStore.getState());
+  // Only the read-state change that would do something is offered: "mark
+  // read" needs an unread message in the selection, "mark unread" a read one.
+  // A mixed selection gets both. An unresolved selection keeps both usable.
+  const selectionHasUnread = selectedEmails.length === 0 || selectedEmails.some((email) => !email.keywords?.$seen);
+  const selectionHasRead = selectedEmails.length === 0 || selectedEmails.some((email) => !!email.keywords?.$seen);
 
   // The same targets the row's own context menu offers, with the account of
   // the selection leading (#1149).
@@ -503,13 +508,13 @@ export function MvListToolbar({
             icon={MailOpen}
             label={tBatch("mark_read")}
             onClick={() => run(async () => { if (client) await batchMarkAsRead(client, true); })}
-            disabled={isProcessing}
+            disabled={isProcessing || !selectionHasUnread}
           />
           <ToolbarButton
             icon={Mail}
             label={tBatch("mark_unread")}
             onClick={() => run(async () => { if (client) await batchMarkAsRead(client, false); })}
-            disabled={isProcessing}
+            disabled={isProcessing || !selectionHasRead}
           />
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
           {moveTree.length > 0 && (

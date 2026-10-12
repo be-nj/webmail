@@ -219,3 +219,37 @@ describe('MvListToolbar failure feedback', () => {
     await waitFor(() => expect(error).toHaveBeenCalledWith('error_updating'));
   });
 });
+
+describe('MvListToolbar read state', () => {
+  const select = (emails: Email[]) => {
+    useAuthStore.setState({ client: {} as never } as never);
+    useEmailStore.setState({
+      emails,
+      mailboxes,
+      selectedMailbox: 'inbox',
+      selectedEmailKeys: new Set(emails.map((email) => email.id)),
+      isUnifiedView: false,
+      unifiedRole: null,
+    } as never);
+    render(<MvListToolbar loadedCount={emails.length} onRefresh={() => {}} />);
+  };
+  const button = (label: string) => screen.getByLabelText(label) as HTMLButtonElement;
+
+  it('offers only "mark unread" for read mail', () => {
+    select([message('a', { $seen: true })]);
+    expect(button('mark_read').disabled).toBe(true);
+    expect(button('mark_unread').disabled).toBe(false);
+  });
+
+  it('offers only "mark read" for unread mail', () => {
+    select([message('a')]);
+    expect(button('mark_read').disabled).toBe(false);
+    expect(button('mark_unread').disabled).toBe(true);
+  });
+
+  it('offers both for a mixed selection', () => {
+    select([message('a', { $seen: true }), message('b')]);
+    expect(button('mark_read').disabled).toBe(false);
+    expect(button('mark_unread').disabled).toBe(false);
+  });
+});
