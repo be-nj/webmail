@@ -140,6 +140,20 @@ function RowChips({ email, loadAttachments, onOpenAttachment, mountainView, mvRo
 }
 
 /**
+ * Mountain View's two-line rows: the preview on a line of its own, indented
+ * to the subject column like the chips, so it no longer runs on from the
+ * subject.
+ */
+function MvPreviewLine({ preview, snippet }: { preview: string; snippet: string | null }) {
+  if (!preview && !snippet) return null;
+  return (
+    <div className="-mt-2 mb-2 truncate ps-[8.75rem] text-[13px] leading-[18px] text-muted-foreground lg:ps-[10.75rem]">
+      {snippet ? <SearchSnippetText snippet={snippet} /> : preview}
+    </div>
+  );
+}
+
+/**
  * The fill behind Mountain View's hover actions, which has to match the row
  * they sit on (see the [data-mv-row] rules in globals.css).
  */
@@ -462,6 +476,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
     const timeFormat = useSettingsStore((state) => state.timeFormat);
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
     const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
+    const mvRowLines = useSettingsStore((state) => state.mvRowLines);
     const isTrustedSender = useIsTrustedSender();
     const rowTrust = showRecipient ? null : senderTrustSignal(email, isTrustedSender);
     const hideJunkAvatarImages = currentMailboxRole === 'junk' && !showAvatarsInJunk;
@@ -483,6 +498,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
     // one-line layout is shaped that way, so the two conditions travel
     // together.
     const mvRow = interfaceLayout === 'mountain-view' && oneLineRow;
+    const mvTwoLines = mvRow && mvRowLines === 'two';
     const mvMobileRow = interfaceLayout === 'mountain-view' && isMobile;
     const trimmedPreview = cleanPreview(email.preview);
     const inlinePreview = showPreview && trimmedPreview ? ` ${trimmedPreview}` : '';
@@ -830,7 +846,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                       <bdi>{subjectSnippet ? <SearchSnippetText snippet={subjectSnippet} /> : (email.subject || tNoSubject)}</bdi>
                     </span>
                     <PluginRowBadges email={email} className={mvRow ? "ms-2" : undefined} />
-                    {(previewSnippet || inlinePreview) && (
+                    {(previewSnippet || inlinePreview) && !mvTwoLines && (
                       <span dir="auto" className="min-w-0 shrink-[9999] truncate text-muted-foreground">
                         {/* Gmail runs the snippet on from the subject after a dash. */}
                         {mvRow && '\u00a0-\u00a0'}
@@ -873,6 +889,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                   {columns && <SizeCell bytes={email.size} />}
                 </div>
               </div>
+              {mvTwoLines && <MvPreviewLine preview={showPreview ? trimmedPreview : ''} snippet={previewSnippet} />}
               {mvRow && (
                 <RowChips email={email} loadAttachments={loadAttachments} onOpenAttachment={onOpenAttachment} mvRow />
               )}
@@ -1065,6 +1082,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
     const timeFormat = useSettingsStore((state) => state.timeFormat);
     const showAvatarsInJunk = useSettingsStore((state) => state.showAvatarsInJunk);
     const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
+    const mvRowLines = useSettingsStore((state) => state.mvRowLines);
     const isTrustedSender = useIsTrustedSender();
     const isMobile = useUIStore((state) => state.isMobile);
     const { latestEmail, participantNames, hasUnread, hasStarred, hasPinned, hasAnswered, hasForwarded, emailCount } = thread;
@@ -1081,6 +1099,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
     // one-line layout is shaped that way, so the two conditions travel
     // together.
     const mvRow = interfaceLayout === 'mountain-view' && oneLineRow;
+    const mvTwoLines = mvRow && mvRowLines === 'two';
     const mvMobileRow = interfaceLayout === 'mountain-view' && isMobile;
     const trimmedPreview = cleanPreview(latestEmail.preview);
     const inlinePreview = showPreview && trimmedPreview ? ` ${trimmedPreview}` : '';
@@ -1610,7 +1629,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                         <bdi>{subjectSnippet ? <SearchSnippetText snippet={subjectSnippet} /> : (latestEmail.subject || tNoSubject)}</bdi>
                       </span>
                       <PluginRowBadges email={latestEmail} className={mvRow ? "ms-2" : undefined} />
-                      {(previewSnippet || inlinePreview) && (
+                      {(previewSnippet || inlinePreview) && !mvTwoLines && (
                         <span dir="auto" className="min-w-0 shrink-[9999] truncate text-muted-foreground">
                           {mvRow && '\u00a0-\u00a0'}
                           {previewSnippet ? <> <SearchSnippetText snippet={previewSnippet} /></> : (mvRow ? trimmedPreview : inlinePreview)}
@@ -1651,6 +1670,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                     {columns && <SizeCell bytes={thread.emails.reduce((sum, e) => sum + (e.size ?? 0), 0)} />}
                   </div>
                 </div>
+                {mvTwoLines && <MvPreviewLine preview={showPreview ? trimmedPreview : ''} snippet={previewSnippet} />}
                 {mvRow && (
                   <RowChips
                     email={latestEmail}
