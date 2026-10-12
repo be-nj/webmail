@@ -6489,7 +6489,7 @@ export function EmailViewer({
                           <span className="text-xs text-foreground truncate flex-1 min-w-0">{displayName}</span>
                         </div>
                         {/* Hover: name, size and actions over the preview, like Gmail's card overlay. */}
-                        <div className="absolute inset-x-0 top-0 bottom-10 flex flex-col justify-between p-2 bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-x-0 top-0 bottom-10 flex flex-col justify-between p-2 bg-black/60 text-white opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                           <div className="min-w-0">
                             <div className="text-xs font-medium line-clamp-2 break-all">{displayName}</div>
                             <div className="text-[11px] text-white/80">{formatFileSize(attachment.size)}</div>
