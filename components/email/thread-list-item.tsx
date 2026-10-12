@@ -629,7 +629,8 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                       <StatusIcon icon={Forward} label={tStatus('forwarded')} className="w-3.5 h-3.5 text-muted-foreground" />
                     </>
                   )}
-                  {showPaperclip && <StatusIcon icon={Paperclip} label={tStatus('has_attachment')} className="w-3.5 h-3.5 text-muted-foreground" />}
+                  {/* The chips under the subject already show the attachments. */}
+                  {showPaperclip && !(mvRow && onOpenAttachment) && <StatusIcon icon={Paperclip} label={tStatus('has_attachment')} className="w-3.5 h-3.5 text-muted-foreground" />}
                   {showSourceFolder && <SourceFolderTag name={email.sourceFolder!} />}
                   {scheduledSendLabel ? (
                     <span
@@ -700,7 +701,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                           <StatusIcon icon={Forward} label={tStatus('forwarded')} className="w-3.5 h-3.5 text-muted-foreground" />
                         </>
                       )}
-                      {showPaperclip && (
+                      {showPaperclip && !onOpenAttachment && (
                         <StatusIcon icon={Paperclip} label={tStatus('has_attachment')} className="w-3.5 h-3.5 text-muted-foreground" />
                       )}
                     </div>
@@ -841,6 +842,9 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
     // Only the latest email's parts are loaded; an older one with the flag keeps the paperclip.
     const latestHasAttachment = useListHasAttachment(latestEmail, loadAttachments);
     const hasAttachment = latestHasAttachment || thread.emails.some((e) => e !== latestEmail && e.hasAttachment);
+    // The latest email's chips already show its attachments; the paperclip
+    // stays only for attachments further back in the thread.
+    const latestShowsChips = latestHasAttachment && !!onOpenAttachment;
     // The horizontal one-line "focus" layout doesn't fit on narrow screens; fall back to multi-line on mobile.
     const isFocusedMailLayout = mailLayout === 'focus' && !isMobile;
     // Mountain View leads its rows with a checkbox and a clickable star
@@ -1218,7 +1222,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                         <StatusIcon icon={Forward} label={tStatus('forwarded')} className="w-3.5 h-3.5 text-muted-foreground" />
                       </>
                     )}
-                    {hasAttachment && <StatusIcon icon={Paperclip} label={tStatus('has_attachment')} className="w-3.5 h-3.5 text-muted-foreground" />}
+                    {hasAttachment && !(mvRow && latestShowsChips) && <StatusIcon icon={Paperclip} label={tStatus('has_attachment')} className="w-3.5 h-3.5 text-muted-foreground" />}
                     {showSourceFolder && <SourceFolderTag name={latestEmail.sourceFolder!} />}
                     {scheduledSendLabel ? (
                       <span
@@ -1297,7 +1301,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                             <StatusIcon icon={Forward} label={tStatus('forwarded')} className="w-3.5 h-3.5 text-muted-foreground" />
                           </>
                         )}
-                        {hasAttachment && (
+                        {hasAttachment && !latestShowsChips && (
                           <StatusIcon icon={Paperclip} label={tStatus('has_attachment')} className="w-3.5 h-3.5 text-muted-foreground" />
                         )}
                       </div>
