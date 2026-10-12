@@ -66,7 +66,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { FilePickerDialog } from "@/components/files/file-picker-dialog";
 import type { IJMAPClient } from "@/lib/jmap/client-interface";
-import type { FileNode } from "@/lib/jmap/types";
+import type { AuthenticationResults, FileNode } from "@/lib/jmap/types";
+import { isAuthenticationSpoofed } from "@/lib/email-headers";
 import { useContactStore, getContactDisplayName, getContactPrimaryEmail } from "@/stores/contact-store";
 import { useTemplateStore } from "@/stores/template-store";
 import { SubAddressHelper } from "@/components/identity/sub-address-helper";
@@ -257,6 +258,9 @@ interface EmailComposerProps {
     body?: string;
     htmlBody?: string;
     receivedAt?: string;
+    // The original's sender check, so a forged trusted From doesn't load
+    // remote images in the quote.
+    authenticationResults?: AuthenticationResults;
     accountId?: string;
     attachments?: Array<{ blobId: string; name?: string; type: string; size: number; cid?: string; disposition?: string }>;
     // Threading: parent's Message-ID and References, used to set RFC 5322
@@ -543,7 +547,10 @@ export function EmailComposer({
     // Whether the quoted original may show its remote images in the editor:
     // the viewer's rule, minus the per-message "load" click it doesn't know.
     const { externalContentPolicy, isSenderTrusted } = useSettingsStore.getState();
-    const quoteRemoteAllowed = externalContentPolicy === 'allow' || (!!from?.email && isSenderTrusted(from.email));
+    // A trusted address only counts when the original didn't fail its sender
+    // check, same rule as the viewer.
+    const quoteRemoteAllowed = externalContentPolicy === 'allow'
+      || (!!from?.email && isSenderTrusted(from.email) && !isAuthenticationSpoofed(replyTo.authenticationResults));
 
     // Plugin override (resolved at composer open via onBuildQuoteHeader).
     if (replyTo.quoteHeaderHtml !== undefined && (mode === 'reply' || mode === 'replyAll' || mode === 'forward')) {
