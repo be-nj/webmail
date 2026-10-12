@@ -87,7 +87,7 @@ describe('useProMultiAccountMailboxes', () => {
   });
 
   it('stays idle outside the Pro shell', () => {
-    useSettingsStore.setState({ proInterface: false } as never);
+    useSettingsStore.setState({ proInterface: false, interfaceLayout: 'default' } as never);
     connected(['a', 'b']);
     renderHook(() => useProMultiAccountMailboxes());
     expect(client('a').getAllMailboxes).not.toHaveBeenCalled();
