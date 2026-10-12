@@ -1,6 +1,6 @@
 # Fork-Notizen
 
-Stand: 04.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
+Stand: 12.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
 upstream (`bulwarkmail/webmail`). Sie beantwortet: *Was ist in diesem Fork
 eigen?* und *Was ist noch offen?*
 
@@ -12,30 +12,40 @@ Begründung für „Logos nur aus geprüften Marken, kein Favicon“ in
 
 ## 1. Stand
 
-Arbeitszweig: **`benj/on-1.12.0`** = Upstream-Tag `1.12.0` plus die Commits
+Arbeitszweig: **`benj/on-1.14.2`** = Upstream-Tag `1.14.2` plus die Commits
 unten. Live auf `webmail.beckm4nn.de` (Komodo-Stack `stalwart`, Dienst
 `bulwark`), Image-Tag = kurzer Commit-Hash.
 
-Vorgänger `benj/on-1.10.0` bleibt als Referenz liegen. Beim Rebase auf 1.12.0
-entfiel der eigene DMARC-Parser (`038059c4`): upstream 1.11.1 liest DMARC
-ebenfalls nur aus dem obersten Authentication-Results und zusätzlich nur am
-Anfang eines Eintrags, was auch den `dmarc=pass` im Envelope-Absender abfängt.
-Der Fork behält nur die Tests dazu.
+Vorgänger `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
+Beim Rebase auf 1.12.0 entfiel der eigene DMARC-Parser (`038059c4`): upstream
+1.11.1 liest DMARC ebenfalls nur aus dem obersten Authentication-Results und
+zusätzlich nur am Anfang eines Eintrags, was auch den `dmarc=pass` im
+Envelope-Absender abfängt. Der Fork behält nur die Tests dazu.
+
+Beim Rebase auf 1.14.2 entfielen die Empfängerprüfung im Composer
+(`20f704d7`) und ihre `nb`/`zh-TW`-Übersetzungen (`db0b314e`): upstream 1.13
+(`3efa370e`) behebt denselben Fehler (#795) auf eigene Art. Ungültige
+Eingaben werden dort rote Chips statt im Feld zu bleiben, und Senden bricht
+mit derselben Meldung ab. Übersetzt ist das in allen Sprachen.
 
 ## 2. Was der Fork gegenüber upstream enthält
 
+Die Hashes sind die ursprünglichen Commits; auf diesem Zweig tragen sie neue
+Hashes mit derselben Betreffzeile.
+
 | Commit | Was |
 |---|---|
-| `66851b5a`, `20f704d7` | Empfänger-Fixes im Composer (keine kaputten Fragmente in Entwürfen, keine Nicht-Adressen) |
-| `db0b314e` | deren Übersetzungen für `nb` und `zh-TW` |
+| `66851b5a` | Entwürfe speichern keine kaputten Empfängerfragmente und behalten Anzeigenamen |
 | `3d9cc8ea` | `clearSearchOnFolderChange` standardmäßig an |
 | `cc12c782` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |
+| (1.14.2) | dieselbe Regel für Bilder im zitierten Original beim Antworten (neu in upstream 1.13) |
 | `087cfb41`, `98a4e553`, `4ce27dfe` | BIMI: Route `/api/bimi`, Auth-Header in Listenabfragen, Tests gegen gefälschte DMARC-Ergebnisse, VMC/CMC-Prüfung gegen DigiCert/GlobalSign |
 | `da8f2f66` | Logos nur aus geprüften Marken, nie für Freemail, **kein Favicon**; Trusted-Sender-Badge und Warnung bei gefälschter vertrauter Adresse |
 | `04b5c487` | Pfad-Präfix-Bug: eine Ordner-ID wie `de` in `/mail/folder/de` galt als Mount-Präfix |
 | `4ec28465` | Handschlag-im-Herz statt Haken für Trusted Senders (Tabler hat keinen schlichten Handschlag), Tooltip, Chip im Authentifizierungs-Block |
 | `fcc54961` | BIMI-Logo ohne Zertifikat nur für Trusted Senders |
 | `4c9a0a4f` | Versionsparameter gegen alte Browser-Cache-Antworten; vorübergehende VMC-Fehler nicht als „ungeprüft“ cachen |
+| (1.14.2) | BIMI-Logo und Trust-Badge auch auf den eingeklappten Nachrichten in Mountain View |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
@@ -56,6 +66,12 @@ macht.
   **Google Maps** (`lib/event-links.ts`, `mapsUrl`); Bestätigungscodes aus
   Mails erscheinen als Kopier-Chip auch in der Liste, auch bei Spam und
   Mails mit gescheiterter Prüfung (abschaltbar: „Show Verification Codes“).
+- **Upstream-Absenderprüfung seit 1.13** (`getSenderVerification`): Hinweis
+  „Absender nicht bestätigt“, wenn weder SPF noch DKIM bestehen, und
+  „Absenderprüfung fehlgeschlagen“ bei DMARC-Fail. Er steht neben der
+  fork-eigenen Impersonation-Warnung, die nur für Trusted Senders gilt. Eine
+  vertraute Adresse ohne SPF/DKIM-Pass („nicht bestätigt“) zählt im Fork
+  weiterhin als vertraut, weil `isAuthenticationSpoofed` dafür nicht anschlägt.
 - **Neue Container ohne Volume** stehen im Setup-Modus (503 auf allen
   API-Routen). Für lokale Smoke-Tests `-e JMAP_SERVER_URL=https://mail.example.com`.
 
