@@ -58,17 +58,22 @@ function UnreadDot({ besideAvatar }: { besideAvatar: boolean }) {
 }
 
 /** The chip row under a row's preview: the verification code, then the attachments. */
-function RowChips({ email, loadAttachments, onOpenAttachment }: {
+function RowChips({ email, loadAttachments, onOpenAttachment, underSubject = false }: {
   email: Email;
   loadAttachments?: LoadListAttachments;
   onOpenAttachment?: (attachment: Attachment) => void;
+  /** Mountain View's one-line row: indent the chips to the subject column. */
+  underSubject?: boolean;
 }) {
   const code = useListVerificationCode(email);
   const leading = code ? <VerificationCodeChip code={code} /> : undefined;
+  // Under the subject, like Gmail: the indent is the sender column (w-32,
+  // lg:w-40) plus the gap after it, so the chips start where the subject does.
+  const className = underSubject ? "-mt-1 mb-2 ps-[8.75rem] lg:ps-[10.75rem]" : "mt-1.5";
   if (onOpenAttachment) {
-    return <ListAttachmentChips email={email} load={loadAttachments} onOpen={onOpenAttachment} leading={leading} className="mt-1.5" />;
+    return <ListAttachmentChips email={email} load={loadAttachments} onOpen={onOpenAttachment} leading={leading} className={className} />;
   }
-  return leading ? <div className="mt-1.5 flex">{leading}</div> : null;
+  return leading ? <div className={cn("flex", className)}>{leading}</div> : null;
 }
 
 /**
@@ -102,7 +107,7 @@ function MvRowLead({
   starLabel: string;
 }) {
   return (
-    <div className="flex items-center gap-0.5 flex-shrink-0 self-center">
+    <div className="flex h-10 items-center gap-0.5 flex-shrink-0 self-start">
       <button
         type="button"
         role="checkbox"
@@ -507,7 +512,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
           </div>
         )}
         <div
-          className={cn('px-3', isFocusedMailLayout ? 'flex items-center' : 'flex items-start', mvRow && 'min-h-10', swipeEnabled && 'relative z-10 bg-inherit')}
+          className={cn('px-3', isFocusedMailLayout && !mvRow ? 'flex items-center' : 'flex items-start', swipeEnabled && 'relative z-10 bg-inherit')}
           style={{ gap: 'var(--density-item-gap)', paddingBlock: mvRow ? undefined : 'var(--density-item-py)', transform: swipeEnabled && offsetX ? `translateX(${offsetX}px)` : undefined, transition: swipeEnabled && offsetX === 0 ? 'transform 200ms ease-out' : undefined }}
         >
           {/* Checkbox - only for extra-compact density (no avatar) while in selection mode */}
@@ -546,7 +551,9 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
           )}
 
           {!mvRow && density !== 'extra-compact' && (
-            <div className="relative flex flex-shrink-0 self-center">
+            <div className={cn("relative flex flex-shrink-0", mvMobileRow ? "self-start mt-1" : "self-center")}>
+              {/* Mountain View on a phone pins the avatar to the sender line,
+                  like Gmail, instead of centring it on the whole entry. */}
               <SelectableAvatar
                 name={sender?.name}
                 email={sender?.email}
@@ -571,7 +578,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
           <div className="flex-1 min-w-0">
             {isFocusedMailLayout ? (
               <>
-              <div className="flex items-center justify-between gap-3">
+              <div className={cn("flex items-center justify-between gap-3", mvRow && "min-h-10")}>
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   {isUnifiedView && email.accountId && accountColor && !tintListRowsByAccount && (
                     <span
@@ -643,7 +650,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                 </div>
               </div>
               {mvRow && (
-                <RowChips email={email} loadAttachments={loadAttachments} onOpenAttachment={onOpenAttachment} />
+                <RowChips email={email} loadAttachments={loadAttachments} onOpenAttachment={onOpenAttachment} underSubject />
               )}
               </>
             ) : (
@@ -786,6 +793,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
             onUndoSpam={onUndoSpam}
             isInJunk={currentMailboxRole === 'junk'}
             spamApplicable={!['sent', 'drafts', 'scheduled'].includes(currentMailboxRole || '')}
+            firstLineOnly={mvRow}
           />
         )}
       </div>
@@ -1047,7 +1055,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
           style={{ minHeight: isFocusedMailLayout ? undefined : 'var(--list-item-height)' }}
         >
           <div
-            className={cn('px-3', isFocusedMailLayout ? 'flex items-center' : 'flex items-start', mvRow && 'min-h-10')}
+            className={cn('px-3', isFocusedMailLayout && !mvRow ? 'flex items-center' : 'flex items-start')}
             style={{ gap: 'var(--density-item-gap)', paddingBlock: mvRow ? undefined : 'var(--density-item-py)' }}
           >
             {/* Checkbox for thread selection - only for extra-compact density (no avatar) while in selection mode */}
@@ -1086,7 +1094,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
             )}
 
             {!mvRow && density !== 'extra-compact' && (
-              <div className="relative flex-shrink-0 self-center">
+              <div className={cn("relative flex-shrink-0", mvMobileRow ? "self-start mt-1" : "self-center")}>
                 <SelectableAvatar
                   name={avatarPerson?.name}
                   email={avatarPerson?.email}
@@ -1138,7 +1146,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
             <div className="flex-1 min-w-0">
               {isFocusedMailLayout ? (
                 <>
-                <div className="flex items-center justify-between gap-3">
+                <div className={cn("flex items-center justify-between gap-3", mvRow && "min-h-10")}>
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     {isUnifiedView && latestEmail.accountId && threadAccountColor && !tintListRowsByAccount && (
                       <span
@@ -1232,6 +1240,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                 </div>
                 {mvRow && (
                   <RowChips
+                    underSubject
                     email={latestEmail}
                     loadAttachments={loadAttachments}
                     onOpenAttachment={onOpenAttachment ? (a) => onOpenAttachment(latestEmail, a) : undefined}
@@ -1385,6 +1394,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
               onUndoSpam={onUndoSpam ? () => onUndoSpam(latestEmail) : undefined}
               isInJunk={currentMailboxRole === 'junk'}
               spamApplicable={!['sent', 'drafts', 'scheduled'].includes(currentMailboxRole || '')}
+              firstLineOnly={mvRow}
             />
           )}
         </div>
