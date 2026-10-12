@@ -11,6 +11,7 @@ import { VerificationCodeChip, useListVerificationCode } from "./verification-co
 import type { Attachment } from "@/lib/jmap/types";
 import type { LoadListAttachments } from "@/lib/list-attachments";
 import { SelectableAvatar } from "@/components/email/selectable-avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Paperclip, Star, Pin, Circle, ChevronRight, ChevronDown, Loader2, MessageSquare, CheckSquare, Square, Reply, Forward, CalendarClock, Folder, Archive, Trash2, MailOpen, ShieldAlert } from "@/components/icons";
 import type { AppIcon } from "@/components/icons";
 import { useSettingsStore, KEYWORD_PALETTE } from "@/stores/settings-store";
@@ -648,6 +649,22 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
             />
           )}
 
+          {/* Fork: Mountain View rows keep the sender's avatar, so the BIMI
+              logo and the trust badge show in the list as well. */}
+          {mvRow && density !== 'extra-compact' && (
+            <div className="flex h-10 items-center flex-shrink-0 self-start">
+              <Avatar
+                name={sender?.name}
+                email={sender?.email}
+                size="sm"
+                disableImages={hideJunkAvatarImages}
+                dmarcPass={!showRecipient && hasAlignedDmarcPass(email)}
+                senderTrust={rowTrust}
+                senderTrustLabel={rowTrust ? t(`sender_trust.${rowTrust}`) : undefined}
+              />
+            </div>
+          )}
+
           {!mvRow && density !== 'extra-compact' && (
             <div className={cn("relative flex flex-shrink-0", mvMobileRow ? "self-start mt-1" : "self-center")}>
               {/* Mountain View on a phone pins the avatar to the sender line,
@@ -1244,6 +1261,20 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                 selectLabel={tBatch('select')}
                 starLabel={tHover('star')}
               />
+            )}
+
+            {mvRow && density !== 'extra-compact' && (
+              <div className="flex h-10 items-center flex-shrink-0 self-start">
+                <Avatar
+                  name={avatarPerson?.name}
+                  email={avatarPerson?.email}
+                  size="sm"
+                  disableImages={hideJunkAvatarImages}
+                  dmarcPass={!showRecipient && hasAlignedDmarcPass(latestEmail)}
+                  senderTrust={threadTrust}
+                  senderTrustLabel={threadTrust ? tEmailViewer(`sender_trust.${threadTrust}`) : undefined}
+                />
+              </div>
             )}
 
             {!mvRow && density !== 'extra-compact' && (
