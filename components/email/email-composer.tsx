@@ -67,7 +67,7 @@ import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { FilePickerDialog } from "@/components/files/file-picker-dialog";
 import type { IJMAPClient } from "@/lib/jmap/client-interface";
 import type { AuthenticationResults, FileNode } from "@/lib/jmap/types";
-import { isAuthenticationSpoofed } from "@/lib/email-headers";
+import { failsSenderCheck } from "@/lib/sender-trust";
 import { useContactStore, getContactDisplayName, getContactPrimaryEmail } from "@/stores/contact-store";
 import { useTemplateStore } from "@/stores/template-store";
 import { SubAddressHelper } from "@/components/identity/sub-address-helper";
@@ -550,7 +550,8 @@ export function EmailComposer({
     // A trusted address only counts when the original didn't fail its sender
     // check, same rule as the viewer.
     const quoteRemoteAllowed = externalContentPolicy === 'allow'
-      || (!!from?.email && isSenderTrusted(from.email) && !isAuthenticationSpoofed(replyTo.authenticationResults));
+      || (!!from?.email && isSenderTrusted(from.email)
+        && !failsSenderCheck({ from: [from], authenticationResults: replyTo.authenticationResults }));
 
     // Plugin override (resolved at composer open via onBuildQuoteHeader).
     if (replyTo.quoteHeaderHtml !== undefined && (mode === 'reply' || mode === 'replyAll' || mode === 'forward')) {
