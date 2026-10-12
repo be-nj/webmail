@@ -106,6 +106,7 @@ export function MvTopBar({
   const { appName, appLogoLightUrl, appLogoDarkUrl } = useConfig();
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
   const toggleSidebarCollapsed = useUIStore((s) => s.toggleSidebarCollapsed);
+  const sidebarWidth = useUIStore((s) => s.sidebarWidth);
 
   const client = useAuthStore((s) => s.client);
   const { supportsCalendar } = useCalendarStore(useShallow((state) => ({ supportsCalendar: state.supportsCalendar })));
@@ -173,8 +174,13 @@ export function MvTopBar({
       className="mv-topbar flex items-center h-16 gap-2 ps-1 pe-4 shrink-0 bg-[var(--mv-canvas)]"
       data-mv-topbar=""
     >
-      {/* Brand block: occupies the sidebar's own column width */}
-      <div className={cn("flex items-center gap-1 shrink-0", !showMenuButton && "ps-3")}>
+      {/* Brand block: occupies the sidebar's own (resizable) column width, so
+          the search field starts where the content card does. The bar's start
+          padding and the gap after the block come off that width. */}
+      <div
+        className={cn("flex items-center gap-1 shrink-0", !showMenuButton && "ps-3")}
+        style={{ width: `calc(${sidebarWidth}px - 0.75rem)` }}
+      >
         {showMenuButton && (
           <button
             type="button"
@@ -185,7 +191,7 @@ export function MvTopBar({
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <Link href="/" className="flex items-center gap-2 pe-4 min-w-0" aria-label={appName}>
+        <Link href="/" className="flex items-center gap-2 pe-4 min-w-0" aria-label={appName} title={appName}>
           {logoUrl ? <img src={logoUrl} alt="" className="w-8 h-8 object-contain" /> : null}
           <span className="text-[22px] leading-none text-foreground/80 truncate">{appName}</span>
         </Link>
@@ -193,7 +199,7 @@ export function MvTopBar({
 
       {/* Search: left-anchored and capped, not centred */}
       {search && (
-        <div className="mv-topbar-search relative flex items-center gap-1 flex-1 min-w-0 max-w-[720px]">
+        <div className="mv-topbar-search relative flex items-center gap-1 flex-1 grow-[100] min-w-0 max-w-[720px]">
           <SearchBox
             value={search.query}
             onChange={search.onQueryChange}
@@ -241,7 +247,9 @@ export function MvTopBar({
       {/* Plugin buttons (top-bar-actions), next to the search field */}
       <PluginActions surface="top-bar-actions" context={TOP_BAR_CONTEXT} compact className="shrink-0 flex-nowrap" />
 
-      {/* Spacer keeps the right cluster pinned while search stays left */}
+      {/* Spacer keeps the right cluster pinned while search stays left. The
+          search grows a hundred times faster, so it fills up to its cap
+          before the spacer takes anything. */}
       <div className="flex-1 min-w-0" />
 
       <div className="flex items-center gap-1 shrink-0">
