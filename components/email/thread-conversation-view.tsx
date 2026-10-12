@@ -31,8 +31,8 @@ import { useThemeStore } from "@/stores/theme-store";
 import { useShallow } from "zustand/react/shallow";
 import { Avatar } from "@/components/ui/avatar";
 import { useSenderWarning } from "@/hooks/use-sender-warning";
-import { brandIndicatorDomain, isAuthenticationSpoofed } from "@/lib/email-headers";
-import { senderTrustSignal } from "@/lib/sender-trust";
+import { brandIndicatorDomain } from "@/lib/email-headers";
+import { failsSenderCheck, senderTrustSignal } from "@/lib/sender-trust";
 import { useIsTrustedSender } from "@/hooks/use-trusted-sender";
 import { ImpersonationWarning } from "@/components/email/impersonation-warning";
 import { Button } from "@/components/ui/button";
@@ -131,9 +131,9 @@ export function useConversationExternalContent() {
     const senderIsTrusted = senderEmail
       ? (isSenderTrusted(senderEmail) || (trustedSendersAddressBook && isTrustedAddressBookSender(senderEmail)))
         // A trusted address only counts when the message didn't fail its
-        // sender check, or a forged From would load external content.
+        // sender check (or pass neither SPF nor DKIM), or a forged From would load external content.
         // Messages without Authentication-Results keep their trust.
-        && !isAuthenticationSpoofed(email.authenticationResults)
+        && !failsSenderCheck(email)
       : false;
     if (remoteContent.heldBack(email.sourceClientAccountId)) return false;
     return externalContentPolicy === 'allow' || !!senderIsTrusted || allowedIds.has(email.id);

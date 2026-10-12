@@ -90,7 +90,7 @@ import { DirectoryPickerDialog } from "@/components/contacts/directory-picker-di
 import type { DirectoryEntry } from "@/stores/contact-store";
 import type { IJMAPClient } from "@/lib/jmap/client-interface";
 import type { AuthenticationResults, FileNode } from "@/lib/jmap/types";
-import { isAuthenticationSpoofed } from "@/lib/email-headers";
+import { failsSenderCheck } from "@/lib/sender-trust";
 import { useContactStore, getContactDisplayName, getContactPrimaryEmail } from "@/stores/contact-store";
 import { renderTemplateWithPlugins, notifyTemplateApplied } from "@/stores/template-store";
 import { useTemplateSources } from "@/hooks/use-template-sources";
@@ -811,7 +811,7 @@ export function EmailComposer({
       // A trusted address only counts when the original didn't fail its
       // sender check, same rule as the viewer.
       && (externalContentPolicy === 'allow'
-        || (!!from?.email && isSenderTrusted(from.email) && !isAuthenticationSpoofed(replyTo.authenticationResults)));
+        || (!!from?.email && isSenderTrusted(from.email) && !failsSenderCheck({ from: [from], authenticationResults: replyTo.authenticationResults })));
 
     const replyHeader = (html: string) => mode === 'reply' || mode === 'replyAll'
       ? markReplyQuoteHeader(html)
