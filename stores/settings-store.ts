@@ -798,7 +798,9 @@ const DEFAULT_SETTINGS = {
   // Appearance
   fontSize: 'medium' as FontSize,
   density: 'regular' as Density,
-  interfaceLayout: 'default' as InterfaceLayout,
+  // Fork: new users and devices start in Mountain View. Anyone who already
+  // has a persisted or synced choice keeps it.
+  interfaceLayout: 'mountain-view' as InterfaceLayout,
   mvInboxType: 'unread-first' as MvInboxType,
   mvUnreadSectionCollapsed: false,
   mvEverythingElseCollapsed: false,
