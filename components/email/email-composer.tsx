@@ -81,7 +81,8 @@ import { FilePickerDialog } from "@/components/files/file-picker-dialog";
 import { DirectoryPickerDialog } from "@/components/contacts/directory-picker-dialog";
 import type { DirectoryEntry } from "@/stores/contact-store";
 import type { IJMAPClient } from "@/lib/jmap/client-interface";
-import type { FileNode } from "@/lib/jmap/types";
+import type { AuthenticationResults, FileNode } from "@/lib/jmap/types";
+import { isAuthenticationSpoofed } from "@/lib/email-headers";
 import { useContactStore, getContactDisplayName, getContactPrimaryEmail } from "@/stores/contact-store";
 import { useTemplateStore, renderTemplateWithPlugins, notifyTemplateApplied } from "@/stores/template-store";
 import { notifyIdentitySelected } from "@/stores/identity-store";
@@ -328,6 +329,9 @@ interface EmailComposerProps {
     body?: string;
     htmlBody?: string;
     receivedAt?: string;
+    // The original's sender check, so a forged trusted From doesn't load
+    // remote images in the quote.
+    authenticationResults?: AuthenticationResults;
     accountId?: string;
     // sourceAccountId: login holding this part, when it differs per part
     // (a batch forward across accounts); otherwise the original's login.
@@ -713,7 +717,10 @@ export function EmailComposer({
     // Whether the quoted original may show its remote images in the editor:
     // the viewer's rule, minus the per-message "load" click it doesn't know.
     const { externalContentPolicy, isSenderTrusted } = useSettingsStore.getState();
-    const quoteRemoteAllowed = externalContentPolicy === 'allow' || (!!from?.email && isSenderTrusted(from.email));
+    // A trusted address only counts when the original didn't fail its sender
+    // check, same rule as the viewer.
+    const quoteRemoteAllowed = externalContentPolicy === 'allow'
+      || (!!from?.email && isSenderTrusted(from.email) && !isAuthenticationSpoofed(replyTo.authenticationResults));
 
     // Plugin override (resolved at composer open via onBuildQuoteHeader).
     if (replyTo.quoteHeaderHtml !== undefined && (mode === 'reply' || mode === 'replyAll' || mode === 'forward')) {

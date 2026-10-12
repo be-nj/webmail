@@ -4529,6 +4529,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
           subject: composerSourceEmail.subject,
           ...getQuoteBodies(composerSourceEmail),
           receivedAt: composerSourceEmail.receivedAt,
+          authenticationResults: composerSourceEmail.authenticationResults,
           // The login that holds the message, so the reply
           // defaults to that account's identity (#1104).
           accountId: composerSourceEmail.sourceClientAccountId ?? viewingAccountId ?? undefined,
