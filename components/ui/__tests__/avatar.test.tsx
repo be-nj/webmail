@@ -9,6 +9,22 @@ describe('Avatar', () => {
     expect(container.textContent).toBe('AS');
   });
 
+  it('reads a surname-first name as first name, then surname', () => {
+    const { container } = render(<Avatar name="Wolf, Daniela" />);
+    expect(container.textContent).toBe('DW');
+  });
+
+  it('ignores bracketed additions and trailing numbers', () => {
+    expect(render(<Avatar name="Wolf, Daniela (3)" />).container.textContent).toBe('DW');
+    expect(render(<Avatar name="Daniela Wolf [ext]" />).container.textContent).toBe('DW');
+    expect(render(<Avatar name="Daniela Wolf 3" />).container.textContent).toBe('DW');
+  });
+
+  it('keeps digits when the name has nothing else', () => {
+    const { container } = render(<Avatar name="42" />);
+    expect(container.textContent).toBe('42');
+  });
+
   it('renders two letters from single-word name', () => {
     const { container } = render(<Avatar name="Alice" />);
     expect(container.textContent).toBe('AL');
