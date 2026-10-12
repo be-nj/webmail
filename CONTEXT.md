@@ -35,7 +35,7 @@ The handshake badge on an avatar (and the matching chip in the message's authent
 _Avoid_: Verified badge, check mark, blue check
 
 **Impersonation Warning**:
-The red warning shown when the From address is a **Trusted Sender** but the message failed its **Sender Check** (DMARC fail, or a hard SPF fail without a valid DKIM signature).
+The red warning shown when the From address is a **Trusted Sender** but the message failed its **Sender Check** (DMARC fail, or a hard SPF fail without a valid DKIM signature) or passed neither SPF nor DKIM, so nothing ties it to the From domain. Such a message also loses the **Trusted Sender**'s right to load external content.
 _Avoid_: Spoof alert, phishing warning (unqualified)
 
 ## Relationships
