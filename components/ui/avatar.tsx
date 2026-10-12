@@ -284,11 +284,21 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
 
   const getInitials = () => {
     if (name) {
-      const parts = name
+      // Fork: bracketed additions ("(Sales)", "[ext]") are not part of the
+      // name, and "Wolf, Daniela" is surname-first, so it reads "DW".
+      let cleaned = name.replace(/[([{][^)\]}]*[)\]}]/g, " ").trim();
+      const commaParts = cleaned.split(",");
+      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part))) {
+        cleaned = `${commaParts[1]} ${commaParts[0]}`;
+      }
+      const words = cleaned
         .trim()
         .split(/\s+/)
         .map((p) => p.replace(/^[^\p{L}\p{N}]+/u, ""))
         .filter((p) => p.length > 0);
+      // A trailing number or code ("Team 3") is no initial when there are words.
+      const lettered = words.filter((p) => /^\p{L}/u.test(p));
+      const parts = lettered.length > 0 ? lettered : words;
       if (parts.length >= 2) {
         return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
       }
