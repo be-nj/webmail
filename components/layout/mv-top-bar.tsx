@@ -176,7 +176,9 @@ export function MvTopBar({
     >
       {/* Brand block: occupies the sidebar's own (resizable) column width, so
           the search field starts where the content card does. The bar's start
-          padding and the gap after the block come off that width. */}
+          padding and the gap after the block come off that width. A collapsed
+          sidebar leaves the bar as it is, as in Gmail: the 72px rail has no
+          room for the brand, so only the content card moves. */}
       <div
         className={cn("flex items-center gap-1 shrink-0", !showMenuButton && "ps-3")}
         style={{ width: `calc(${sidebarWidth}px - 0.75rem)` }}
