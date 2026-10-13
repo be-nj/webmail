@@ -158,6 +158,15 @@ const ROW_PX_BASE = 8;
 const CHEVRON_SLOT = 20;
 const INDENT_STEP = 12;
 
+/** `nodes` one level deeper, to list a shared account's folders under its row. */
+function indentNodes(nodes: MailboxNode[]): MailboxNode[] {
+  return nodes.map((node) => ({ ...node, depth: node.depth + 1, children: indentNodes(node.children) }));
+}
+
+function containsMailbox(nodes: MailboxNode[], id: string): boolean {
+  return !!id && nodes.some((node) => node.id === id || containsMailbox(node.children, id));
+}
+
 // Icons and colours follow the JMAP role only.
 const getIconForMailbox = (role?: string, hasChildren?: boolean, isExpanded?: boolean, id?: string) => {
   if (id?.startsWith('shared-account-')) {
@@ -1168,8 +1177,7 @@ function SidebarImpl({
   // which is what they are to someone coming from Gmail.
   const moreTree = secondaryTree.filter((node) => !!node.role);
   const labelTree = secondaryTree.filter((node) => !node.role);
-  // Everything under "More" is hidden together, so one flag covers the extra
-  // folders, the shared accounts and the labels.
+  // Everything under "More" is hidden together, so one flag covers it.
   const showSecondary = !mvFlat || moreExpanded;
 
   // With nesting off every tag is its own root, so the same rows render through
@@ -1808,6 +1816,69 @@ function SidebarImpl({
           onSelect: onMailboxSelect,
         })}
 
+        {/* Mailboxes shared with you, such as a group address, are places mail
+            goes too, so Mountain View keeps them in view under their own
+            heading rather than behind "More". Each one opens like a folder. */}
+        {mvFlat && !useMultiAccount && sharedAccounts.length > 0 && (
+          <div data-mv-shared="">
+            <div className="ps-[26px] pe-3 pt-4 pb-1">
+              <span className="text-base font-medium text-foreground">{t("shared")}</span>
+            </div>
+            {sharedAccounts.map((account) => {
+              const accountExpanded = expandedSharedAccounts.has(account.id);
+              const menuAccountId = sharedAccountMenuId(account.accountId);
+              // A closed account stands in for the folder open inside it.
+              const holdsSelection = !accountExpanded && containsMailbox(account.children, treeSelection);
+              const inbox = account.children.find((child) => child.role === 'inbox');
+              return (
+                <div key={account.id}>
+                  <SidebarRow
+                    icon={<Users className={getIconClass(holdsSelection, false, colorfulSidebarIcons)} />}
+                    label={account.name}
+                    testName={account.name}
+                    testMailboxId={account.id}
+                    testShared
+                    depth={0}
+                    isSelected={holdsSelection}
+                    unread={accountExpanded ? undefined : inbox?.unreadEmails}
+                    hasChildren={account.children.length > 0}
+                    isExpanded={accountExpanded}
+                    onExpandToggle={() => toggleSharedAccount(account.id)}
+                    onClick={() => toggleSharedAccount(account.id)}
+                    onContextMenu={menuAccountId
+                      ? (e) => handleSharedAccountContextMenu(e, menuAccountId)
+                      : undefined}
+                    isCollapsed={false}
+                  />
+                  {accountExpanded && (
+                    <>
+                      {indentNodes(account.children).map((child) => (
+                        <Fragment key={child.id}>
+                          <MailboxTreeItem
+                            node={child}
+                            selectedMailbox={treeSelection}
+                            expandedFolders={expandedFolders}
+                            onMailboxSelect={onMailboxSelect}
+                            onToggleExpand={handleToggleExpand}
+                            isCollapsed={false}
+                            onUnreadFilterClick={onUnreadFilterClick}
+                            colorful={colorfulSidebarIcons}
+                            onContextMenu={handleMailboxContextMenu}
+                          />
+                          {child.role === 'drafts' && menuAccountId
+                            && renderScheduledRow(`${account.id}-scheduled`, { accountId: menuAccountId, depth: 1 })}
+                        </Fragment>
+                      ))}
+                      {menuAccountId && !account.children.some((child) => child.role === 'drafts')
+                        && renderScheduledRow(`${account.id}-scheduled`, { accountId: menuAccountId, depth: 1 })}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {mvFlat && !useMultiAccount && (
           <div data-mv-labels="">
             <div className="flex items-center justify-between ps-[26px] pe-3 pt-4 pb-1">
@@ -1843,7 +1914,7 @@ function SidebarImpl({
 
         {tagsAboveShared && renderTags()}
 
-        {!useMultiAccount && showSecondary && sharedAccounts.length > 0 && (
+        {!useMultiAccount && !mvFlat && sharedAccounts.length > 0 && (
           <div>
             <SidebarSectionHeader
               label={t("shared")}
