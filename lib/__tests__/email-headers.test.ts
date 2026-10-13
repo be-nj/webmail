@@ -510,6 +510,15 @@ describe('hasAlignedDmarcPass', () => {
     })).toBe(false);
   });
 
+  it('reads the From domain after the last "@", as DMARC does', () => {
+    const auth = { dmarc: { result: 'pass' as const, domain: 'evil.example' } };
+    expect(hasAlignedDmarcPass({ from: from('x@paypal.example@evil.example'), authenticationResults: auth })).toBe(true);
+    expect(hasAlignedDmarcPass({
+      from: from('x@paypal.example@evil.example'),
+      authenticationResults: { dmarc: { result: 'pass', domain: 'paypal.example' } },
+    })).toBe(false);
+  });
+
   it('is false without header.from, a failing result, or no results', () => {
     expect(hasAlignedDmarcPass({ from: from('a@brand.example'), authenticationResults: { dmarc: { result: 'pass' } } })).toBe(false);
     expect(hasAlignedDmarcPass({ from: from('a@brand.example'), authenticationResults: { dmarc: { result: 'fail', domain: 'brand.example' } } })).toBe(false);
