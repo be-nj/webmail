@@ -10,6 +10,7 @@ import {
   type BimiRecord,
 } from '@/lib/bimi';
 import { MAX_PEM_BYTES, parseCertificates, verifiedLogo } from '@/lib/vmc';
+import { getClientIP } from '@/lib/admin/session';
 import { VMC_ROOTS_PEM } from '@/lib/vmc-roots';
 
 // BIMI sender logos, looked up from the sender domain's DNS.
@@ -34,6 +35,26 @@ const NEGATIVE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const ERROR_CACHE_TTL_MS = 60 * 60 * 1000;
 const MAX_REDIRECTS = 3;
 const FETCH_TIMEOUT_MS = 5000;
+// The route answers without a session, so each client may start only so
+// many fresh lookups (DNS plus up to two fetches) in a window. Cached
+// answers don't count. An inbox full of new senders stays far below this.
+const LOOKUP_LIMIT = 300;
+const LOOKUP_WINDOW_MS = 10 * 60 * 1000;
+const LOOKUP_CLIENTS_MAX = 5000;
+const lookupsByClient = new Map<string, { count: number; fetchedAt: number }>();
+
+/** Counts a fresh lookup for this client; false once it is over the limit. */
+function allowLookup(client: string): boolean {
+  const now = Date.now();
+  const entry = lookupsByClient.get(client);
+  if (!entry || now - entry.fetchedAt >= LOOKUP_WINDOW_MS) {
+    if (!entry) evictOldest(lookupsByClient, LOOKUP_CLIENTS_MAX);
+    lookupsByClient.set(client, { count: 1, fetchedAt: now });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= LOOKUP_LIMIT;
+}
 
 interface Logo {
   svg: string;
@@ -159,6 +180,13 @@ async function fetchCapped(target: string, cap: number, accept: string): Promise
       url = new URL(location, url);
       continue;
     }
+    // A client error is the host's answer for good (an expired mark taken
+    // down, a logo moved away); only server errors and throttling are worth
+    // another try later.
+    if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) {
+      await response.body?.cancel();
+      throw new NoBimi();
+    }
     if (!response.ok) throw new Error(`fetch failed: HTTP ${response.status}`);
     return readCapped(response, cap);
   }
@@ -248,6 +276,9 @@ export async function GET(request: NextRequest) {
 
   let pending = inflight.get(domain);
   if (!pending) {
+    if (!allowLookup(getClientIP(request))) {
+      return new NextResponse(null, { status: 429, headers: { 'Retry-After': String(LOOKUP_WINDOW_MS / 1000) } });
+    }
     pending = loadLogo(domain).finally(() => inflight.delete(domain));
     inflight.set(domain, pending);
   }
