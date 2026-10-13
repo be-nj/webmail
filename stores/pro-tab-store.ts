@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { ComposerDraftData } from '@/components/email/email-composer';
 import type { ComposePrefill } from '@/lib/plugin-compose-gate';
 import type { SearchScope } from '@/lib/global-search/query-parser';
+import type { AuthenticationResults } from '@/lib/jmap/types';
 
 export type ProTabKind =
   | 'mail' | 'calendar' | 'contacts' | 'files' | 'settings'
@@ -38,6 +39,8 @@ export interface ProReplyContext {
   body?: string;
   htmlBody?: string;
   receivedAt?: string;
+  /** Decides whether a Trusted Sender's quote may load remote images. */
+  authenticationResults?: AuthenticationResults;
   accountId?: string;
   attachments?: Array<{
     blobId: string; name?: string; type: string; size: number;

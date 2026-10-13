@@ -65,6 +65,7 @@ function buildReplyContext(email: Email): ProReplyContext {
     subject: email.subject,
     ...getQuoteBodies(email),
     receivedAt: email.receivedAt,
+    authenticationResults: email.authenticationResults,
     accountId: email.accountId,
     attachments: email.attachments,
     messageId: email.messageId,
