@@ -104,20 +104,30 @@ function UnreadDot({ besideAvatar }: { besideAvatar: boolean }) {
 }
 
 /** The chip row under a row's preview: the verification code, then the attachments. */
-function RowChips({ email, loadAttachments, onOpenAttachment, underSubject = false }: {
+/**
+ * The indent that puts Mountain View's second lines under the subject: the
+ * sender column (w-32, lg:w-40) plus the gap after it, and in a unified view
+ * the account dot (w-2) with its gap when the row shows one.
+ */
+function subjectIndent(accountDot: boolean) {
+  return accountDot ? "ps-[10rem] lg:ps-[12rem]" : "ps-[8.75rem] lg:ps-[10.75rem]";
+}
+
+function RowChips({ email, loadAttachments, onOpenAttachment, underSubject = false, accountDot = false }: {
   email: Email;
   loadAttachments?: LoadListAttachments;
   onOpenAttachment?: (attachment: Attachment) => void;
   /** Mountain View's one-line row: indent the chips to the subject column. */
   underSubject?: boolean;
+  /** The row leads with an account dot, which the indent has to clear. */
+  accountDot?: boolean;
 }) {
   const code = useListVerificationCode(email);
   const leading = code ? <VerificationCodeChip code={code} /> : undefined;
   // Most rows have no attachment: no loader for them, nor an empty chip row.
   const mayHaveAttachments = email.hasAttachment || (email.attachments?.length ?? 0) > 0;
-  // Under the subject, like Gmail: the indent is the sender column (w-32,
-  // lg:w-40) plus the gap after it, so the chips start where the subject does.
-  const className = underSubject ? "-mt-1 mb-2 ps-[8.75rem] lg:ps-[10.75rem]" : "mt-1.5";
+  // Under the subject, like Gmail, so the chips start where the subject does.
+  const className = underSubject ? cn("-mt-1 mb-2", subjectIndent(accountDot)) : "mt-1.5";
   if (onOpenAttachment && mayHaveAttachments) {
     return <ListAttachmentChips email={email} load={loadAttachments} onOpen={onOpenAttachment} leading={leading} className={className} />;
   }
@@ -129,10 +139,10 @@ function RowChips({ email, loadAttachments, onOpenAttachment, underSubject = fal
  * to the subject column like the chips, so it no longer runs on from the
  * subject.
  */
-function MvPreviewLine({ preview, snippet }: { preview: string; snippet: string | null }) {
+function MvPreviewLine({ preview, snippet, accountDot = false }: { preview: string; snippet: string | null; accountDot?: boolean }) {
   if (!preview && !snippet) return null;
   return (
-    <div className="-mt-2 mb-2 truncate ps-[8.75rem] text-[13px] leading-[18px] text-muted-foreground lg:ps-[10.75rem]">
+    <div className={cn("-mt-2 mb-2 truncate text-[13px] leading-[18px] text-muted-foreground", subjectIndent(accountDot))}>
       {snippet ? <SearchSnippetText snippet={snippet} /> : preview}
     </div>
   );
@@ -788,9 +798,9 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
                   {columns && <SizeCell bytes={email.size} />}
                 </div>
               </div>
-              {mvTwoLines && <MvPreviewLine preview={showPreview ? trimmedPreview : ''} snippet={previewSnippet} />}
+              {mvTwoLines && <MvPreviewLine preview={showPreview ? trimmedPreview : ''} snippet={previewSnippet} accountDot={!columns && !!(isUnifiedView && email.accountId && accountColor && showAccountDot)} />}
               {mvRow && (
-                <RowChips email={email} loadAttachments={loadAttachments} onOpenAttachment={onOpenAttachment} underSubject />
+                <RowChips email={email} loadAttachments={loadAttachments} onOpenAttachment={onOpenAttachment} underSubject accountDot={!columns && !!(isUnifiedView && email.accountId && accountColor && showAccountDot)} />
               )}
               </>
             ) : (
@@ -1464,10 +1474,11 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                     {columns && <SizeCell bytes={thread.emails.reduce((sum, e) => sum + (e.size ?? 0), 0)} />}
                   </div>
                 </div>
-                {mvTwoLines && <MvPreviewLine preview={showPreview ? trimmedPreview : ''} snippet={previewSnippet} />}
+                {mvTwoLines && <MvPreviewLine preview={showPreview ? trimmedPreview : ''} snippet={previewSnippet} accountDot={!columns && !!(isUnifiedView && latestEmail.accountId && threadAccountColor && showAccountDot)} />}
                 {mvRow && (
                   <RowChips
                     underSubject
+                    accountDot={!columns && !!(isUnifiedView && latestEmail.accountId && threadAccountColor && showAccountDot)}
                     email={latestEmail}
                     loadAttachments={loadAttachments}
                     onOpenAttachment={onOpenAttachment ? (a) => onOpenAttachment(latestEmail, a) : undefined}
