@@ -46,7 +46,7 @@ function hasDkimPass(auth: AuthenticationResults): boolean {
  * relaxed alignment DMARC applies, without a public-suffix list.
  */
 function alignedWith(fromDomain: string, candidate: string | undefined): boolean {
-  const other = candidate ? domainOf(`@${candidate}`) : undefined;
+  const other = candidate ? addressDomain(`@${candidate}`) : undefined;
   if (!other) return false;
   return other === fromDomain || other.endsWith(`.${fromDomain}`) || fromDomain.endsWith(`.${other}`);
 }
@@ -77,12 +77,18 @@ function hasAlignedDkimPass(auth: AuthenticationResults, fromDomain: string): bo
  */
 export function hasAlignedAuthenticationPass(auth: AuthenticationResults | undefined, fromEmail: string | undefined): boolean {
   if (!auth || !fromEmail) return false;
-  const domain = domainOf(fromEmail);
+  const domain = addressDomain(fromEmail);
   if (!domain) return false;
   return auth.dmarc?.result === 'pass' || hasAlignedSpfPass(auth, domain) || hasAlignedDkimPass(auth, domain);
 }
 
-function domainOf(address: string): string | undefined {
+/**
+ * The domain of an address: the text after its last `@`, as DMARC reads it
+ * (and as Stalwart does). "x@paypal.com@evil.com" is evil.com. Everything
+ * that ties a domain to a DMARC verdict must read it this way, or a pass
+ * for one domain can lend its standing to another.
+ */
+export function addressDomain(address: string): string | undefined {
   const domain = address.slice(address.lastIndexOf('@') + 1).trim().toLowerCase().replace(/\.$/, '');
   return /^[^\s<>@]+\.[^\s<>@]+$/.test(domain) ? domain : undefined;
 }
@@ -114,14 +120,14 @@ export function getSenderVerification(
   fromEmail: string | undefined,
 ): SenderVerification | null {
   if (!auth || !fromEmail || (!auth.spf && !auth.dkim && !auth.dmarc)) return null;
-  const domain = domainOf(fromEmail);
+  const domain = addressDomain(fromEmail);
   if (!domain) return null;
 
   // DMARC only counts the MAIL FROM identity; a HELO pass proves nothing
   // about who wrote the message.
   const mailFrom = auth.spf?.all?.find((entry) => entry.identity === 'mailfrom');
   const envelope = mailFrom?.domain ?? auth.spf?.domain;
-  const envelopeDomain = envelope ? domainOf(envelope) : undefined;
+  const envelopeDomain = envelope ? addressDomain(envelope) : undefined;
   const sentFrom = envelopeDomain && envelopeDomain !== domain ? envelopeDomain : undefined;
 
   if (isAuthenticationSpoofed(auth)) return { status: 'failed', domain, sentFrom };
@@ -145,7 +151,8 @@ export function hasAlignedDmarcPass(email: {
 }): boolean {
   const dmarc = email.authenticationResults?.dmarc;
   if (dmarc?.result !== 'pass' || !dmarc.domain) return false;
-  const fromDomain = email.from?.[0]?.email?.split('@').pop()?.toLowerCase();
+  const fromAddress = email.from?.[0]?.email;
+  const fromDomain = fromAddress ? addressDomain(fromAddress) : undefined;
   return !!fromDomain && dmarc.domain.toLowerCase() === fromDomain;
 }
 

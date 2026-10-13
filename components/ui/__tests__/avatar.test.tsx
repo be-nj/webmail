@@ -84,6 +84,12 @@ describe('Avatar Brand Logo', () => {
     expect(container.querySelector('[data-testid="trusted-mark"]')).toBeNull();
   });
 
+  it('asks for the domain after the last "@", the one DMARC passed', async () => {
+    render(<Avatar name="PayPal" email="x@paypal.example@evil.example" dmarcPass />);
+    await waitFor(() => expect(bimiCalls()).toHaveLength(1));
+    expect(bimiCalls()[0]).toMatch(/&domain=evil\.example$/);
+  });
+
   it('never asks without a DMARC pass, and never shows a favicon', () => {
     const { container } = render(<Avatar name="Brand" email="news@mail.brand2.example" />);
     expect(imgSrc(container)).toBeNull();
