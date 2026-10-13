@@ -572,7 +572,7 @@
       "thread_id": "Thread-ID",
       "size": "Größe",
       "mime_type": "MIME-Typ",
-      "attachments_summary": "{count} Dateien · {size}",
+      "attachments_summary": "{count, plural, one {# Datei} other {# Dateien}} · {size}",
       "list_id": "Listen-ID",
       "list_help": "Listenhilfe",
       "list_post": "Listenbeitrag",

@@ -456,7 +456,7 @@
       "thread_id": "Thread ID",
       "size": "Size",
       "mime_type": "MIME type",
-      "attachments_summary": "{count} files · {size}",
+      "attachments_summary": "{count, plural, one {# file} other {# files}} · {size}",
       "list_id": "List ID",
       "list_help": "List help",
       "list_post": "List post",
