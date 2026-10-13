@@ -705,6 +705,17 @@ describe('ThreadListItem Mountain View desktop row', () => {
     expect(screen.getByText('See you there').textContent).toBe('See you there');
   });
 
+  it('indents the second line past the account dot in a unified view', () => {
+    useSettingsStore.setState({ mvRowLines: 'two', tintListRowsByAccount: false } as never);
+    useEmailStore.setState({ isUnifiedView: true } as never);
+    try {
+      renderRow(makeEmail({ preview: 'See you there', accountId: ACCOUNT_TEAL.id } as Partial<Email>));
+      expect(screen.getByText('See you there').className).toContain('ps-[10rem]');
+    } finally {
+      useEmailStore.setState({ isUnifiedView: false } as never);
+    }
+  });
+
   it('counts a thread after the names instead of in a pill, and opens it without unfolding', () => {
     const onEmailSelect = vi.fn();
     const onToggleExpand = vi.fn();
