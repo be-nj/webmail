@@ -95,3 +95,13 @@ macht.
    - BIMI (#732) als PR, ohne die fork-eigenen Teile (Favicon-Entfernung,
      Trusted-Sender-Logo, Handschlag). Braucht Screenshots.
 3. **Stalwart:** fehlende Unterstützung für Termin-Anhänge per `blobId` melden.
+4. **Stalwart: fremde Authentication-Results bei angemeldeter Einlieferung.**
+   Eine Mail, die ein Konto dieses Servers per Submission an ein anderes
+   schickt, bekommt von Stalwart keinen eigenen Authentication-Results-Header,
+   und ein mitgeschickter bleibt stehen (im Integrations-Stack geprüft am
+   13.10.2026, auch mit dem echten Server-Namen als authserv-id). Der Client
+   hält den obersten Header für den des Servers, also kann ein Kontoinhaber
+   einen DMARC-Pass für fremde Domains vortäuschen (Marken-Logo, Handschlag).
+   Ein Abgleich der authserv-id im Client hilft nicht. Abhilfe nur im
+   Stalwart: auch bei Submission einen eigenen Header setzen oder fremde
+   entfernen.
