@@ -204,6 +204,10 @@ function initialsColor(background: string): string {
   return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? '#ffffff' : '#000000';
 }
 
+// Fork: a legal form after a comma ("Acme, Inc.", "Müller, GmbH & Co. KG")
+// keeps a company name in order instead of reading it surname-first.
+const LEGAL_FORM = /^\s*(?:(?:inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?|&)(?:\s*(?:(?:inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?|&))*\s*$/i;
+
 export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain, senderTrust = null, senderTrustLabel }: AvatarProps) {
   // The BIMI logo of this domain answered with no logo (or didn't load).
   const [failedBrand, setFailedBrand] = useState<string | null>(null);
@@ -257,9 +261,7 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
       // name, and "Wolf, Daniela" is surname-first, so it reads "DW".
       let cleaned = name.replace(/[([{][^)\]}]*[)\]}]/g, " ").trim();
       const commaParts = cleaned.split(",");
-      // A legal form after the comma ("Acme, Inc.") keeps a company name in order.
-      const legalForm = /^\s*(inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?\s*$/i;
-      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part)) && !legalForm.test(commaParts[1])) {
+      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part)) && !LEGAL_FORM.test(commaParts[1])) {
         cleaned = `${commaParts[1]} ${commaParts[0]}`;
       }
       const words = cleaned
