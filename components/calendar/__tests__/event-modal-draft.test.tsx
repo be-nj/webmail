@@ -50,14 +50,63 @@ describe('EventModal with a draft from a message', () => {
   });
 
   it('fills the end from the picked start, an hour later', () => {
-    const { startDate, endDate, view } = renderModal();
+    // 10:15 now: the event starts at the next full hour, as a new one does.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 1, 10, 15));
+    try {
+      const { startDate, endDate, view } = renderModal();
+      fireEvent.change(startDate, { target: { value: '2026-10-05' } });
+      expect(endDate.value).toBe('2026-10-05');
+      const times = view.container.querySelectorAll('input[type="time"]');
+      expect((times[0] as HTMLInputElement).value).toBe('11:00');
+      expect((times[1] as HTMLInputElement).value).toBe('12:00');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  const timeInputs = (view: ReturnType<typeof renderModal>['view']) =>
+    [...view.container.querySelectorAll('input[type="time"]')] as HTMLInputElement[];
+  const saveButton = () => screen.getByText('form.save').closest('button') as HTMLButtonElement;
+
+  it('moves the end to the next day when the hour passes midnight', () => {
+    const { view, startDate, endDate } = renderModal();
+    fireEvent.change(timeInputs(view)[0], { target: { value: '23:30' } });
     fireEvent.change(startDate, { target: { value: '2026-10-05' } });
-    expect(endDate.value).toBe('2026-10-05');
-    const times = view.container.querySelectorAll('input[type="time"]');
-    const start = (times[0] as HTMLInputElement).value;
-    const end = (times[1] as HTMLInputElement).value;
-    expect(start).toMatch(/^\d{2}:\d{2}$/);
-    expect(Number(end.slice(0, 2))).toBe((Number(start.slice(0, 2)) + 1) % 24);
+    expect(endDate.value).toBe('2026-10-06');
+    expect(timeInputs(view)[1].value).toBe('00:30');
+  });
+
+  it('gives times when "all day" is turned off after picking a date', async () => {
+    const { onSave, view, startDate } = renderModal();
+    const allDay = view.container.querySelector('#allDay') as HTMLInputElement;
+    fireEvent.click(allDay);
+    fireEvent.change(startDate, { target: { value: '2026-10-05' } });
+    fireEvent.click(allDay);
+    const [start, end] = timeInputs(view);
+    expect(start.value).toMatch(/^\d{2}:\d{2}$/);
+    expect(end.value).toMatch(/^\d{2}:\d{2}$/);
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect((onSave.mock.calls[0][0] as Partial<CalendarEvent>).start).toMatch(/^2026-10-05T\d{2}:\d{2}:00$/);
+  });
+
+  it('gives times when the end date was picked first', () => {
+    const { view, startDate, endDate } = renderModal();
+    fireEvent.change(endDate, { target: { value: '2026-10-07' } });
+    fireEvent.change(startDate, { target: { value: '2026-10-05' } });
+    const [start, end] = timeInputs(view);
+    expect(start.value).toMatch(/^\d{2}:\d{2}$/);
+    expect(end.value).toMatch(/^\d{2}:\d{2}$/);
+    expect(endDate.value).toBe('2026-10-07');
+  });
+
+  it('cannot be saved without a start time', () => {
+    const { view, startDate } = renderModal();
+    fireEvent.change(startDate, { target: { value: '2026-10-05' } });
+    expect(saveButton().disabled).toBe(false);
+    fireEvent.change(timeInputs(view)[0], { target: { value: '' } });
+    expect(saveButton().disabled).toBe(true);
   });
 
   it('saves the message links with the new event', async () => {
