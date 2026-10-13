@@ -14,7 +14,7 @@ import { hasFullBleedCanvas } from "@/lib/email-full-bleed";
 import { stripBidiControls } from "@/lib/bidi";
 import { withBasePath } from "@/lib/browser-navigation";
 import { appUrl, buildCalendarPath, buildContactsPath, buildMailPath } from "@/lib/deep-links";
-import { buildEventDraftFromEmail } from "@/lib/event-from-email";
+import { buildEventDraftFromEmail, MAX_EMBEDDED_EMAIL_BYTES } from "@/lib/event-from-email";
 import { useCalendarDraftStore } from "@/stores/calendar-draft-store";
 import { useCopyLink } from "@/hooks/use-copy-link";
 import { Button } from "@/components/ui/button";
@@ -3341,9 +3341,13 @@ export function EmailViewer({
   const handleCreateEvent = async () => {
     if (!email) return;
     let raw: Uint8Array | null = null;
-    if (email.blobId && client) {
+    // The message's own account, as attachments read it, so a message from
+    // a shared folder or another login is found. One too big to embed is
+    // not fetched at all.
+    const tooBig = typeof email.size === 'number' && email.size > MAX_EMBEDDED_EMAIL_BYTES;
+    if (email.blobId && blobClient && !tooBig) {
       try {
-        raw = new Uint8Array(await client.fetchBlobArrayBuffer(email.blobId, undefined, 'message/rfc822'));
+        raw = new Uint8Array(await blobClient.fetchBlobArrayBuffer(email.blobId, undefined, 'message/rfc822', blobAccountId));
       } catch {
         // No bytes, no attachment - the link back to the message stands.
         raw = null;
