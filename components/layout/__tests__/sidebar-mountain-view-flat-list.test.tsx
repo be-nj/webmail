@@ -122,6 +122,38 @@ describe('Sidebar under Mountain View', () => {
     expect(folderRow('Trash')).toBeNull();
   });
 
+  it('keeps a shared mailbox in view under its own heading, and opens its folders', () => {
+    localStorage.removeItem('sidebarExpandedSharedAccounts');
+    const shared = [
+      { id: 'g-inbox', name: 'Inbox', role: 'inbox', parentId: null, totalEmails: 4, unreadEmails: 2, sortOrder: 0, myRights: { mayAddItems: true }, isShared: true, accountId: 'd', accountName: 'mb@beck.ma' },
+      { id: 'g-sent', name: 'Sent', role: 'sent', parentId: null, totalEmails: 0, unreadEmails: 0, sortOrder: 1, myRights: { mayAddItems: true }, isShared: true, accountId: 'd', accountName: 'mb@beck.ma' },
+    ] as unknown as Mailbox[];
+    const onMailboxSelect = vi.fn();
+    const { container } = render(
+      <Sidebar mailboxes={[...mailboxes, ...shared]} selectedMailbox="inbox" mvShell onMailboxSelect={onMailboxSelect} />,
+    );
+
+    // Visible without opening More, ahead of the labels.
+    const section = container.querySelector('[data-mv-shared]')!;
+    expect(section).not.toBeNull();
+    expect(section.compareDocumentPosition(container.querySelector('[data-mv-labels]')!))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    const accountRow = section.querySelector('[data-folder-name="mb@beck.ma"]')!;
+    expect(accountRow).toHaveTextContent('2');
+    expect(section.querySelector('[data-mailbox-id="g-inbox"]')).toBeNull();
+
+    fireEvent.click(accountRow.querySelector('button:last-of-type')!);
+    const groupInbox = section.querySelector('[data-mailbox-id="g-inbox"]')!;
+    expect(groupInbox).not.toBeNull();
+    fireEvent.click(groupInbox.querySelector('button:last-of-type')!);
+    expect(onMailboxSelect).toHaveBeenCalledWith('g-inbox');
+
+    // The old "Shared" section under More is gone.
+    fireEvent.click(screen.getByText('show_more'));
+    expect(screen.queryByTestId('section-shared')).toBeNull();
+    localStorage.removeItem('sidebarExpandedSharedAccounts');
+  });
+
   it('leaves the default layout its sections and every folder', () => {
     render(<Sidebar mailboxes={mailboxes} selectedMailbox="inbox" />);
 
