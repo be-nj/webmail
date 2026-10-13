@@ -3604,6 +3604,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       return;
     }
     setSearchFilters({ ...DEFAULT_SEARCH_FILTERS, isStarred: true });
+    // Starred mail wherever it is, also when Trash or Spam was open, whose
+    // default search scope is that folder alone.
+    useEmailStore.getState().setSearchMailboxId(SEARCH_SCOPE_ALL_FOLDERS);
     void handleAdvancedSearch();
   };
 
