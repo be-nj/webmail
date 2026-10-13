@@ -10,6 +10,7 @@ import { withBasePath } from "@/lib/browser-navigation";
 import { IS_LITE } from "@/lib/lite";
 import { AlertTriangle, HeartHandshake } from "@/components/icons";
 import type { SenderTrustSignal } from "@/lib/sender-trust";
+import { addressDomain } from "@/lib/email-headers";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -215,7 +216,7 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
   // Start from what this page already knows, so a row scrolled back into view
   // draws its logo on the first render.
   const [brandLogo, setBrandLogo] = useState<BrandLogo | null | undefined>(() => {
-    const d = email?.split("@")[1]?.toLowerCase();
+    const d = email ? addressDomain(email) : undefined;
     return d ? settledBrandLogos.get(d) : undefined;
   });
   const [brandLogoError, setBrandLogoError] = useState(false);
@@ -255,7 +256,10 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
     return undefined;
   }, [contactPhotoUri, email, contacts]);
 
-  const domain = email?.split("@")[1]?.toLowerCase();
+  // Read the domain the way the DMARC check does (after the last "@"), so
+  // "x@paypal.com@evil.com" passing DMARC for evil.com cannot show the
+  // mark of paypal.com.
+  const domain = email ? addressDomain(email) : undefined;
   // The registrable domain decides freemail (mail.gmx.net is still gmx.net).
   const rootDomain = domain ? getRootDomain(domain) : undefined;
 

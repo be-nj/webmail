@@ -41,7 +41,13 @@ function hasDkimPass(auth: AuthenticationResults): boolean {
   return auth.dkim?.result === 'pass' || !!auth.dkim?.all?.some((entry) => entry.result === 'pass');
 }
 
-function domainOf(address: string): string | undefined {
+/**
+ * The domain of an address: the text after its last `@`, as DMARC reads it
+ * (and as Stalwart does). "x@paypal.com@evil.com" is evil.com. Everything
+ * that ties a domain to a DMARC verdict must read it this way, or a pass
+ * for one domain can lend its standing to another.
+ */
+export function addressDomain(address: string): string | undefined {
   const domain = address.slice(address.lastIndexOf('@') + 1).trim().toLowerCase().replace(/\.$/, '');
   return /^[^\s<>@]+\.[^\s<>@]+$/.test(domain) ? domain : undefined;
 }
@@ -73,7 +79,7 @@ export function getSenderVerification(
   fromEmail: string | undefined,
 ): SenderVerification | null {
   if (!auth || !fromEmail || (!auth.spf && !auth.dkim && !auth.dmarc)) return null;
-  const domain = domainOf(fromEmail);
+  const domain = addressDomain(fromEmail);
   if (!domain) return null;
 
   // DMARC only counts the MAIL FROM identity; a HELO pass proves nothing
@@ -81,7 +87,7 @@ export function getSenderVerification(
   const mailFrom = auth.spf?.all?.find((entry) => entry.identity === 'mailfrom');
   const spfPass = auth.spf?.all ? mailFrom?.result === 'pass' : auth.spf?.result === 'pass';
   const envelope = mailFrom?.domain ?? auth.spf?.domain;
-  const envelopeDomain = envelope ? domainOf(envelope) : undefined;
+  const envelopeDomain = envelope ? addressDomain(envelope) : undefined;
   const sentFrom = envelopeDomain && envelopeDomain !== domain ? envelopeDomain : undefined;
 
   if (isAuthenticationSpoofed(auth)) return { status: 'failed', domain, sentFrom };
@@ -101,7 +107,8 @@ export function hasAlignedDmarcPass(email: {
 }): boolean {
   const dmarc = email.authenticationResults?.dmarc;
   if (dmarc?.result !== 'pass' || !dmarc.domain) return false;
-  const fromDomain = email.from?.[0]?.email?.split('@').pop()?.toLowerCase();
+  const fromAddress = email.from?.[0]?.email;
+  const fromDomain = fromAddress ? addressDomain(fromAddress) : undefined;
   return !!fromDomain && dmarc.domain.toLowerCase() === fromDomain;
 }
 
