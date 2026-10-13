@@ -357,21 +357,44 @@ export function EventModal({
     setEndDate(formatDateInput(nextEnd));
     if (!allDay) setEndTime(formatTimeInput(nextEnd));
   };
+  // A draft made from a message starts without dates or times. Give a date
+  // that has no times yet the standard one hour from the next full hour, as
+  // a new event gets, with the end on the day that hour ends. An end date
+  // already picked past the start stays.
+  const fillBlankTimes = (date: string) => {
+    let from = startTime;
+    if (!from) {
+      const next = displayNow();
+      next.setHours(next.getHours() + 1, 0, 0, 0);
+      from = formatTimeInput(next);
+      setStartTime(from);
+    }
+    const end = addHours(new Date(`${date}T${from}:00`), 1);
+    if (!(endDate && endDate > formatDateInput(end))) setEndDate(formatDateInput(end));
+    setEndTime(formatTimeInput(end));
+  };
   const handleStartDateChange = (v: string) => {
     setStartDate(v);
     // First date on a blank draft: no duration to preserve, so the event
     // becomes the standard one hour (or that whole day).
-    if (!endDate) {
-      setEndDate(v);
-      if (!allDay) {
-        const from = startTime || formatTimeInput(displayNow());
-        if (!startTime) setStartTime(from);
-        setEndTime(formatTimeInput(addHours(new Date(`${v}T${from}:00`), 1)));
-      }
+    if (allDay) {
+      if (!endDate) setEndDate(v);
+      else shiftEndKeepingDuration(v, startTime);
+      return;
+    }
+    if (!endDate || !startTime || !endTime) {
+      fillBlankTimes(v);
       return;
     }
     shiftEndKeepingDuration(v, startTime);
   };
+  const handleAllDayChange = (checked: boolean) => {
+    setAllDay(checked);
+    // Leaving "all day" on a draft that never had times needs some.
+    if (!checked && startDate && (!startTime || !endTime)) fillBlankTimes(startDate);
+  };
+  // A timed event needs both times and an end date before it can be saved.
+  const timesMissing = !allDay && (!startTime || !endTime || !endDate);
   const handleStartTimeChange = (v: string) => { setStartTime(v); shiftEndKeepingDuration(startDate, v); };
   const [calendarId, setCalendarId] = useState<string>(() => {
     if (event?.calendarIds) return getPrimaryCalendarId(event) || calendars[0]?.id || "";
@@ -544,7 +567,7 @@ export function EventModal({
 
   const handleSave = useCallback(async () => {
     const trimmedTitle = title.trim();
-    if (!trimmedTitle || !startDate || isSaving || savingRef.current) return;
+    if (!trimmedTitle || !startDate || timesMissing || isSaving || savingRef.current) return;
     if (trimmedTitle.length > 500 || description.trim().length > 10000 || location.trim().length > 500) {
       // This guard returned silently, so a rejected save was indistinguishable from a dead
       // button. The fields also enforce their limits via maxLength, so this is a backstop —
@@ -746,7 +769,7 @@ export function EventModal({
       savingRef.current = false;
       setIsSaving(false);
     }
-  }, [title, description, location, virtualLocation, startDate, startTime, endDate, endTime, allDay, calendarId, recurrence, customRule, alertRows, attendees, sendInvitations, currentUserEmails, existingParticipants, resolveContactName, event, draft, onSave, isSaving, t]);
+  }, [title, description, location, virtualLocation, startDate, startTime, endDate, endTime, allDay, timesMissing, calendarId, recurrence, customRule, alertRows, attendees, sendInvitations, currentUserEmails, existingParticipants, resolveContactName, event, draft, onSave, isSaving, t]);
 
   const handleRsvp = useCallback((status: CalendarParticipant['participationStatus']) => {
     if (!event || !userParticipantId || !onRsvp) return;
@@ -1255,7 +1278,7 @@ export function EventModal({
               type="checkbox"
               id="allDay"
               checked={allDay}
-              onChange={(e) => setAllDay(e.target.checked)}
+              onChange={(e) => handleAllDayChange(e.target.checked)}
               className="rounded border-input"
             />
             <label htmlFor="allDay" className="text-sm">{t("form.all_day_event")}</label>
@@ -1539,7 +1562,7 @@ export function EventModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!title.trim() || !startDate || isSaving}
+            disabled={!title.trim() || !startDate || timesMissing || isSaving}
             className="w-full"
           >
             {/* While a save is in flight the button was disabled with no visible change, so a
