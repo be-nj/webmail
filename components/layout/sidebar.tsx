@@ -2256,7 +2256,8 @@ function SidebarImpl({
 
         {tagsAboveShared && renderTags()}
 
-        {!useMultiAccount && showSecondary && renderSharedSection(sharedAccounts, {
+        {/* Fork: Mountain View keeps shared mailboxes in view rather than behind "More". */}
+        {!useMultiAccount && (showSecondary || mvFlat) && renderSharedSection(sharedAccounts, {
           expanded: sharedExpanded,
           onToggle: toggleShared,
           selected: selectedKeyword ? "" : selectedMailbox,
