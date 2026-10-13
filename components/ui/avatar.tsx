@@ -206,6 +206,10 @@ interface AvatarProps {
   senderTrustLabel?: string;
 }
 
+// Fork: a legal form after a comma ("Acme, Inc.", "Müller, GmbH & Co. KG")
+// keeps a company name in order instead of reading it surname-first.
+const LEGAL_FORM = /^\s*(?:(?:inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?|&)(?:\s*(?:(?:inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?|&))*\s*$/i;
+
 export function Avatar({ name, email, contactPhotoUri, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, dmarcPass = false, senderTrust = null, senderTrustLabel }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
   // Start from what this page already knows, so a row scrolled back into view
@@ -286,9 +290,7 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
       // name, and "Wolf, Daniela" is surname-first, so it reads "DW".
       let cleaned = name.replace(/[([{][^)\]}]*[)\]}]/g, " ").trim();
       const commaParts = cleaned.split(",");
-      // A legal form after the comma ("Acme, Inc.") keeps a company name in order.
-      const legalForm = /^\s*(inc|ltd|llc|gmbh|ag|kg|co|corp|plc|e\.?\s?v)\.?\s*$/i;
-      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part)) && !legalForm.test(commaParts[1])) {
+      if (commaParts.length === 2 && commaParts.every((part) => /\p{L}/u.test(part)) && !LEGAL_FORM.test(commaParts[1])) {
         cleaned = `${commaParts[1]} ${commaParts[0]}`;
       }
       const words = cleaned
