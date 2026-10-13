@@ -25,6 +25,8 @@ vi.mock('../account-switcher', () => ({ AccountSwitcher: () => null }));
 const { Sidebar } = await import('../sidebar');
 const { useSettingsStore } = await import('@/stores/settings-store');
 const { useUIStore } = await import('@/stores/ui-store');
+const { useEmailStore } = await import('@/stores/email-store');
+const { DEFAULT_SEARCH_FILTERS } = await import('@/lib/jmap/search-utils');
 
 const mailboxes: Mailbox[] = [
   { id: 'inbox', name: 'Inbox', role: 'inbox', parentId: null, totalEmails: 0, unreadEmails: 0, sortOrder: 0, myRights: { mayAddItems: true } },
@@ -88,6 +90,21 @@ describe('Sidebar under Mountain View', () => {
     expect(rows.indexOf('mv-starred')).toBe(rows.indexOf('Inbox') + 1);
     fireEvent.click(container.querySelector('[data-folder-name="mv-starred"] button:last-of-type')!);
     expect(onOpenStarred).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks only the Starred row while its search runs, whichever folder was open', () => {
+    useEmailStore.setState({ searchQuery: '', searchFilters: { ...DEFAULT_SEARCH_FILTERS, isStarred: true } } as never);
+    try {
+      const { container } = render(
+        <Sidebar mailboxes={mailboxes} selectedMailbox="receipts" mvShell onOpenStarred={vi.fn()} />,
+      );
+      const selected = [...container.querySelectorAll('[data-folder-name]')]
+        .filter((row) => row.querySelector('[data-selected="true"]') || row.getAttribute('data-selected') === 'true')
+        .map((row) => row.getAttribute('data-folder-name'));
+      expect(selected).toEqual(['mv-starred']);
+    } finally {
+      useEmailStore.setState({ searchFilters: { ...DEFAULT_SEARCH_FILTERS } } as never);
+    }
   });
 
   it('has no Starred row outside Mountain View', () => {
