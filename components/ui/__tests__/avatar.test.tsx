@@ -27,6 +27,8 @@ describe('Avatar', () => {
   it('keeps a company name with its legal form in order', () => {
     expect(render(<Avatar name="Acme, Inc." />).container.textContent).toBe('AI');
     expect(render(<Avatar name="Beispiel, GmbH" />).container.textContent).toBe('BG');
+    expect(render(<Avatar name="Müller, Co. KG" />).container.textContent).toBe('MK');
+    expect(render(<Avatar name="Müller, GmbH & Co. KG" />).container.textContent).toBe('MK');
   });
 
   it('keeps digits when the name has nothing else', () => {
