@@ -1368,11 +1368,13 @@ function SidebarImpl({
   const unifiedSectionShown = showUnified || anyCrossViewEnabled;
   const mvFoldersHeadless = mvFlat && !unifiedSectionShown;
   // Without a cross-account starred view, the Starred row runs a search for
-  // starred mail and the open folder stays the Inbox. Show the row as the
-  // active one then, and the Inbox not.
+  // starred mail over all folders, and whichever folder was open stays the
+  // selected one underneath. Show the Starred row as the active one then,
+  // and no folder.
   const starredSearchActive = useEmailStore((s) => isStarredOnlySearch(s.searchQuery, s.searchFilters));
   const mvStarredSelected = !selectedKeyword
     && (selectedMailbox === CROSS_VIEW_IDS.starred || (mvFlat && !!onOpenStarred && starredSearchActive));
+  const treeSelection = selectedKeyword || mvStarredSelected ? "" : selectedMailbox;
   const isPrimaryFolder = (node: MailboxNode) =>
     node.role === 'inbox' || node.role === 'sent' || node.role === 'drafts';
   // Everywhere else the folders the user made sit in a "Your folders" section
@@ -2008,7 +2010,7 @@ function SidebarImpl({
                 {showUnified && unifiedCounts.map((count) => {
                   const unifiedId = UNIFIED_MAILBOX_IDS[count.role];
                   const Icon = getUnifiedIcon(count.role);
-                  const isSelected = !selectedKeyword && selectedMailbox === unifiedId;
+                  const isSelected = !selectedKeyword && !mvStarredSelected && selectedMailbox === unifiedId;
                   return (
                     <SidebarRow
                       key={unifiedId}
@@ -2032,7 +2034,8 @@ function SidebarImpl({
                   { show: showCrossAll, id: CROSS_VIEW_IDS.all, Icon: Mails, label: t('unified_all_mail'), unread: crossUnreadCount },
                 ].map(({ show, id, Icon, label, unread }) => {
                   if (!show) return null;
-                  const isSelected = !selectedKeyword && selectedMailbox === id;
+                  const isSelected = !selectedKeyword && selectedMailbox === id
+                    && (!mvStarredSelected || id === CROSS_VIEW_IDS.starred);
                   return (
                     <SidebarRow
                       key={id}
@@ -2084,7 +2087,7 @@ function SidebarImpl({
                           <Fragment key={node.id}>
                             <MailboxTreeItem
                               node={node}
-                              selectedMailbox={selectedKeyword || !isViewing ? "" : selectedMailbox}
+                              selectedMailbox={!isViewing ? "" : treeSelection}
                               expandedFolders={expandedFolders}
                               onMailboxSelect={(mailboxId) =>
                                 onAccountMailboxSelect?.(isActive ? null : account.id, mailboxId)
@@ -2153,7 +2156,7 @@ function SidebarImpl({
                       <Fragment key={node.id}>
                         <MailboxTreeItem
                           node={node}
-                          selectedMailbox={selectedKeyword || mvStarredSelected ? "" : selectedMailbox}
+                          selectedMailbox={treeSelection}
                           expandedFolders={expandedFolders}
                           onMailboxSelect={onMailboxSelect}
                           onToggleExpand={handleToggleExpand}
@@ -2196,7 +2199,7 @@ function SidebarImpl({
                       <MailboxTreeItem
                         key={node.id}
                         node={node}
-                        selectedMailbox={selectedKeyword ? "" : selectedMailbox}
+                        selectedMailbox={treeSelection}
                         expandedFolders={expandedFolders}
                         onMailboxSelect={onMailboxSelect}
                         onToggleExpand={handleToggleExpand}
@@ -2238,7 +2241,7 @@ function SidebarImpl({
               <MailboxTreeItem
                 key={node.id}
                 node={node}
-                selectedMailbox={selectedKeyword ? "" : selectedMailbox}
+                selectedMailbox={treeSelection}
                 expandedFolders={expandedFolders}
                 onMailboxSelect={onMailboxSelect}
                 onToggleExpand={handleToggleExpand}
