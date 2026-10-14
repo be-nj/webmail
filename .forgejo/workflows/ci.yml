@@ -1,0 +1,244 @@
+# CI + CD for the Bulwark fork on git.beckm4nn.net: checks and unit tests on
+# every push; on the deploy branch also image build + push and a Komodo
+# rollout of the `bulwark` service in the stack "stalwart" on diana.
+#
+# Forgejo reads .forgejo/workflows/ and then ignores .github/workflows/, so the
+# upstream GitHub workflows (docker publish, demo deploy, integration) stay
+# for the GitHub fork and never run here.
+#
+# The deploy branch is the repository's default branch. The fork moves to a
+# new branch with every upstream release (benj/on-<version>); switching the
+# default branch in the repo settings moves the deploys with it, and pushes to
+# older branches still get checked but never roll out.
+#
+# Every push:
+#   1. check   eslint + typecheck                        (quick runner)
+#   2. test    vitest, the same flags as upstream's tests.yml
+#   3. gate    is this the default branch, still at this commit?
+# Default branch only:
+#   4. images  docker build with GIT_COMMIT=<short sha>, push :<sha> and :latest
+#   5. deploy  Komodo: BULWARK_IMAGE_TAG=<sha> in the stack environment, then
+#              DeployStack for the `bulwark` service alone and wait for it.
+#              The other services of the stack (Stalwart, otel) stay untouched.
+#
+# Secrets (on the repo — Settings → Actions → Secrets):
+#   PACKAGES_TOKEN     Forgejo token with write:package (the built-in Actions
+#                      token may NOT push to the package registry)
+#   KOMODO_API_KEY, KOMODO_API_SECRET
+# The Komodo URL is internal, not a secret, and stands in clear text below.
+name: CI
+
+on: [push]
+
+# Two pushes in quick succession would race for the :latest tag and the
+# DeployStack call; queue them instead.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+# Not github.server_url: that is the address the runner registered with, which
+# does not resolve inside the per-job network.
+env:
+  FORGE_URL: https://git.beckm4nn.net
+  IMAGE: git.beckm4nn.net/benjamin/bulwark-mail
+
+jobs:
+  check:
+    name: eslint + typecheck
+    runs-on: quick
+    container:
+      image: node:22-bookworm
+    steps:
+      # No actions/checkout on this Forgejo (no marketplace mirror): clone with
+      # the per-run token, then strip it from .git/config again.
+      - name: Checkout
+        run: |
+          set -eu
+          scheme="${FORGE_URL%%://*}"
+          host="${FORGE_URL#*://}"
+          git clone -q "${scheme}://token:${{ github.token }}@${host}/${GITHUB_REPOSITORY}.git" .
+          git checkout -q "${GITHUB_SHA}"
+          git remote set-url origin "${FORGE_URL}/${GITHUB_REPOSITORY}.git"
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: eslint
+        run: npm run lint
+      - name: typecheck
+        run: npm run typecheck
+
+  test:
+    name: vitest
+    # Unit tests without services, but the suite runs for 8–10 minutes; that
+    # belongs on the heavy runner, not in front of other repos' quick jobs.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: node:22-bookworm
+    steps:
+      - name: Checkout
+        run: |
+          set -eu
+          scheme="${FORGE_URL%%://*}"
+          host="${FORGE_URL#*://}"
+          git clone -q "${scheme}://token:${{ github.token }}@${host}/${GITHUB_REPOSITORY}.git" .
+          git checkout -q "${GITHUB_SHA}"
+          git remote set-url origin "${FORGE_URL}/${GITHUB_REPOSITORY}.git"
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run test suite
+        # forks + a small worker count keeps the load-sensitive component tests
+        # from timing out; the longer per-test timeout covers the jsdom-heavy
+        # suites.
+        run: npx vitest run --pool=forks --maxWorkers=2 --testTimeout=15000
+
+  gate:
+    name: deploy branch?
+    needs: [check, test]
+    runs-on: quick
+    outputs:
+      deploy: ${{ steps.branch.outputs.deploy }}
+    steps:
+      # Deploy only from the default branch, and only while it still points at
+      # this commit: if it moved on meanwhile, the newer run owns the rollout.
+      - name: Compare with the default branch
+        id: branch
+        run: |
+          set -eu
+          api="${FORGE_URL}/api/v1/repos/${GITHUB_REPOSITORY}"
+          auth="Authorization: token ${{ github.token }}"
+          default=$(curl -fsS -H "$auth" "$api" | python3 -c 'import sys, json; print(json.load(sys.stdin)["default_branch"])')
+          if [ "${GITHUB_REF}" != "refs/heads/${default}" ]; then
+            echo "${GITHUB_REF} is not the default branch ${default} — no deploy."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          head=$(curl -fsS -H "$auth" "$api/branches/${default}" | python3 -c 'import sys, json; print(json.load(sys.stdin)["commit"]["id"])')
+          if [ "$head" != "${GITHUB_SHA}" ]; then
+            echo "${default} is at $head, this run is ${GITHUB_SHA} — the newer run deploys."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+
+  images:
+    name: Build + push image
+    needs: gate
+    if: needs.gate.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    container:
+      # The diana runners mount the host Docker socket (docker_host:
+      # automount), so the plain client is enough — no docker-in-docker.
+      image: docker:28-cli
+    steps:
+      - name: Checkout
+        run: |
+          set -eu
+          apk add --no-cache git >/dev/null
+          scheme="${FORGE_URL%%://*}"
+          host="${FORGE_URL#*://}"
+          git clone -q "${scheme}://token:${{ github.token }}@${host}/${GITHUB_REPOSITORY}.git" .
+          git checkout -q "${GITHUB_SHA}"
+          # The clone wrote the token into .git/config; the build context must not carry it.
+          git remote set-url origin "${FORGE_URL}/${GITHUB_REPOSITORY}.git"
+      - name: Log in to the registry
+        run: |
+          set -eu
+          echo "${{ secrets.PACKAGES_TOKEN }}" | docker login "${FORGE_URL#*://}" -u "${{ github.actor }}" --password-stdin
+      # Pushed one tag after the other, NOT via buildx in one go — both tags
+      # share blobs and Forgejo's parallel upload trips "duplicate key value
+      # violates unique constraint UQE_package_blob_sha1".
+      # --pull so a refreshed node:24-alpine base is picked up instead of
+      # whatever the runner cached.
+      - name: Build + push
+        run: |
+          set -eu
+          short="$(echo "${GITHUB_SHA}" | cut -c1-8)"
+          docker build --pull --build-arg "GIT_COMMIT=${short}" -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:latest" .
+          docker push "${IMAGE}:${GITHUB_SHA}"
+          docker push "${IMAGE}:latest"
+          echo "pushed: ${IMAGE}:${GITHUB_SHA} (GIT_COMMIT=${short}) and :latest"
+
+  deploy:
+    name: Komodo DeployStack stalwart/bulwark
+    needs: images
+    # A few API calls — small deployment steps go on the quick runner.
+    runs-on: quick
+    env:
+      KOMODO_URL: https://komodo.lan.haus
+      KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+      KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+      STACK: stalwart
+      SERVICE: bulwark
+    steps:
+      # Pin BULWARK_IMAGE_TAG in the stack environment to the SHA just built.
+      # Only that one line changes; the rest of the environment (Stalwart's
+      # keys, the session secret) stays untouched. A missing key aborts: then
+      # the stack isn't set up as this pipeline expects, and silently
+      # appending would hide that.
+      - name: Set BULWARK_IMAGE_TAG in the stack environment
+        run: |
+          set -eu
+          python3 - "${GITHUB_SHA}" <<'PY'
+          import json, os, sys, urllib.request
+
+          sha = sys.argv[1]
+          url = os.environ["KOMODO_URL"]
+          stack = os.environ["STACK"]
+          head = {
+              "X-Api-Key": os.environ["KOMODO_API_KEY"],
+              "X-Api-Secret": os.environ["KOMODO_API_SECRET"],
+              "Content-Type": "application/json",
+          }
+
+          def call(path, payload):
+              req = urllib.request.Request(url + path, data=json.dumps(payload).encode(), headers=head, method="POST")
+              with urllib.request.urlopen(req) as r:
+                  return json.load(r)
+
+          env = call("/read", {"type": "GetStack", "params": {"stack": stack}})["config"]["environment"]
+          if not any(line.startswith("BULWARK_IMAGE_TAG=") for line in env.splitlines()):
+              sys.exit("BULWARK_IMAGE_TAG missing in the stack environment — add it in Komodo first.")
+          new = "\n".join(f"BULWARK_IMAGE_TAG={sha}" if line.startswith("BULWARK_IMAGE_TAG=") else line for line in env.splitlines())
+          call("/write", {"type": "UpdateStack", "params": {"id": stack, "config": {"environment": new}}})
+          print(f"BULWARK_IMAGE_TAG={sha} set on stack {stack}.")
+          PY
+
+      - name: Deploy and wait
+        run: |
+          set -euo pipefail
+          api() {  # $1 = execute|read, $2 = JSON body
+            curl -s -X POST "${KOMODO_URL}/$1" \
+              -H "X-Api-Key: ${KOMODO_API_KEY}" -H "X-Api-Secret: ${KOMODO_API_SECRET}" \
+              -H "Content-Type: application/json" -d "$2"
+          }
+          # Komodo returns stderr as HTML snippets — strip the tags so the
+          # reason ("Resource is busy", pull failure) is readable in the log.
+          show_logs() {
+            echo "$1" | python3 -c "
+          import sys, json, re
+          for l in json.load(sys.stdin).get('logs', []):
+              text = re.sub(r'<[^>]+>', '', (l.get('stderr') or l.get('stdout') or '')).strip()
+              print('  ', 'ok' if l.get('success') else 'FAIL', l.get('stage'), '—', text[:300])"
+          }
+          # Komodo accepts one deploy per stack at a time ("Resource is busy");
+          # retry a few times instead of failing the run.
+          for attempt in 1 2 3 4 5 6; do
+            resp=$(api execute "{\"type\":\"DeployStack\",\"params\":{\"stack\":\"${STACK}\",\"services\":[\"${SERVICE}\"]}}")
+            upd=$(echo "$resp" | python3 -c "import sys,json;print(json.load(sys.stdin).get('_id',{}).get('\$oid',''))")
+            if [ -z "$upd" ]; then echo "no update id in the response:"; echo "$resp"; exit 1; fi
+            echo "attempt $attempt: update_id=$upd — waiting…"
+            for i in $(seq 1 60); do
+              st=$(api read "{\"type\":\"GetUpdate\",\"params\":{\"id\":\"$upd\"}}")
+              status=$(echo "$st" | python3 -c "import sys,json;print(json.load(sys.stdin).get('status','?'))")
+              if [ "$status" = "Complete" ]; then
+                show_logs "$st"
+                ok=$(echo "$st" | python3 -c "import sys,json;print(json.load(sys.stdin).get('success'))")
+                if [ "$ok" = "True" ]; then echo "deployed ${STACK}/${SERVICE} @ ${GITHUB_SHA}"; exit 0; fi
+                if echo "$st" | grep -qi "busy"; then echo "stack busy — retrying in 30 s"; sleep 30; continue 2; fi
+                exit 1
+              fi
+              sleep 10
+            done
+            echo "timed out waiting for the deploy"; exit 1
+          done
+          echo "stack stayed busy"; exit 1
