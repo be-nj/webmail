@@ -3637,9 +3637,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
 
   const handleLogout = logout;
 
-  // Mountain View reads a message in place of the list, so a search run with
-  // a message open would fill a list nobody sees. As in Gmail, the message
-  // closes and the results show.
+  // Mountain View reads a message in place of the list, so a search run (or
+  // cleared) with a message open would fill a list nobody sees. As in Gmail,
+  // the message closes and the list shows.
   const closeMvMessageForSearch = () => {
     if (!mvShell) return;
     setCursorOnly(false);
@@ -3674,6 +3674,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   };
 
   const handleClearSearch = async () => {
+    closeMvMessageForSearch();
     setSearchQuery("");
     clearSearchFilters();
     if (!client) return;
