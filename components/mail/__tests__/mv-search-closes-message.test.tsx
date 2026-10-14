@@ -20,9 +20,10 @@ vi.mock('next/dynamic', () => ({ default: (load: () => Promise<React.ComponentTy
 } }));
 vi.mock('@/components/email/email-viewer', () => ({ EmailViewer: () => <div>stub viewer</div> }));
 vi.mock('@/components/layout/mv-top-bar', () => ({
-  MvTopBar: ({ search }: { search?: { onSubmit: (q: string) => void; onSelectContact: (c: unknown, f: string) => void } }) => (
+  MvTopBar: ({ search }: { search?: { onSubmit: (q: string) => void; onClear: () => void; onSelectContact: (c: unknown, f: string) => void } }) => (
     <>
       <button onClick={() => search?.onSubmit('invoice')}>stub search</button>
+      <button onClick={() => search?.onClear()}>stub clear</button>
       <button onClick={() => search?.onSelectContact({ email: 'bob@example.com' }, 'from')}>stub contact</button>
     </>
   ),
@@ -116,6 +117,18 @@ describe('searching in Mountain View with a message open', () => {
     fireEvent.click(screen.getByText('stub contact'));
 
     await waitFor(() => expect(advancedSearch).toHaveBeenCalled());
+    expect(useEmailStore.getState().selectedEmail).toBeNull();
+  });
+
+  it('closes the message when the search is cleared', async () => {
+    const fetchEmails = useEmailStore.getState().fetchEmails;
+    useEmailStore.setState({ searchQuery: 'invoice' });
+    render(<MailApp />);
+    await screen.findByText('stub viewer', {}, { timeout: 5000 });
+
+    fireEvent.click(screen.getByText('stub clear'));
+
+    await waitFor(() => expect(fetchEmails).toHaveBeenCalledWith(expect.anything(), 'inbox'));
     expect(useEmailStore.getState().selectedEmail).toBeNull();
   });
 });
