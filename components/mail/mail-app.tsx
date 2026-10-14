@@ -3546,8 +3546,18 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
 
   const handleLogout = logout;
 
+  // Mountain View reads a message in place of the list, so a search run with
+  // a message open would fill a list nobody sees. As in Gmail, the message
+  // closes and the results show.
+  const closeMvMessageForSearch = () => {
+    if (!mvShell) return;
+    setCursorOnly(false);
+    if (useEmailStore.getState().selectedEmail) selectEmail(null);
+  };
+
   const handleSearch = async (query: string) => {
     if (!client) return;
+    closeMvMessageForSearch();
     // Nothing the mail view renders from is written before the request has
     // left (see afterRequestDispatch): searchEmails records the query itself,
     // and the history entry only feeds the suggestion dropdown.
@@ -3566,6 +3576,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   // dropped rather than ANDed into the query as a full-text term.
   const handleSelectContactSuggestion = async (contact: ContactSuggestion, field: ContactSearchField) => {
     if (!client) return;
+    closeMvMessageForSearch();
     setSearchQuery("");
     setSearchFilters({ [field]: contact.email });
     await advancedSearch(client);
@@ -3603,6 +3614,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       void handleMailboxSelect(CROSS_VIEW_IDS.starred);
       return;
     }
+    closeMvMessageForSearch();
     setSearchFilters({ ...DEFAULT_SEARCH_FILTERS, isStarred: true });
     // Starred mail wherever it is, also when Trash or Spam was open, whose
     // default search scope is that folder alone.
@@ -4847,7 +4859,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                     <MvSearchForm
                       filters={searchFilters}
                       onChange={setSearchFilters}
-                      onSearch={() => { handleAdvancedSearch(); toggleAdvancedSearch(); }}
+                      onSearch={() => { closeMvMessageForSearch(); handleAdvancedSearch(); toggleAdvancedSearch(); }}
                       onClear={() => { clearSearchFilters(); if (client) advancedSearch(client); }}
                       folderSelect={!isUnifiedView ? renderSearchFolderSelect(
                         "w-full h-8 bg-transparent border-0 border-b border-border px-0 text-sm text-foreground focus:outline-none focus:border-b-2 focus:border-primary",
