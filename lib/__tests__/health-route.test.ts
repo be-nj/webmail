@@ -53,6 +53,14 @@ describe('health route', () => {
       arrayBuffers: 1_000_000,
     });
     vi.spyOn(process, 'uptime').mockReturnValue(123.45);
+    // The real heap limit follows the machine's memory: on a smaller CI
+    // runner 4 GB used is past the critical threshold and reads "very high".
+    // Pin it so 4 GB lands between the warning and the critical threshold.
+    const v8 = (await import('node:v8')).default;
+    vi.spyOn(v8, 'getHeapStatistics').mockReturnValue({
+      ...v8.getHeapStatistics(),
+      heap_size_limit: 4_500_000_000,
+    });
 
     const { GET } = await import('@/app/api/health/route');
     const response = await GET({ nextUrl: new URL('http://localhost/api/health?detailed=true') } as never);
