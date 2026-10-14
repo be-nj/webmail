@@ -27,25 +27,30 @@ _Avoid_: Verified logo, favicon
 ### Sender Trust
 
 **Trusted Sender**:
-An exact address the reader has personally marked as trusted, either in the local list or in the trusted-senders address book.
+An exact address the reader has personally marked as trusted: from a message that passed its **Sender Check**, or in Settings. Never set by replying or by allowing images.
 _Avoid_: Whitelisted sender, safe sender, known sender
+
+**Image Sender**:
+An exact address whose external content loads without asking. "Always load images from this sender" and every reply add to it, so it says nothing about trust; upstream's code and settings call this list `trustedSenders`, and the trusted-senders address book holds it too.
+_Avoid_: Trusted sender (for this list)
 
 **Trusted Mark**:
 The handshake badge on an avatar (and the matching chip in the message's authentication details); it means the From address is a **Trusted Sender** and the message passed its **Sender Check**.
 _Avoid_: Verified badge, check mark, blue check
 
 **Impersonation Warning**:
-The red warning shown when the From address is a **Trusted Sender** but the message failed its **Sender Check** (DMARC fail, or a hard SPF fail without a valid DKIM signature) or passed neither SPF nor DKIM, so nothing ties it to the From domain. Such a message also loses the **Trusted Sender**'s right to load external content.
+The red warning shown when the From address is a **Trusted Sender** but the message failed its **Sender Check** (DMARC fail, or a hard SPF fail without a valid DKIM signature) or passed neither SPF nor DKIM, so nothing ties it to the From domain. Separately, any message that fails the check loses an **Image Sender**'s right to load external content.
 _Avoid_: Spoof alert, phishing warning (unqualified)
 
 ## Relationships
 
+- An **Image Sender** is not a **Trusted Sender**: loading someone's images or replying to them never gives them the **Trusted Mark**
 - **Domain Trust** and **Sender Trust** are independent: a **Brand Logo** says nothing about the person, a **Trusted Mark** nothing about the brand
 - A **Brand Logo** requires a passed **Sender Check** and a domain that is not a **Freemail Domain**, plus either a valid **Verified Mark Certificate** naming the domain or a **Trusted Sender** in From
 - A BIMI record's own picture is someone else's logo as easily as its owner's; only a **Verified Mark Certificate** or the reader's own trust in the exact address makes it a **Brand Logo**
 - A **Brand Logo** is shared by every address on its domain
 - A **Trusted Sender** on a given message shows exactly one of: the **Trusted Mark** (check passed), the **Impersonation Warning** (check failed), or neither (no verdict)
-- A message without any Authentication-Results has no verdict: it can still load external content for a **Trusted Sender**, but never shows the **Trusted Mark**
+- A message without any Authentication-Results has no verdict: it can still load external content for an **Image Sender**, but never shows the **Trusted Mark**
 - The **Impersonation Warning** shows in the message list and in the opened message
 
 ## Example dialogue

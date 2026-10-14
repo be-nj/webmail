@@ -28,9 +28,20 @@ export function senderTrustSignal(
   const address = email.from?.[0]?.email?.trim().toLowerCase();
   if (!address || !isTrustedSender(address)) return null;
   if (failsSenderCheck(email)) return 'impersonated';
-  // The DMARC result must name the From domain itself (header.from=).
-  if (email.authenticationResults?.dmarc?.domain && brandIndicatorDomain(email)) return 'trusted';
+  if (passedDmarcForFrom(email)) return 'trusted';
   return null;
+}
+
+/**
+ * Whether the message passed DMARC for the domain in its visible From, with
+ * the result naming that domain itself (`header.from=`): a result recorded
+ * for some other domain can't lend its pass to this From.
+ */
+export function passedDmarcForFrom(email: {
+  from?: Array<{ email?: string | null }> | null;
+  authenticationResults?: AuthenticationResults;
+}): boolean {
+  return !!email.authenticationResults?.dmarc?.domain && brandIndicatorDomain(email) !== undefined;
 }
 
 /**
