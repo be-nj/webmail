@@ -21,7 +21,7 @@
 #              DeployStack for the `bulwark` service alone and wait for it.
 #              The other services of the stack (Stalwart, otel) stay untouched.
 #
-# Secrets (on the repo — Settings → Actions → Secrets):
+# Secrets (KOMODO_* on the org benj, PACKAGES_TOKEN on the org or the repo):
 #   PACKAGES_TOKEN     Forgejo token with write:package (the built-in Actions
 #                      token may NOT push to the package registry)
 #   KOMODO_API_KEY, KOMODO_API_SECRET
@@ -40,7 +40,7 @@ concurrency:
 # does not resolve inside the per-job network.
 env:
   FORGE_URL: https://git.beckm4nn.net
-  IMAGE: git.beckm4nn.net/benjamin/bulwark-mail
+  IMAGE: git.beckm4nn.net/benj/bulwark-mail
 
 jobs:
   check:
