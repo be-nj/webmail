@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { ShieldCheck, Search, Trash2, Plus } from "@/components/icons";
+import { ShieldCheck, HeartHandshake, Search, Trash2, Plus } from "@/components/icons";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -25,15 +25,28 @@ interface TrustedSendersModalProps {
    * cleaned up, but adding senders is pointless and offered nowhere.
    */
   readOnly?: boolean;
+  /**
+   * Fork: `images` is upstream's list of senders whose images load on their
+   * own; `marks` the Trusted Senders the reader marked by hand, the only ones
+   * that get the Trusted Mark. Marks are never kept in the address book.
+   */
+  list?: "images" | "marks";
 }
 
-export function TrustedSendersModal({ isOpen, onClose, readOnly = false }: TrustedSendersModalProps) {
+export function TrustedSendersModal({ isOpen, onClose, readOnly = false, list = "images" }: TrustedSendersModalProps) {
   const t = useTranslations("settings.email_behavior.trusted_senders");
+  const tMarks = useTranslations("settings.email_behavior.marked_senders");
+  const marks = list === "marks";
+  const HeaderIcon = marks ? HeartHandshake : ShieldCheck;
   const tLock = useTranslations("remote_content_lock");
   const tNotifications = useTranslations("notifications");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { trustedSenders, addTrustedSender, removeTrustedSender, trustedSendersAddressBook } = useSettingsStore();
+  const {
+    trustedSenders, addTrustedSender, removeTrustedSender,
+    markedTrustedSenders, markTrustedSender, unmarkTrustedSender,
+  } = useSettingsStore();
+  const trustedSendersAddressBook = useSettingsStore((s) => s.trustedSendersAddressBook) && !marks;
   const {
     trustedSenderEmails,
     trustedSendersLoaded,
@@ -58,7 +71,7 @@ export function TrustedSendersModal({ isOpen, onClose, readOnly = false }: Trust
   }, [isOpen, trustedSendersAddressBook, client, trustedSendersLoaded, loadTrustedSendersBook]);
 
   // The active list depends on mode
-  const activeSenders = trustedSendersAddressBook ? trustedSenderEmails : trustedSenders;
+  const activeSenders = marks ? markedTrustedSenders : trustedSendersAddressBook ? trustedSenderEmails : trustedSenders;
   const isLoading = trustedSendersAddressBook && (!trustedSendersLoaded || trustedSendersLoading);
 
   // Filter senders based on search query
@@ -94,7 +107,9 @@ export function TrustedSendersModal({ isOpen, onClose, readOnly = false }: Trust
   };
 
   const addSender = async (email: string) => {
-    if (trustedSendersAddressBook && client) {
+    if (marks) {
+      markTrustedSender(email);
+    } else if (trustedSendersAddressBook && client) {
       await addToTrustedSendersBook(client, email);
     } else {
       addTrustedSender(email);
@@ -136,7 +151,9 @@ export function TrustedSendersModal({ isOpen, onClose, readOnly = false }: Trust
   // with Undo that adds the address back.
   const handleRemoveSender = async (email: string) => {
     try {
-      if (trustedSendersAddressBook && client) {
+      if (marks) {
+        unmarkTrustedSender(email);
+      } else if (trustedSendersAddressBook && client) {
         await removeFromTrustedSendersBook(client, email);
       } else {
         removeTrustedSender(email);
@@ -203,7 +220,7 @@ export function TrustedSendersModal({ isOpen, onClose, readOnly = false }: Trust
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title={t("modal_title")}
+      title={marks ? tMarks("modal_title") : t("modal_title")}
       dirty={isAdding && newEmail.trim() !== ""}
       className="max-h-[60vh]"
       bodyClassName="px-0 pb-0 mt-4 border-y border-border"
@@ -235,9 +252,9 @@ export function TrustedSendersModal({ isOpen, onClose, readOnly = false }: Trust
         // empty list or not.
         <EmptyState
           compact
-          icon={ShieldCheck}
-          title={t("empty_title")}
-          description={t("empty_description")}
+          icon={HeaderIcon}
+          title={marks ? tMarks("empty_title") : t("empty_title")}
+          description={marks ? tMarks("empty_description") : t("empty_description")}
           actions={!isAdding && !readOnly ? (
             <Button size="sm" onClick={() => setIsAdding(true)}>
               <Plus className="w-4 h-4" />
