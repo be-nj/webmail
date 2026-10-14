@@ -374,7 +374,7 @@
     "hide_details": "Ascunde detaliile",
     "external_content_warning": "Imaginile și conținutul extern au fost blocate",
     "load_external_content": "Încărcați imagini",
-    "trust_sender": "Aveți întotdeauna încredere în acest expeditor",
+    "trust_sender": "Încarcă întotdeauna imaginile de la acest expeditor",
     "sender_check": {
       "unverified_label": "Expeditor neverificat",
       "failed_label": "Verificarea expeditorului a eșuat",
@@ -647,6 +647,8 @@
       "description": "Acest mesaj pretinde că vine de la {address}, unul dintre expeditorii tăi de încredere, dar nu a trecut verificarea expeditorului. Cel mai probabil nu a fost trimis de acesta."
     },
     "sender_trust": {
+      "mark": "Marchează ca de încredere",
+      "unmark": "Elimină marcajul de încredere",
       "label": "Expeditor de încredere",
       "trusted": "Expeditor de încredere – verificarea expeditorului a reușit",
       "impersonated": "Se dă drept expeditor de încredere – verificarea expeditorului a eșuat"
@@ -1584,15 +1586,22 @@
         "block": "Blocați întotdeauna",
         "allow": "Permiteți întotdeauna"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Expeditori de încredere",
+        "description": "Expeditori pe care i-ați marcat chiar dumneavoastră. Mesajele lor arată o strângere de mână când verificarea expeditorului trece.",
+        "modal_title": "Expeditori de încredere",
+        "empty_title": "Încă niciun expeditor de încredere",
+        "empty_description": "Deschideți un mesaj de la expeditor și faceți clic pe „Marchează ca de încredere” în detaliile lui."
+      },
+      "trusted_senders": {
+        "label": "Încarcă întotdeauna imaginile de la",
         "description": "Gestionați expeditorii ale căror imagini se încarcă automat",
         "count_zero": "Niciunul",
         "count_one": "1 expeditor",
         "count_other": "{count} expeditori",
-        "modal_title": "Expeditori de încredere",
-        "empty_title": "Nu există încă expeditori de încredere",
-        "empty_description": "Când vizualizați un e-mail cu imagini blocate, faceți clic pe „Aveți întotdeauna încredere în acest expeditor” pentru a le adăuga aici.",
+        "modal_title": "Încarcă întotdeauna imaginile de la",
+        "empty_title": "Încă niciun expeditor",
+        "empty_description": "Când vizualizați un e-mail cu imagini blocate, faceți clic pe „Încarcă întotdeauna imaginile de la acest expeditor” pentru a-l adăuga aici. Și răspunsul către cineva îl adaugă.",
         "add_manually": "Adăugați expeditorul manual",
         "add_button": "Adăugați",
         "add_placeholder": "Introduceți adresa de e-mail",

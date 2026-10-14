@@ -314,6 +314,8 @@
       "from_message": "Fra meldingen fra {sender}, {date}"
     },
     "sender_trust": {
+      "mark": "Merk som klarert",
+      "unmark": "Fjern klareringsmerke",
       "label": "Betrodd avsender",
       "trusted": "Betrodd avsender – avsenderbekreftelse bestått",
       "impersonated": "Utgir seg for å være en betrodd avsender – avsenderbekreftelse mislyktes"
@@ -388,7 +390,7 @@
     "hide_details": "Skjul detaljer",
     "external_content_warning": "Bilder og eksternt innhold er blokkert",
     "load_external_content": "Last inn bilder",
-    "trust_sender": "Stol alltid på denne avsenderen",
+    "trust_sender": "Last alltid inn bilder fra denne avsenderen",
     "sender_check": {
       "unverified_label": "Ubekreftet avsender",
       "failed_label": "Avsenderkontrollen mislyktes",
@@ -1584,15 +1586,22 @@
         "block": "Blokker alltid",
         "allow": "Tillat alltid"
       },
+      "marked_senders": {
+        "label": "Klarerte avsendere",
+        "description": "Avsendere du har merket selv. Meldingene deres viser et håndtrykk når avsenderkontrollen består.",
+        "modal_title": "Klarerte avsendere",
+        "empty_title": "Ingen klarerte avsendere ennå",
+        "empty_description": "Åpne en melding fra avsenderen og klikk på «Merk som klarert» i detaljene."
+      },
       "trusted_senders": {
-        "label": "Pålitelige avsendere",
+        "label": "Last alltid inn bilder fra",
         "description": "Administrer avsendere du alltid vil laste inn bilder fra",
         "count_zero": "Ingen",
         "count_one": "1 avsender",
         "count_other": "{count} avsendere",
-        "modal_title": "Pålitelige avsendere",
-        "empty_title": "Ingen pålitelige avsendere ennå",
-        "empty_description": "Når du ser på en e-post med blokkerte bilder, klikker du «Stol alltid på denne avsenderen» for å legge til avsenderen her.",
+        "modal_title": "Last alltid inn bilder fra",
+        "empty_title": "Ingen avsendere ennå",
+        "empty_description": "Når du ser en e-post med blokkerte bilder, klikker du på «Last alltid inn bilder fra denne avsenderen» for å legge den til her. Svarer du noen, legges de også til.",
         "add_manually": "Legg til avsender manuelt",
         "add_button": "Legg til",
         "add_placeholder": "Skriv inn e-postadresse",

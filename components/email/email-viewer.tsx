@@ -1117,6 +1117,8 @@ export function EmailViewer({
   const isSenderTrusted = useSettingsStore((state) => state.isSenderTrusted);
   const trustedSendersAddressBook = useSettingsStore((state) => state.trustedSendersAddressBook);
   const isTrustedSender = useIsTrustedSender();
+  const markTrustedSender = useSettingsStore((state) => state.markTrustedSender);
+  const unmarkTrustedSender = useSettingsStore((state) => state.unmarkTrustedSender);
   const isTrustedAddressBookSender = useContactStore((state) => state.isTrustedAddressBookSender);
   const addToTrustedSendersBook = useContactStore((state) => state.addToTrustedSendersBook);
   const emailKeywords = useSettingsStore((state) => state.emailKeywords);
@@ -5677,6 +5679,26 @@ export function EmailViewer({
                           </span>
                         </span>
                       )}
+                      {(() => {
+                        // Marking by hand is the only way to a Trusted Sender.
+                        // Only a message that proves its From address (aligned
+                        // DMARC pass) offers it, so a forgery can't be marked;
+                        // removing the mark is always offered.
+                        const address = sender?.email?.trim().toLowerCase();
+                        if (!address) return null;
+                        const marked = isTrustedSender(address);
+                        if (!marked && !hasAlignedDmarcPass(email)) return null;
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => (marked ? unmarkTrustedSender(address) : markTrustedSender(address))}
+                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          >
+                            <HeartHandshake className="w-3.5 h-3.5 flex-shrink-0" />
+                            {marked ? t('sender_trust.unmark') : t('sender_trust.mark')}
+                          </button>
+                        );
+                      })()}
                       {email.spamScore !== undefined && (
                         <span className={cn(
                           "inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs",

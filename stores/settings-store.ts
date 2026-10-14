@@ -539,6 +539,10 @@ interface SettingsState {
   // Privacy & Security
   sessionTimeout: number; // minutes (0 = never)
   trustedSenders: string[]; // Email addresses that can load external content
+  // Fork: the Trusted Senders (CONTEXT.md) - addresses the reader marked by
+  // hand. Unlike trustedSenders, which "Always load images" and every reply
+  // fill on their own, only these get the Trusted Mark.
+  markedTrustedSenders: string[];
   // Store trusted senders in a dedicated JMAP address book so they sync across
   // devices. `null` means "not yet decided": resolved on first connect to
   // `true` when the server supports contacts, otherwise left off. Once the user
@@ -758,6 +762,8 @@ interface SettingsState {
   addTrustedSender: (email: string) => void;
   removeTrustedSender: (email: string) => void;
   isSenderTrusted: (email: string) => boolean;
+  markTrustedSender: (email: string) => void;
+  unmarkTrustedSender: (email: string) => void;
 
   // Keywords
   addKeyword: (keyword: KeywordDefinition) => void;
@@ -784,6 +790,13 @@ interface SettingsState {
    * does not start from them (#1185). Device-only settings are kept.
    */
   forgetSyncedSettings: () => void;
+}
+
+/** The address of "Name <address>" or a bare address, lower-cased. */
+function bareAddress(email: string): string {
+  const trimmed = email.trim();
+  const angleMatch = trimmed.match(/^(.+?)\s*<([^>]+)>$/);
+  return (angleMatch ? angleMatch[2] : trimmed).toLowerCase().trim();
 }
 
 const DEFAULT_SETTINGS = {
@@ -849,6 +862,7 @@ const DEFAULT_SETTINGS = {
   // Privacy & Security
   sessionTimeout: 0, // Never
   trustedSenders: [] as string[],
+  markedTrustedSenders: [] as string[],
   trustedSendersAddressBook: null as boolean | null,
 
   // Filters
@@ -1199,6 +1213,7 @@ export const useSettingsStore = create<SettingsState>()(
           swipeLeftAction: state.swipeLeftAction,
           disableThreading: state.disableThreading,
           trustedSenders: state.trustedSenders,
+          markedTrustedSenders: state.markedTrustedSenders,
           autoSaveDraftInterval: state.autoSaveDraftInterval,
           sendConfirmation: state.sendConfirmation,
           defaultReplyMode: state.defaultReplyMode,
@@ -1566,6 +1581,19 @@ export const useSettingsStore = create<SettingsState>()(
         const angleMatch = trimmed.match(/^(.+?)\s*<([^>]+)>$/);
         const emailAddress = (angleMatch ? angleMatch[2] : trimmed).toLowerCase().trim();
         return get().trustedSenders.includes(emailAddress);
+      },
+
+      markTrustedSender: (email: string) => {
+        const address = bareAddress(email);
+        const current = get().markedTrustedSenders;
+        if (address && !current.includes(address)) {
+          set({ markedTrustedSenders: [...current, address] });
+        }
+      },
+
+      unmarkTrustedSender: (email: string) => {
+        const address = bareAddress(email);
+        set({ markedTrustedSenders: get().markedTrustedSenders.filter(e => e !== address) });
       },
 
       // Keyword methods

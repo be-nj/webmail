@@ -374,7 +374,7 @@
     "hide_details": "Skjul detaljer",
     "external_content_warning": "Billeder og eksternt indhold er blevet blokeret",
     "load_external_content": "Indlæs billeder",
-    "trust_sender": "Stol altid på denne afsender",
+    "trust_sender": "Indlæs altid billeder fra denne afsender",
     "sender_check": {
       "unverified_label": "Ubekræftet afsender",
       "failed_label": "Afsenderkontrol mislykkedes",
@@ -647,6 +647,8 @@
       "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
     },
     "sender_trust": {
+      "mark": "Markér som betroet",
+      "unmark": "Fjern tillidsmarkering",
       "label": "Betroet afsender",
       "trusted": "Betroet afsender – afsenderbekræftelse bestået",
       "impersonated": "Udgiver sig for at være en betroet afsender – afsenderbekræftelse mislykkedes"
@@ -1584,15 +1586,22 @@
         "block": "Bloker altid",
         "allow": "Tillad altid"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Betroede afsendere",
+        "description": "Afsendere, du selv har markeret. Deres beskeder viser et håndtryk, når afsenderkontrollen består.",
+        "modal_title": "Betroede afsendere",
+        "empty_title": "Ingen betroede afsendere endnu",
+        "empty_description": "Åbn en besked fra afsenderen, og klik på \"Markér som betroet\" i dens detaljer."
+      },
+      "trusted_senders": {
+        "label": "Indlæs altid billeder fra",
         "description": "Administrér afsendere hvis billeder indlæses automatisk",
         "count_zero": "Ingen",
         "count_one": "1 afsender",
         "count_other": "{count} afsendere",
-        "modal_title": "Betroede afsendere",
-        "empty_title": "Ingen betroede afsendere endnu",
-        "empty_description": "Når du ser en e-mail med blokerede billeder, klik på \"Stol altid på denne afsender\" for at tilføje dem her.",
+        "modal_title": "Indlæs altid billeder fra",
+        "empty_title": "Ingen afsendere endnu",
+        "empty_description": "Når du ser en e-mail med blokerede billeder, skal du klikke på \"Indlæs altid billeder fra denne afsender\" for at tilføje afsenderen her. Svarer du nogen, bliver de også tilføjet.",
         "add_manually": "Tilføj afsender manuelt",
         "add_button": "Tilføj",
         "add_placeholder": "Indtast e-mailadresse",
