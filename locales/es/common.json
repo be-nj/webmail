@@ -379,7 +379,7 @@
     "hide_details": "Ocultar detalles",
     "external_content_warning": "Las imágenes y el contenido externo han sido bloqueados",
     "load_external_content": "Cargar imágenes",
-    "trust_sender": "Confiar siempre en este remitente",
+    "trust_sender": "Cargar siempre las imágenes de este remitente",
     "sender_check": {
       "unverified_label": "Remitente no verificado",
       "failed_label": "Falló la verificación del remitente",
@@ -663,6 +663,8 @@
       "description": "Este mensaje dice venir de {address}, uno de tus remitentes de confianza, pero no superó la verificación del remitente. Lo más probable es que no lo haya enviado."
     },
     "sender_trust": {
+      "mark": "Marcar como de confianza",
+      "unmark": "Quitar marca de confianza",
       "label": "Remitente de confianza",
       "trusted": "Remitente de confianza – verificación del remitente superada",
       "impersonated": "Dice ser un remitente de confianza – la verificación del remitente falló"
@@ -1629,15 +1631,22 @@
         "block": "Bloquear siempre",
         "allow": "Permitir siempre"
       },
+      "marked_senders": {
+        "label": "Remitentes de confianza",
+        "description": "Remitentes que has marcado tú. Sus mensajes muestran un apretón de manos cuando la verificación del remitente es correcta.",
+        "modal_title": "Remitentes de confianza",
+        "empty_title": "Aún no hay remitentes de confianza",
+        "empty_description": "Abre un mensaje del remitente y haz clic en «Marcar como de confianza» en sus detalles."
+      },
       "trusted_senders": {
-        "label": "Remitentes de Confianza",
+        "label": "Cargar siempre las imágenes de",
         "description": "Administre remitentes cuyas imágenes se cargan automáticamente",
         "count_zero": "Ninguno",
         "count_one": "1 remitente",
         "count_other": "{count} remitentes",
-        "modal_title": "Remitentes de Confianza",
-        "empty_title": "Aún no hay remitentes de confianza",
-        "empty_description": "Al ver un correo con imágenes bloqueadas, haga clic en \"Confiar siempre en este remitente\" para agregarlo aquí.",
+        "modal_title": "Cargar siempre las imágenes de",
+        "empty_title": "Aún no hay remitentes",
+        "empty_description": "Al ver un correo con imágenes bloqueadas, haz clic en «Cargar siempre las imágenes de este remitente» para añadirlo aquí. Responder a alguien también lo añade.",
         "add_manually": "Agregar remitente manualmente",
         "add_button": "Agregar",
         "add_placeholder": "Ingrese dirección de correo",

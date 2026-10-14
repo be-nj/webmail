@@ -379,7 +379,7 @@
     "hide_details": "Amaga els detalls",
     "external_content_warning": "S'han bloquejat les imatges i el contingut extern",
     "load_external_content": "Carrega les imatges",
-    "trust_sender": "Confia sempre en aquest remitent",
+    "trust_sender": "Carrega sempre les imatges d'aquest remitent",
     "sender_check": {
       "unverified_label": "Remitent no verificat",
       "failed_label": "La verificació del remitent ha fallat",
@@ -663,6 +663,8 @@
       "description": "Aquest missatge diu que ve de {address}, un dels teus remitents de confiança, però no ha superat la verificació del remitent. Molt probablement no l'ha enviat."
     },
     "sender_trust": {
+      "mark": "Marca com a de confiança",
+      "unmark": "Treu la marca de confiança",
       "label": "Remitent de confiança",
       "trusted": "Remitent de confiança – verificació del remitent superada",
       "impersonated": "Diu ser un remitent de confiança – la verificació del remitent ha fallat"
@@ -1632,15 +1634,22 @@
         "block": "Bloqueja sempre",
         "allow": "Permet sempre"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Remitents de confiança",
+        "description": "Remitents que has marcat tu. Els seus missatges mostren una encaixada de mans quan la verificació del remitent és correcta.",
+        "modal_title": "Remitents de confiança",
+        "empty_title": "Encara no hi ha remitents de confiança",
+        "empty_description": "Obre un missatge del remitent i fes clic a «Marca com a de confiança» als detalls."
+      },
+      "trusted_senders": {
+        "label": "Carrega sempre les imatges de",
         "description": "Gestioneu els remitents les imatges dels quals es carreguen automàticament",
         "count_zero": "Cap",
         "count_one": "1 remitent",
         "count_other": "{count} remitents",
-        "modal_title": "Remitents de confiança",
-        "empty_title": "Encara no hi ha remitents de confiança",
-        "empty_description": "En visualitzar un correu amb imatges bloquejades, feu clic a «Confia sempre en aquest remitent» per afegir-lo aquí.",
+        "modal_title": "Carrega sempre les imatges de",
+        "empty_title": "Encara no hi ha remitents",
+        "empty_description": "Quan vegis un correu amb imatges bloquejades, fes clic a «Carrega sempre les imatges d'aquest remitent» per afegir-lo aquí. Respondre a algú també l'afegeix.",
         "add_manually": "Afegeix un remitent manualment",
         "add_button": "Afegeix",
         "add_placeholder": "Introduïu l'adreça electrònica",

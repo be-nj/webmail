@@ -379,7 +379,7 @@
     "hide_details": "Részletek elrejtése",
     "external_content_warning": "Képek és külső tartalmak blokkolva",
     "load_external_content": "Képek betöltése",
-    "trust_sender": "Feladó mindig megbízható",
+    "trust_sender": "Mindig töltse be a feladó képeit",
     "sender_check": {
       "unverified_label": "Nem ellenőrzött feladó",
       "failed_label": "Sikertelen feladóellenőrzés",
@@ -663,6 +663,8 @@
       "description": "Ez az üzenet azt állítja, hogy {address} küldte, aki az egyik megbízható feladód, de nem ment át a feladó-ellenőrzésen. Valószínűleg nem tőle származik."
     },
     "sender_trust": {
+      "mark": "Megjelölés megbízhatóként",
+      "unmark": "Megbízható jelölés eltávolítása",
       "label": "Megbízható feladó",
       "trusted": "Megbízható feladó – a feladó-ellenőrzés sikeres",
       "impersonated": "Megbízható feladónak adja ki magát – a feladó-ellenőrzés sikertelen"
@@ -1632,15 +1634,22 @@
         "block": "Mindig blokkoljon",
         "allow": "Mindig engedélyezzen"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Megbízható feladók",
+        "description": "Az Ön által megjelölt feladók. Üzeneteiken kézfogás jelenik meg, ha a feladóellenőrzés sikeres.",
+        "modal_title": "Megbízható feladók",
+        "empty_title": "Még nincsenek megbízható feladók",
+        "empty_description": "Nyisson meg egy üzenetet a feladótól, és a részleteknél kattintson a „Megjelölés megbízhatóként” gombra."
+      },
+      "trusted_senders": {
+        "label": "Képek mindig betöltése innen:",
         "description": "Azon feladók kezelése, akiknek a képei automatikusan betöltődnek",
         "count_zero": "Nincs",
         "count_one": "1 feladó",
         "count_other": "{count} feladó",
-        "modal_title": "Megbízható feladók",
-        "empty_title": "Még nincsenek megbízható feladók",
-        "empty_description": "Amikor blokkolt képekkel rendelkező e-mailt nézel, kattints a \"Feladó megbízható\" gombra a hozzáadáshoz.",
+        "modal_title": "Képek mindig betöltése innen:",
+        "empty_title": "Még nincsenek feladók",
+        "empty_description": "Letiltott képeket tartalmazó e-mail megtekintésekor kattintson a „Mindig töltse be a feladó képeit” gombra, hogy ide felvegye. Ha valakinek válaszol, ő is ide kerül.",
         "add_manually": "Feladó kézi hozzáadása",
         "add_button": "Hozzáadás",
         "add_placeholder": "E-mail cím megadása",

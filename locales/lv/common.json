@@ -379,7 +379,7 @@
     "hide_details": "Slēpt sīkāku informāciju",
     "external_content_warning": "Attēli un ārējais saturs ir bloķēts",
     "load_external_content": "Ielādēt attēlus",
-    "trust_sender": "Vienmēr uzticēties šim sūtītājam",
+    "trust_sender": "Vienmēr ielādēt šī sūtītāja attēlus",
     "sender_check": {
       "unverified_label": "Nepārbaudīts sūtītājs",
       "failed_label": "Sūtītāja pārbaude neizdevās",
@@ -663,6 +663,8 @@
       "description": "Šis ziņojums apgalvo, ka ir no {address}, viena no jūsu uzticamajiem sūtītājiem, taču nav izturējis sūtītāja pārbaudi. Visticamāk, to nav sūtījis viņš."
     },
     "sender_trust": {
+      "mark": "Atzīmēt kā uzticamu",
+      "unmark": "Noņemt uzticamības atzīmi",
       "label": "Uzticams sūtītājs",
       "trusted": "Uzticams sūtītājs – sūtītāja pārbaude izturēta",
       "impersonated": "Uzdodas par uzticamu sūtītāju – sūtītāja pārbaude neizdevās"
@@ -1629,15 +1631,22 @@
         "block": "Vienmēr bloķēt",
         "allow": "Vienmēr atļaut"
       },
+      "marked_senders": {
+        "label": "Uzticami sūtītāji",
+        "description": "Sūtītāji, kurus atzīmējāt paši. Viņu ziņojumos redzams rokasspiediens, ja sūtītāja pārbaude ir veiksmīga.",
+        "modal_title": "Uzticami sūtītāji",
+        "empty_title": "Vēl nav uzticamu sūtītāju",
+        "empty_description": "Atveriet sūtītāja ziņojumu un tā detaļās noklikšķiniet uz “Atzīmēt kā uzticamu”."
+      },
       "trusted_senders": {
-        "label": "Uzticamie sūtītāji",
+        "label": "Vienmēr ielādēt attēlus no",
         "description": "Pārvaldiet sūtītājus, kuru attēli tiek ielādēti automātiski",
         "count_zero": "Nav",
         "count_one": "1 sūtītājs",
         "count_other": "{count} sūtītāji",
-        "modal_title": "Uzticamie sūtītāji",
-        "empty_title": "Nav uzticamo sūtītāju",
-        "empty_description": "Skatot vēstuli ar bloķētiem attēliem, nospiediet \"Vienmēr uzticēties\", lai pievienotu sūtītāju šeit.",
+        "modal_title": "Vienmēr ielādēt attēlus no",
+        "empty_title": "Vēl nav sūtītāju",
+        "empty_description": "Skatot e-pastu ar bloķētiem attēliem, noklikšķiniet uz “Vienmēr ielādēt šī sūtītāja attēlus”, lai pievienotu to šeit. Arī atbildot kādam, tas tiek pievienots.",
         "add_manually": "Pievienot sūtītāju manuāli",
         "add_button": "Pievienot",
         "add_placeholder": "Ievadiet e-pasta adresi",

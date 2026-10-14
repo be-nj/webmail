@@ -379,7 +379,7 @@
     "hide_details": "Details ausblenden",
     "external_content_warning": "Bilder und externe Inhalte wurden blockiert",
     "load_external_content": "Bilder laden",
-    "trust_sender": "Diesem Absender immer vertrauen",
+    "trust_sender": "Bilder dieses Absenders immer laden",
     "sender_check": {
       "unverified_label": "Absender nicht bestätigt",
       "failed_label": "Absenderprüfung fehlgeschlagen",
@@ -663,6 +663,8 @@
       "description": "Diese Nachricht gibt vor, von {address} zu kommen – einem deiner vertrauten Absender –, hat aber die Absenderprüfung nicht bestanden. Sie stammt sehr wahrscheinlich nicht von dort."
     },
     "sender_trust": {
+      "mark": "Als vertrauenswürdig markieren",
+      "unmark": "Markierung entfernen",
       "label": "Vertrauter Absender",
       "trusted": "Vertrauter Absender – Absenderprüfung bestanden",
       "impersonated": "Gibt sich als vertrauter Absender aus – Absenderprüfung fehlgeschlagen"
@@ -1630,14 +1632,14 @@
         "allow": "Immer erlauben"
       },
       "trusted_senders": {
-        "label": "Vertrauenswürdige Absender",
+        "label": "Bilder immer laden von",
         "description": "Verwalten Sie Absender, deren Bilder automatisch geladen werden",
         "count_zero": "Keine",
         "count_one": "1 Absender",
         "count_other": "{count} Absender",
-        "modal_title": "Vertrauenswürdige Absender",
-        "empty_title": "Noch keine vertrauenswürdigen Absender",
-        "empty_description": "Wenn Sie eine E-Mail mit blockierten Bildern anzeigen, klicken Sie auf \"Diesem Absender immer vertrauen\", um sie hier hinzuzufügen.",
+        "modal_title": "Bilder immer laden von",
+        "empty_title": "Noch keine Absender",
+        "empty_description": "Wenn Sie eine E-Mail mit blockierten Bildern anzeigen, klicken Sie auf \"Bilder dieses Absenders immer laden\", um ihn hier hinzuzufügen. Auch wer eine Antwort von Ihnen erhält, kommt hierher.",
         "add_manually": "Absender manuell hinzufügen",
         "add_button": "Hinzufügen",
         "add_placeholder": "E-Mail-Adresse eingeben",
@@ -1753,6 +1755,13 @@
         "label": "Signaturen",
         "description": "Jede E-Mail-Adresse hat ihre eigene Signatur. Bearbeiten Sie sie zusammen mit Ihren Adressen.",
         "button": "E-Mail-Adressen"
+      },
+      "marked_senders": {
+        "label": "Vertrauenswürdige Absender",
+        "description": "Absender, die Sie selbst markiert haben. Ihre Nachrichten zeigen einen Handschlag, wenn die Absenderprüfung besteht.",
+        "modal_title": "Vertrauenswürdige Absender",
+        "empty_title": "Noch keine vertrauenswürdigen Absender",
+        "empty_description": "Öffnen Sie eine Nachricht des Absenders und klicken Sie in ihren Details auf \"Als vertrauenswürdig markieren\"."
       }
     },
     "account": {

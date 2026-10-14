@@ -21,6 +21,7 @@ export function ReadingSettings() {
   const t = useTranslations('settings.email_behavior');
   const tPage = useTranslations('settings.reading_page');
   const [showTrustedModal, setShowTrustedModal] = useState(false);
+  const [showMarksModal, setShowMarksModal] = useState(false);
   const { isSettingLocked, isSettingHidden, isFeatureEnabled } = usePolicyStore();
 
   const {
@@ -35,6 +36,7 @@ export function ReadingSettings() {
     externalContentPolicy,
     emailAlwaysLightMode,
     trustedSenders,
+    markedTrustedSenders,
     trustedSendersAddressBook,
     updateSetting,
   } = useSettingsStore();
@@ -48,8 +50,7 @@ export function ReadingSettings() {
     }
   }, [trustedSendersAddressBook, client, trustedSendersLoaded, loadTrustedSendersBook]);
 
-  const getTrustedSendersCount = () => {
-    const count = trustedSendersAddressBook ? trustedSenderEmails.length : trustedSenders.length;
+  const getTrustedSendersCount = (count = trustedSendersAddressBook ? trustedSenderEmails.length : trustedSenders.length) => {
     if (count === 0) return t('trusted_senders.count_zero');
     if (count === 1) return t('trusted_senders.count_one');
     return t('trusted_senders.count_other', { count });
@@ -151,9 +152,27 @@ export function ReadingSettings() {
           />
         </SettingItem>
 
+        {/* Fork: the Trusted Senders behind the Trusted Mark, kept apart from
+            the image list above, which fills itself from replies and from
+            "Always load images from this sender". */}
+        <SettingItem label={t('marked_senders.label')} description={t('marked_senders.description')}>
+          <button
+            onClick={() => setShowMarksModal(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-accent rounded-md transition-colors"
+          >
+            <span className="text-sm text-foreground">{getTrustedSendersCount(markedTrustedSenders.length)}</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </SettingItem>
+
         <TrustedSendersModal
           isOpen={showTrustedModal}
           onClose={() => setShowTrustedModal(false)}
+        />
+        <TrustedSendersModal
+          list="marks"
+          isOpen={showMarksModal}
+          onClose={() => setShowMarksModal(false)}
         />
       </SettingsSection>
 

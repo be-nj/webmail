@@ -379,7 +379,7 @@
     "hide_details": "Details verbergen",
     "external_content_warning": "Afbeeldingen en externe inhoud zijn geblokkeerd",
     "load_external_content": "Afbeeldingen laden",
-    "trust_sender": "Deze afzender altijd vertrouwen",
+    "trust_sender": "Afbeeldingen van deze afzender altijd laden",
     "sender_check": {
       "unverified_label": "Niet-geverifieerde afzender",
       "failed_label": "Afzendercontrole mislukt",
@@ -663,6 +663,8 @@
       "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
     },
     "sender_trust": {
+      "mark": "Markeren als vertrouwd",
+      "unmark": "Vertrouwensmarkering verwijderen",
       "label": "Vertrouwde afzender",
       "trusted": "Vertrouwde afzender – afzendercontrole geslaagd",
       "impersonated": "Doet zich voor als vertrouwde afzender – afzendercontrole mislukt"
@@ -1629,15 +1631,22 @@
         "block": "Altijd blokkeren",
         "allow": "Altijd toestaan"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Vertrouwde afzenders",
+        "description": "Afzenders die je zelf hebt gemarkeerd. Hun berichten tonen een handdruk als de afzendercontrole slaagt.",
+        "modal_title": "Vertrouwde afzenders",
+        "empty_title": "Nog geen vertrouwde afzenders",
+        "empty_description": "Open een bericht van de afzender en klik in de details op \"Markeren als vertrouwd\"."
+      },
+      "trusted_senders": {
+        "label": "Afbeeldingen altijd laden van",
         "description": "Beheer afzenders van wie afbeeldingen automatisch worden geladen",
         "count_zero": "Geen",
         "count_one": "1 afzender",
         "count_other": "{count} afzenders",
-        "modal_title": "Vertrouwde afzenders",
-        "empty_title": "Nog geen vertrouwde afzenders",
-        "empty_description": "Wanneer je een e-mail bekijkt met geblokkeerde afbeeldingen, klik op \"Deze afzender altijd vertrouwen\" om ze hier toe te voegen.",
+        "modal_title": "Afbeeldingen altijd laden van",
+        "empty_title": "Nog geen afzenders",
+        "empty_description": "Klik bij een e-mail met geblokkeerde afbeeldingen op \"Afbeeldingen van deze afzender altijd laden\" om de afzender hier toe te voegen. Iemand beantwoorden voegt hem ook toe.",
         "add_manually": "Afzender handmatig toevoegen",
         "add_button": "Toevoegen",
         "add_placeholder": "Voer e-mailadres in",

@@ -379,7 +379,7 @@
     "hide_details": "Masquer les détails",
     "external_content_warning": "Les images et le contenu externe ont été bloqués",
     "load_external_content": "Charger les images",
-    "trust_sender": "Toujours faire confiance à cet expéditeur",
+    "trust_sender": "Toujours charger les images de cet expéditeur",
     "sender_check": {
       "unverified_label": "Expéditeur non vérifié",
       "failed_label": "Échec de la vérification de l'expéditeur",
@@ -663,6 +663,8 @@
       "description": "Ce message prétend venir de {address}, l'un de vos expéditeurs de confiance, mais a échoué à la vérification de l'expéditeur. Il n'a très probablement pas été envoyé par lui."
     },
     "sender_trust": {
+      "mark": "Marquer comme fiable",
+      "unmark": "Retirer la marque de confiance",
       "label": "Expéditeur de confiance",
       "trusted": "Expéditeur de confiance – vérification de l'expéditeur réussie",
       "impersonated": "Se fait passer pour un expéditeur de confiance – échec de la vérification de l'expéditeur"
@@ -1629,15 +1631,22 @@
         "block": "Toujours bloquer",
         "allow": "Toujours autoriser"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Expéditeurs de confiance",
+        "description": "Expéditeurs que vous avez marqués vous-même. Leurs messages affichent une poignée de main lorsque la vérification de l'expéditeur réussit.",
+        "modal_title": "Expéditeurs de confiance",
+        "empty_title": "Aucun expéditeur de confiance pour l'instant",
+        "empty_description": "Ouvrez un message de l'expéditeur et cliquez sur « Marquer comme fiable » dans ses détails."
+      },
+      "trusted_senders": {
+        "label": "Toujours charger les images de",
         "description": "Gérer les expéditeurs dont les images se chargent automatiquement",
         "count_zero": "Aucun",
         "count_one": "1 expéditeur",
         "count_other": "{count} expéditeurs",
-        "modal_title": "Expéditeurs de confiance",
-        "empty_title": "Aucun expéditeur de confiance",
-        "empty_description": "Lorsque vous consultez un email avec des images bloquées, cliquez sur « Toujours faire confiance à cet expéditeur » pour l'ajouter ici.",
+        "modal_title": "Toujours charger les images de",
+        "empty_title": "Aucun expéditeur pour l'instant",
+        "empty_description": "Lorsque vous consultez un email avec des images bloquées, cliquez sur « Toujours charger les images de cet expéditeur » pour l'ajouter ici. Répondre à quelqu'un l'ajoute aussi.",
         "add_manually": "Ajouter manuellement",
         "add_button": "Ajouter",
         "add_placeholder": "Entrez une adresse email",

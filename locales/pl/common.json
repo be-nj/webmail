@@ -379,7 +379,7 @@
     "hide_details": "Ukryj szczegóły",
     "external_content_warning": "Obrazy i treści zewnętrzne zostały zablokowane",
     "load_external_content": "Załaduj obrazy",
-    "trust_sender": "Zawsze ufaj temu nadawcy",
+    "trust_sender": "Zawsze ładuj obrazy od tego nadawcy",
     "sender_check": {
       "unverified_label": "Niezweryfikowany nadawca",
       "failed_label": "Weryfikacja nadawcy nie powiodła się",
@@ -663,6 +663,8 @@
       "description": "Ta wiadomość podaje się za wysłaną przez {address}, jednego z Twoich zaufanych nadawców, ale nie przeszła weryfikacji nadawcy. Najprawdopodobniej nie została przez niego wysłana."
     },
     "sender_trust": {
+      "mark": "Oznacz jako zaufanego",
+      "unmark": "Usuń oznaczenie zaufania",
       "label": "Zaufany nadawca",
       "trusted": "Zaufany nadawca – weryfikacja nadawcy zaliczona",
       "impersonated": "Podszywa się pod zaufanego nadawcę – weryfikacja nadawcy nieudana"
@@ -1629,15 +1631,22 @@
         "block": "Zawsze blokuj",
         "allow": "Zawsze zezwalaj"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Zaufani nadawcy",
+        "description": "Nadawcy oznaczeni przez Ciebie. Ich wiadomości pokazują uścisk dłoni, gdy weryfikacja nadawcy się powiedzie.",
+        "modal_title": "Zaufani nadawcy",
+        "empty_title": "Brak zaufanych nadawców",
+        "empty_description": "Otwórz wiadomość od nadawcy i kliknij „Oznacz jako zaufanego” w jej szczegółach."
+      },
+      "trusted_senders": {
+        "label": "Zawsze ładuj obrazy od",
         "description": "Zarządzaj nadawcami, których obrazy ładują się automatycznie",
         "count_zero": "Brak",
         "count_one": "1 nadawca",
         "count_other": "{count} nadawców",
-        "modal_title": "Zaufani nadawcy",
-        "empty_title": "Brak zaufanych nadawców",
-        "empty_description": "Podczas wyświetlania wiadomości e-mail z zablokowanymi obrazami kliknij \"Zawsze ufaj temu nadawcy\", aby dodać go tutaj.",
+        "modal_title": "Zawsze ładuj obrazy od",
+        "empty_title": "Brak nadawców",
+        "empty_description": "Podczas oglądania wiadomości z zablokowanymi obrazami kliknij „Zawsze ładuj obrazy od tego nadawcy”, aby dodać go tutaj. Odpowiedź na wiadomość też go dodaje.",
         "add_manually": "Dodaj nadawcę ręcznie",
         "add_button": "Dodaj",
         "add_placeholder": "Wprowadź adres e-mail",

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { X, ShieldCheck, Search, Trash2, Plus, Loader2 } from "@/components/icons";
+import { X, ShieldCheck, HeartHandshake, Search, Trash2, Plus, Loader2 } from "@/components/icons";
 import { Avatar } from "@/components/ui/avatar";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useContactStore } from "@/stores/contact-store";
@@ -12,14 +12,27 @@ import { cn } from "@/lib/utils";
 interface TrustedSendersModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * Fork: `images` is upstream's list of senders whose images load on their
+   * own; `marks` the Trusted Senders the reader marked by hand, the only ones
+   * that get the Trusted Mark. Marks are never kept in the address book.
+   */
+  list?: "images" | "marks";
 }
 
-export function TrustedSendersModal({ isOpen, onClose }: TrustedSendersModalProps) {
+export function TrustedSendersModal({ isOpen, onClose, list = "images" }: TrustedSendersModalProps) {
   const t = useTranslations("settings.email_behavior.trusted_senders");
+  const tMarks = useTranslations("settings.email_behavior.marked_senders");
+  const marks = list === "marks";
+  const HeaderIcon = marks ? HeartHandshake : ShieldCheck;
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { trustedSenders, addTrustedSender, removeTrustedSender, trustedSendersAddressBook } = useSettingsStore();
+  const {
+    trustedSenders, addTrustedSender, removeTrustedSender,
+    markedTrustedSenders, markTrustedSender, unmarkTrustedSender,
+  } = useSettingsStore();
+  const trustedSendersAddressBook = useSettingsStore((s) => s.trustedSendersAddressBook) && !marks;
   const {
     trustedSenderEmails,
     trustedSendersLoaded,
@@ -44,7 +57,7 @@ export function TrustedSendersModal({ isOpen, onClose }: TrustedSendersModalProp
   }, [isOpen, trustedSendersAddressBook, client, trustedSendersLoaded, loadTrustedSendersBook]);
 
   // The active list depends on mode
-  const activeSenders = trustedSendersAddressBook ? trustedSenderEmails : trustedSenders;
+  const activeSenders = marks ? markedTrustedSenders : trustedSendersAddressBook ? trustedSenderEmails : trustedSenders;
   const isLoading = trustedSendersAddressBook && (!trustedSendersLoaded || trustedSendersLoading);
 
   // Filter senders based on search query
@@ -133,7 +146,9 @@ export function TrustedSendersModal({ isOpen, onClose }: TrustedSendersModalProp
 
     setIsSubmitting(true);
     try {
-      if (trustedSendersAddressBook && client) {
+      if (marks) {
+        markTrustedSender(trimmedEmail);
+      } else if (trustedSendersAddressBook && client) {
         await addToTrustedSendersBook(client, trimmedEmail);
       } else {
         addTrustedSender(trimmedEmail);
@@ -149,7 +164,9 @@ export function TrustedSendersModal({ isOpen, onClose }: TrustedSendersModalProp
   };
 
   const handleRemoveSender = async (email: string) => {
-    if (trustedSendersAddressBook && client) {
+    if (marks) {
+      unmarkTrustedSender(email);
+    } else if (trustedSendersAddressBook && client) {
       await removeFromTrustedSendersBook(client, email);
     } else {
       removeTrustedSender(email);
@@ -180,9 +197,9 @@ export function TrustedSendersModal({ isOpen, onClose }: TrustedSendersModalProp
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-primary" />
+            <HeaderIcon className="w-5 h-5 text-primary" />
             <h2 id="trusted-senders-title" className="text-lg font-semibold text-foreground">
-              {t("modal_title")}
+              {marks ? tMarks("modal_title") : t("modal_title")}
             </h2>
           </div>
           <button
@@ -219,12 +236,12 @@ export function TrustedSendersModal({ isOpen, onClose }: TrustedSendersModalProp
           ) : activeSenders.length === 0 ? (
             /* Empty State */
             <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-              <ShieldCheck className="w-12 h-12 text-muted-foreground/50 mb-4" />
+              <HeaderIcon className="w-12 h-12 text-muted-foreground/50 mb-4" />
               <h3 className="text-base font-medium text-foreground mb-2">
-                {t("empty_title")}
+                {marks ? tMarks("empty_title") : t("empty_title")}
               </h3>
               <p className="text-sm text-muted-foreground max-w-[280px] mb-6">
-                {t("empty_description")}
+                {marks ? tMarks("empty_description") : t("empty_description")}
               </p>
               <button
                 onClick={() => setIsAdding(true)}

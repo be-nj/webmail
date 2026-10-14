@@ -379,7 +379,7 @@
     "hide_details": "Hide details",
     "external_content_warning": "Images and external content have been blocked",
     "load_external_content": "Load images",
-    "trust_sender": "Always trust this sender",
+    "trust_sender": "Always load images from this sender",
     "sender_check": {
       "unverified_label": "Unverified sender",
       "failed_label": "Sender check failed",
@@ -663,6 +663,8 @@
       "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."
     },
     "sender_trust": {
+      "mark": "Mark as trusted",
+      "unmark": "Remove trust mark",
       "label": "Trusted sender",
       "trusted": "Trusted sender – sender verification passed",
       "impersonated": "Claims to be a trusted sender – sender verification failed"
@@ -1633,14 +1635,14 @@
         "allow": "Always allow"
       },
       "trusted_senders": {
-        "label": "Trusted Senders",
+        "label": "Always load images from",
         "description": "Manage senders whose images load automatically",
         "count_zero": "None",
         "count_one": "1 sender",
         "count_other": "{count} senders",
-        "modal_title": "Trusted Senders",
-        "empty_title": "No trusted senders yet",
-        "empty_description": "When viewing an email with blocked images, click \"Always trust this sender\" to add them here.",
+        "modal_title": "Always load images from",
+        "empty_title": "No senders yet",
+        "empty_description": "When viewing an email with blocked images, click \"Always load images from this sender\" to add them here. Replying to someone adds them too.",
         "add_manually": "Add sender manually",
         "add_button": "Add",
         "add_placeholder": "Enter email address",
@@ -1756,6 +1758,13 @@
         "label": "Signatures",
         "description": "Each email address has its own signature. Edit them together with your addresses.",
         "button": "Email addresses"
+      },
+      "marked_senders": {
+        "label": "Trusted senders",
+        "description": "Senders you marked yourself. Their messages show a handshake when the sender check passes.",
+        "modal_title": "Trusted senders",
+        "empty_title": "No trusted senders yet",
+        "empty_description": "Open a message from the sender and click \"Mark as trusted\" in its details."
       }
     },
     "account": {

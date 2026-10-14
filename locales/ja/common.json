@@ -379,7 +379,7 @@
     "hide_details": "詳細を非表示",
     "external_content_warning": "画像と外部コンテンツがブロックされました",
     "load_external_content": "画像を読み込む",
-    "trust_sender": "常にこの送信者を信頼する",
+    "trust_sender": "この送信者の画像を常に読み込む",
     "sender_check": {
       "unverified_label": "未確認の送信者",
       "failed_label": "送信者の確認に失敗",
@@ -663,6 +663,8 @@
       "description": "このメッセージは信頼済み送信者の {address} からと称していますが、送信者認証に失敗しました。本人が送信したものではない可能性が高いです。"
     },
     "sender_trust": {
+      "mark": "信頼済みとしてマーク",
+      "unmark": "信頼マークを外す",
       "label": "信頼済み送信者",
       "trusted": "信頼済み送信者 – 送信者認証に合格",
       "impersonated": "信頼済み送信者を装っています – 送信者認証に失敗"
@@ -1629,15 +1631,22 @@
         "block": "常にブロック",
         "allow": "常に許可"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "信頼する送信者",
+        "description": "自分でマークした送信者です。送信者チェックに合格したメッセージに握手のマークが表示されます。",
+        "modal_title": "信頼する送信者",
+        "empty_title": "信頼する送信者はまだいません",
+        "empty_description": "送信者のメッセージを開き、詳細で「信頼済みとしてマーク」をクリックします。"
+      },
+      "trusted_senders": {
+        "label": "画像を常に読み込む送信者",
         "description": "画像が自動的に読み込まれる送信者を管理",
         "count_zero": "なし",
         "count_one": "1件",
         "count_other": "{count}件",
-        "modal_title": "信頼する送信者",
-        "empty_title": "信頼する送信者はまだありません",
-        "empty_description": "ブロックされた画像を含むメールを表示するときに、「常にこの送信者を信頼する」をクリックしてここに追加します。",
+        "modal_title": "画像を常に読み込む送信者",
+        "empty_title": "送信者はまだいません",
+        "empty_description": "画像がブロックされたメールを表示するときに「この送信者の画像を常に読み込む」をクリックすると、ここに追加されます。返信した相手も追加されます。",
         "add_manually": "送信者を手動で追加",
         "add_button": "追加",
         "add_placeholder": "メールアドレスを入力",

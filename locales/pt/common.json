@@ -379,7 +379,7 @@
     "hide_details": "Ocultar detalhes",
     "external_content_warning": "Imagens e conteúdo externo foram bloqueados",
     "load_external_content": "Carregar imagens",
-    "trust_sender": "Sempre confiar neste remetente",
+    "trust_sender": "Carregar sempre as imagens deste remetente",
     "sender_check": {
       "unverified_label": "Remetente não verificado",
       "failed_label": "Falha na verificação do remetente",
@@ -663,6 +663,8 @@
       "description": "Esta mensagem afirma vir de {address}, um dos seus remetentes de confiança, mas falhou a verificação do remetente. Muito provavelmente não foi enviada por ele."
     },
     "sender_trust": {
+      "mark": "Marcar como confiável",
+      "unmark": "Remover marca de confiança",
       "label": "Remetente de confiança",
       "trusted": "Remetente de confiança – verificação do remetente aprovada",
       "impersonated": "Diz ser um remetente de confiança – falha na verificação do remetente"
@@ -1629,15 +1631,22 @@
         "block": "Sempre bloquear",
         "allow": "Sempre permitir"
       },
+      "marked_senders": {
+        "label": "Remetentes confiáveis",
+        "description": "Remetentes que você mesmo marcou. As mensagens deles mostram um aperto de mão quando a verificação do remetente é aprovada.",
+        "modal_title": "Remetentes confiáveis",
+        "empty_title": "Ainda não há remetentes confiáveis",
+        "empty_description": "Abra uma mensagem do remetente e clique em \"Marcar como confiável\" nos detalhes."
+      },
       "trusted_senders": {
-        "label": "Remetentes Confiáveis",
+        "label": "Carregar sempre as imagens de",
         "description": "Gerencie remetentes cujas imagens são carregadas automaticamente",
         "count_zero": "Nenhum",
         "count_one": "1 remetente",
         "count_other": "{count} remetentes",
-        "modal_title": "Remetentes Confiáveis",
-        "empty_title": "Nenhum remetente confiável ainda",
-        "empty_description": "Ao visualizar um e-mail com imagens bloqueadas, clique em \"Sempre confiar neste remetente\" para adicioná-lo aqui.",
+        "modal_title": "Carregar sempre as imagens de",
+        "empty_title": "Ainda não há remetentes",
+        "empty_description": "Ao ver um email com imagens bloqueadas, clique em \"Carregar sempre as imagens deste remetente\" para adicioná-lo aqui. Responder a alguém também o adiciona.",
         "add_manually": "Adicionar remetente manualmente",
         "add_button": "Adicionar",
         "add_placeholder": "Digite o endereço de e-mail",
