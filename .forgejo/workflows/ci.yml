@@ -64,6 +64,10 @@ jobs:
       - name: eslint
         run: npm run lint
       - name: typecheck
+        # tsc over the whole app outgrows node's default heap in the job
+        # container and dies with "JavaScript heap out of memory".
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm run typecheck
 
   test:
