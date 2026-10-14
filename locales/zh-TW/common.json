@@ -297,6 +297,8 @@
       "from_message": "來自 {sender} 的郵件，{date}"
     },
     "sender_trust": {
+      "mark": "標記為受信任",
+      "unmark": "移除信任標記",
       "label": "信任的寄件者",
       "trusted": "信任的寄件者 – 寄件者驗證通過",
       "impersonated": "冒充信任的寄件者 – 寄件者驗證失敗"
@@ -371,7 +373,7 @@
     "hide_details": "隱藏詳細資料",
     "external_content_warning": "圖片與外部內容已遭封鎖",
     "load_external_content": "載入圖片",
-    "trust_sender": "一律信任此寄件者",
+    "trust_sender": "一律載入此寄件者的圖片",
     "sender_check": {
       "unverified_label": "寄件者未經驗證",
       "failed_label": "寄件者驗證失敗",
@@ -1547,15 +1549,22 @@
         "block": "一律封鎖",
         "allow": "一律允許"
       },
+      "marked_senders": {
+        "label": "受信任的寄件者",
+        "description": "您親自標記的寄件者。寄件者驗證通過時，其郵件會顯示握手標誌。",
+        "modal_title": "受信任的寄件者",
+        "empty_title": "尚無受信任的寄件者",
+        "empty_description": "開啟該寄件者的郵件，在詳細資料中按一下「標記為受信任」。"
+      },
       "trusted_senders": {
-        "label": "受信任寄件者",
+        "label": "一律載入圖片的寄件者",
         "description": "管理可自動載入圖片的寄件者",
         "count_zero": "無",
         "count_one": "1 位寄件者",
         "count_other": "{count} 位寄件者",
-        "modal_title": "受信任寄件者",
-        "empty_title": "尚無受信任寄件者",
-        "empty_description": "檢視包含遭封鎖圖片的郵件時，點擊「一律信任此寄件者」即可新增到這裡。",
+        "modal_title": "一律載入圖片的寄件者",
+        "empty_title": "尚無寄件者",
+        "empty_description": "檢視圖片遭封鎖的郵件時，按一下「一律載入此寄件者的圖片」即可新增到這裡。回覆某人也會新增對方。",
         "add_manually": "手動新增",
         "add_button": "新增",
         "add_placeholder": "輸入電子郵件地址",

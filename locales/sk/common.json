@@ -357,7 +357,7 @@
     "hide_details": "Skryť podrobnosti",
     "external_content_warning": "Obrázky a externý obsah boli zablokované",
     "load_external_content": "Načítať obrázky",
-    "trust_sender": "Vždy dôverovať tomuto odosielateľovi",
+    "trust_sender": "Vždy načítať obrázky od tohto odosielateľa",
     "sender_check": {
       "unverified_label": "Neoverený odosielateľ",
       "failed_label": "Kontrola odosielateľa zlyhala",
@@ -625,6 +625,8 @@
       "description": "Táto správa tvrdí, že pochádza od {address}, jedného z vašich dôveryhodných odosielateľov, ale neprešla overením odosielateľa. S najväčšou pravdepodobnosťou ju neodoslal."
     },
     "sender_trust": {
+      "mark": "Označiť ako dôveryhodného",
+      "unmark": "Odstrániť označenie dôvery",
       "label": "Dôveryhodný odosielateľ",
       "trusted": "Dôveryhodný odosielateľ – overenie odosielateľa prešlo",
       "impersonated": "Vydáva sa za dôveryhodného odosielateľa – overenie odosielateľa zlyhalo"
@@ -1547,15 +1549,22 @@
         "block": "Vždy blokovať",
         "allow": "Vždy povoliť"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Dôveryhodní odosielatelia",
+        "description": "Odosielatelia, ktorých ste sami označili. Ich správy ukazujú podanie ruky, keď kontrola odosielateľa prejde.",
+        "modal_title": "Dôveryhodní odosielatelia",
+        "empty_title": "Zatiaľ žiadni dôveryhodní odosielatelia",
+        "empty_description": "Otvorte správu od odosielateľa a v jej podrobnostiach kliknite na „Označiť ako dôveryhodného“."
+      },
+      "trusted_senders": {
+        "label": "Vždy načítať obrázky od",
         "description": "Spravujte odosielateľov, ktorých obrázky sa načítavajú automaticky",
         "count_zero": "Žiadni",
         "count_one": "1 odosielateľ",
         "count_other": "{count} odosielateľov",
-        "modal_title": "Dôveryhodní odosielatelia",
-        "empty_title": "Žiadni dôveryhodní odosielatelia",
-        "empty_description": "Pri prezeraní e-mailu so zablokovanými obrázkami kliknite na \"Vždy dôverovať tomuto odosielateľovi\".",
+        "modal_title": "Vždy načítať obrázky od",
+        "empty_title": "Zatiaľ žiadni odosielatelia",
+        "empty_description": "Pri zobrazení e-mailu s blokovanými obrázkami kliknite na „Vždy načítať obrázky od tohto odosielateľa“ a pridáte ho sem. Pridá ho aj odpoveď na jeho správu.",
         "add_manually": "Pridať odosielateľa ručne",
         "add_button": "Pridať",
         "add_placeholder": "Zadajte e-mailovú adresu",

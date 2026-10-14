@@ -357,7 +357,7 @@
     "hide_details": "간략히 보기",
     "external_content_warning": "이미지와 외부 콘텐츠가 차단되었어요",
     "load_external_content": "이미지 불러오기",
-    "trust_sender": "이 보낸 사람 항상 신뢰하기",
+    "trust_sender": "이 발신자의 이미지를 항상 불러오기",
     "sender_check": {
       "unverified_label": "확인되지 않은 보낸 사람",
       "failed_label": "보낸 사람 확인 실패",
@@ -625,6 +625,8 @@
       "description": "이 메시지는 신뢰하는 발신자인 {address}에서 보낸 것처럼 보이지만 발신자 인증에 실패했습니다. 해당 발신자가 보낸 것이 아닐 가능성이 높습니다."
     },
     "sender_trust": {
+      "mark": "신뢰함으로 표시",
+      "unmark": "신뢰 표시 제거",
       "label": "신뢰하는 발신자",
       "trusted": "신뢰하는 발신자 – 발신자 인증 통과",
       "impersonated": "신뢰하는 발신자를 사칭 – 발신자 인증 실패"
@@ -1544,15 +1546,22 @@
         "block": "항상 차단",
         "allow": "항상 허용"
       },
+      "marked_senders": {
+        "label": "신뢰하는 발신자",
+        "description": "직접 표시한 발신자입니다. 발신자 확인을 통과하면 메시지에 악수 표시가 나타납니다.",
+        "modal_title": "신뢰하는 발신자",
+        "empty_title": "아직 신뢰하는 발신자가 없습니다",
+        "empty_description": "발신자의 메시지를 열고 세부 정보에서 \"신뢰함으로 표시\"를 클릭하세요."
+      },
       "trusted_senders": {
-        "label": "신뢰하는 보낸 사람",
+        "label": "이미지를 항상 불러올 발신자",
         "description": "이미지를 자동으로 불러올 보낸 사람을 관리해요",
         "count_zero": "없음",
         "count_one": "1명",
         "count_other": "{count}명",
-        "modal_title": "신뢰하는 보낸 사람",
-        "empty_title": "아직 신뢰하는 보낸 사람이 없어요",
-        "empty_description": "이미지가 차단된 메일에서 \"이 보낸 사람 항상 신뢰하기\"를 클릭하면 여기에 추가돼요.",
+        "modal_title": "이미지를 항상 불러올 발신자",
+        "empty_title": "아직 발신자가 없습니다",
+        "empty_description": "이미지가 차단된 이메일을 볼 때 \"이 발신자의 이미지를 항상 불러오기\"를 클릭하면 여기에 추가됩니다. 답장한 상대도 추가됩니다.",
         "add_manually": "직접 추가하기",
         "add_button": "추가",
         "add_placeholder": "이메일 주소 입력",

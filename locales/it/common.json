@@ -357,7 +357,7 @@
     "hide_details": "Nascondi dettagli",
     "external_content_warning": "Le immagini e i contenuti esterni sono stati bloccati",
     "load_external_content": "Carica immagini",
-    "trust_sender": "Considera sempre attendibile questo mittente",
+    "trust_sender": "Carica sempre le immagini di questo mittente",
     "sender_check": {
       "unverified_label": "Mittente non verificato",
       "failed_label": "Verifica del mittente non riuscita",
@@ -625,6 +625,8 @@
       "description": "Questo messaggio afferma di provenire da {address}, uno dei tuoi mittenti attendibili, ma non ha superato la verifica del mittente. Molto probabilmente non è stato inviato da lui."
     },
     "sender_trust": {
+      "mark": "Contrassegna come attendibile",
+      "unmark": "Rimuovi contrassegno di fiducia",
       "label": "Mittente attendibile",
       "trusted": "Mittente attendibile – verifica del mittente superata",
       "impersonated": "Si spaccia per un mittente attendibile – verifica del mittente non riuscita"
@@ -1544,15 +1546,22 @@
         "block": "Blocca sempre",
         "allow": "Consenti sempre"
       },
-      "trusted_senders": {
+      "marked_senders": {
         "label": "Mittenti attendibili",
+        "description": "Mittenti che hai contrassegnato tu. I loro messaggi mostrano una stretta di mano quando la verifica del mittente riesce.",
+        "modal_title": "Mittenti attendibili",
+        "empty_title": "Ancora nessun mittente attendibile",
+        "empty_description": "Apri un messaggio del mittente e fai clic su \"Contrassegna come attendibile\" nei dettagli."
+      },
+      "trusted_senders": {
+        "label": "Carica sempre le immagini di",
         "description": "Gestisci i mittenti le cui immagini si caricano automaticamente",
         "count_zero": "Nessuno",
         "count_one": "1 mittente",
         "count_other": "{count} mittenti",
-        "modal_title": "Mittenti attendibili",
-        "empty_title": "Nessun mittente attendibile ancora",
-        "empty_description": "Durante la visualizzazione di un messaggio con immagini bloccate, clicca \"Considera sempre attendibile questo mittente\" per aggiungerlo qui.",
+        "modal_title": "Carica sempre le immagini di",
+        "empty_title": "Ancora nessun mittente",
+        "empty_description": "Quando visualizzi un'email con immagini bloccate, fai clic su \"Carica sempre le immagini di questo mittente\" per aggiungerlo qui. Anche rispondere a qualcuno lo aggiunge.",
         "add_manually": "Aggiungi mittente manualmente",
         "add_button": "Aggiungi",
         "add_placeholder": "Inserisci indirizzo email",

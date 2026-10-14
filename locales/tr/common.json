@@ -357,7 +357,7 @@
     "hide_details": "Ayrıntıları gizle",
     "external_content_warning": "Görseller ve harici içerik engellendi",
     "load_external_content": "Görselleri yükle",
-    "trust_sender": "Bu gönderene her zaman güven",
+    "trust_sender": "Bu gönderenin resimlerini her zaman yükle",
     "sender_check": {
       "unverified_label": "Doğrulanmamış gönderen",
       "failed_label": "Gönderen denetimi başarısız",
@@ -625,6 +625,8 @@
       "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."
     },
     "sender_trust": {
+      "mark": "Güvenilir olarak işaretle",
+      "unmark": "Güven işaretini kaldır",
       "label": "Güvenilir gönderen",
       "trusted": "Güvenilir gönderen – gönderen doğrulaması başarılı",
       "impersonated": "Güvenilir gönderen gibi davranıyor – gönderen doğrulaması başarısız"
@@ -1544,15 +1546,22 @@
         "block": "Her zaman engelle",
         "allow": "Her zaman izin ver"
       },
+      "marked_senders": {
+        "label": "Güvenilir gönderenler",
+        "description": "Kendi işaretlediğiniz gönderenler. Gönderen denetimi geçtiğinde iletilerinde el sıkışma simgesi görünür.",
+        "modal_title": "Güvenilir gönderenler",
+        "empty_title": "Henüz güvenilir gönderen yok",
+        "empty_description": "Gönderenin bir iletisini açın ve ayrıntılarında \"Güvenilir olarak işaretle\"ye tıklayın."
+      },
       "trusted_senders": {
-        "label": "Güvenilir Göndericiler",
+        "label": "Resimleri her zaman yükle:",
         "description": "Görsellerinin otomatik yükleneceği göndericileri yönetin",
         "count_zero": "Yok",
         "count_one": "1 gönderici",
         "count_other": "{count} gönderici",
-        "modal_title": "Güvenilir Göndericiler",
-        "empty_title": "Henüz güvenilir gönderici yok",
-        "empty_description": "Engellenen görseller içeren bir e-postayı görüntülerken \"Bu göndericiyi her zaman güven\" seçeneğine tıklayın.",
+        "modal_title": "Resimleri her zaman yükle:",
+        "empty_title": "Henüz gönderen yok",
+        "empty_description": "Engellenmiş resimler içeren bir e-postayı görüntülerken, buraya eklemek için \"Bu gönderenin resimlerini her zaman yükle\"ye tıklayın. Birini yanıtlamak da onu ekler.",
         "add_manually": "Gönderici manuel ekle",
         "add_button": "Ekle",
         "add_placeholder": "E-posta adresi girin",
