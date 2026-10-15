@@ -1740,6 +1740,16 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     if (readingPaneEmpty && !tabletListVisible) setTabletListVisible(true);
   }, [readingPaneEmpty, tabletListVisible, setTabletListVisible]);
 
+  // Fork: where the open message takes the list's place (focus layout,
+  // Mountain View), archiving or deleting it goes back to the list, as in
+  // Gmail, instead of opening the next message. A Mountain View cursor still
+  // moves on, since the list is in view.
+  const readsInPlaceOfList = !isMobile && mailLayout === 'focus' && !(mvShell && cursorOnly);
+  useEffect(() => {
+    useEmailStore.getState().setAdvanceAfterRemoval(!readsInPlaceOfList);
+    return () => useEmailStore.getState().setAdvanceAfterRemoval(true);
+  }, [readsInPlaceOfList]);
+
   // Handle mark-as-read with delay based on settings
   useEffect(() => {
     // Clear any existing timeout when email changes

@@ -227,6 +227,12 @@ interface EmailStore {
   isLoadingScheduled: boolean;
   isScheduledView: boolean;
   /**
+   * Fork: whether removing the selected email (delete, archive, move, spam)
+   * selects its neighbour. A layout that reads a message in place of the list
+   * turns this off, so the list comes back as in Gmail.
+   */
+  advanceAfterRemoval: boolean;
+  /**
    * When set, the scheduled view is narrowed to one JMAP account — the shared
    * account whose "Scheduled" row was clicked. null = the combined view.
    */
@@ -434,16 +440,18 @@ interface EmailStore {
   clearPendingUndoSend: () => void;
   refreshScheduledMetadata: (client: IJMAPClient) => Promise<void>;
   setScheduledView: (isScheduledView: boolean, accountScope?: string | null) => void;
+  setAdvanceAfterRemoval: (advance: boolean) => void;
 
   // Mock data for demo
   loadMockData: () => void;
 }
 
 // Helper: compute the next email to select when removing one from the list
-function getNextSelectedEmailAfterRemoval(state: { emails: Email[]; selectedEmail: Email | null }, removedEmailIds: Set<string>): Email | null {
+function getNextSelectedEmailAfterRemoval(state: { emails: Email[]; selectedEmail: Email | null; advanceAfterRemoval?: boolean }, removedEmailIds: Set<string>): Email | null {
   if (!state.selectedEmail || !removedEmailIds.has(state.selectedEmail.id)) {
     return state.selectedEmail;
   }
+  if (state.advanceAfterRemoval === false) return null;
 
   const idx = state.emails.findIndex(e => e.id === state.selectedEmail?.id);
   if (idx === -1) return null;
@@ -465,7 +473,7 @@ function getNextSelectedEmailAfterRemoval(state: { emails: Email[]; selectedEmai
   return null;
 }
 
-function getNextSelectedEmail(state: { emails: Email[]; selectedEmail: Email | null }, removedEmailId: string): Email | null {
+function getNextSelectedEmail(state: { emails: Email[]; selectedEmail: Email | null; advanceAfterRemoval?: boolean }, removedEmailId: string): Email | null {
   return getNextSelectedEmailAfterRemoval(state, new Set([removedEmailId]));
 }
 
@@ -1869,6 +1877,7 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
   scheduledTotalByAccount: {},
   isLoadingScheduled: false,
   isScheduledView: false,
+  advanceAfterRemoval: true,
   scheduledAccountScope: null,
   pendingUndoSend: null,
 
@@ -5622,6 +5631,8 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
       viewToken: state.viewToken + 1,
     }));
   },
+
+  setAdvanceAfterRemoval: (advance) => set({ advanceAfterRemoval: advance }),
 
   setScheduledView: (isScheduledView, accountScope = null) => set(state => {
     const leavingScheduled = !isScheduledView && state.selectedMailbox === VIRTUAL_SCHEDULED_MAILBOX_ID;
