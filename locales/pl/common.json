@@ -739,7 +739,8 @@
     "remove_sub_address": "Usuń podadres",
     "catch_all": {
       "pending": "{address} zostanie zapisany jako nowa tożsamość przy wysyłaniu.",
-      "create_failed": "Serwer nie zaakceptował {address} jako nadawcy: {reason}"
+      "create_failed": "Serwer nie zaakceptował {address} jako nadawcy: {reason}",
+      "via_shared": "Wysyłane przez {account} i zapisywane w jego folderze Wysłane."
     },
     "from_override": {
       "toggle_off": "Zastąp",

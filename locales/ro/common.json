@@ -742,7 +742,8 @@
     "remove_sub_address": "Eliminați subadresa",
     "catch_all": {
       "pending": "{address} va fi salvată ca identitate nouă la trimitere.",
-      "create_failed": "Serverul nu a acceptat {address} ca expeditor: {reason}"
+      "create_failed": "Serverul nu a acceptat {address} ca expeditor: {reason}",
+      "via_shared": "Se trimite prin {account} și se salvează în dosarul său Trimise."
     },
     "from_override": {
       "toggle_off": "Suprascrieți",

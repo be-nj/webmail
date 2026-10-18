@@ -761,7 +761,8 @@
     "link_url_prompt": "הזן את כתובת ה־URL",
     "catch_all": {
       "pending": "{address} תישמר כזהות חדשה בעת השליחה.",
-      "create_failed": "השרת לא קיבל את {address} כשולח: {reason}"
+      "create_failed": "השרת לא קיבל את {address} כשולח: {reason}",
+      "via_shared": "נשלח דרך {account} ונשמר בתיקיית הנשלחים שלו."
     },
     "from_override": {
       "toggle_off": "עקוף",

@@ -742,7 +742,8 @@
     "remove_sub_address": "حذف زیرآدرس",
     "catch_all": {
       "pending": "{address} هنگام ارسال به‌عنوان هویت جدید ذخیره می‌شود.",
-      "create_failed": "سرور {address} را به‌عنوان فرستنده نپذیرفت: {reason}"
+      "create_failed": "سرور {address} را به‌عنوان فرستنده نپذیرفت: {reason}",
+      "via_shared": "از طریق {account} ارسال و در پوشهٔ ارسال‌شدهٔ آن ذخیره می‌شود."
     },
     "from_override": {
       "toggle_off": "بازنویسی",

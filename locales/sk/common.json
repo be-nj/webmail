@@ -742,7 +742,8 @@
     "remove_sub_address": "Odstrániť podadresu",
     "catch_all": {
       "pending": "{address} sa pri odoslaní uloží ako nová identita.",
-      "create_failed": "Server neprijal {address} ako odosielateľa: {reason}"
+      "create_failed": "Server neprijal {address} ako odosielateľa: {reason}",
+      "via_shared": "Odošle sa cez {account} a uloží do jeho odoslanej pošty."
     },
     "from_override": {
       "toggle_off": "Prepísať",

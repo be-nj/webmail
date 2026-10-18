@@ -742,7 +742,8 @@
     "remove_sub_address": "Fjern underadressen",
     "catch_all": {
       "pending": "{address} lagres som ny identitet når du sender.",
-      "create_failed": "Serveren godtok ikke {address} som avsender: {reason}"
+      "create_failed": "Serveren godtok ikke {address} som avsender: {reason}",
+      "via_shared": "Sendes via {account} og lagres i Sendt-mappen der."
     },
     "from_override": {
       "toggle_off": "Endre avsender",

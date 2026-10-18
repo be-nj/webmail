@@ -739,7 +739,8 @@
     "remove_sub_address": "Odebrat subadresu",
     "catch_all": {
       "pending": "{address} se při odeslání uloží jako nová identita.",
-      "create_failed": "Server nepřijal {address} jako odesílatele: {reason}"
+      "create_failed": "Server nepřijal {address} jako odesílatele: {reason}",
+      "via_shared": "Odešle se přes {account} a uloží do jeho odeslané pošty."
     },
     "from_override": {
       "toggle_off": "Přepsat",

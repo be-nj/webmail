@@ -742,7 +742,8 @@
     "remove_sub_address": "刪除子地址",
     "catch_all": {
       "pending": "寄送時 {address} 將儲存為新身分。",
-      "create_failed": "伺服器未接受 {address} 作為寄件者：{reason}"
+      "create_failed": "伺服器未接受 {address} 作為寄件者：{reason}",
+      "via_shared": "透過 {account} 寄送，並儲存到其寄件備份資料夾。"
     },
     "from_override": {
       "toggle_off": "覆寫",

@@ -742,7 +742,8 @@
     "remove_sub_address": "Дэд хаягийг устгах",
     "catch_all": {
       "pending": "{address} илгээх үед шинэ таних тэмдэг болж хадгалагдана.",
-      "create_failed": "Сервер {address}-г илгээгч гэж хүлээн аваагүй: {reason}"
+      "create_failed": "Сервер {address}-г илгээгч гэж хүлээн аваагүй: {reason}",
+      "via_shared": "{account}-ээр илгээгдэж, түүний Илгээсэн хавтсанд хадгалагдана."
     },
     "from_override": {
       "toggle_off": "Дараах",

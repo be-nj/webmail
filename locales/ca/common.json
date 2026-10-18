@@ -742,7 +742,8 @@
     "remove_sub_address": "Elimina el subadreçament",
     "catch_all": {
       "pending": "{address} es desarà com a identitat nova en enviar.",
-      "create_failed": "El servidor no ha acceptat {address} com a remitent: {reason}"
+      "create_failed": "El servidor no ha acceptat {address} com a remitent: {reason}",
+      "via_shared": "S'envia a través de {account} i es desa als seus enviats."
     },
     "from_override": {
       "toggle_off": "Sobreescriu",

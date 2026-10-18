@@ -739,7 +739,8 @@
     "remove_sub_address": "Retirer le sous-adressage",
     "catch_all": {
       "pending": "{address} sera enregistrée comme nouvelle identité lors de l'envoi.",
-      "create_failed": "Le serveur n'a pas accepté {address} comme expéditeur : {reason}"
+      "create_failed": "Le serveur n'a pas accepté {address} comme expéditeur : {reason}",
+      "via_shared": "Envoyé via {account} et classé dans ses éléments envoyés."
     },
     "from_override": {
       "toggle_off": "Remplacer",

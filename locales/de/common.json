@@ -739,7 +739,8 @@
     "remove_sub_address": "Sub-Adresse entfernen",
     "catch_all": {
       "pending": "{address} wird beim Senden als neue Identität gespeichert.",
-      "create_failed": "Der Server hat {address} nicht als Absender angenommen: {reason}"
+      "create_failed": "Der Server hat {address} nicht als Absender angenommen: {reason}",
+      "via_shared": "Wird über {account} gesendet und dort unter „Gesendet“ abgelegt."
     },
     "from_override": {
       "toggle_off": "Überschreiben",
