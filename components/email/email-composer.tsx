@@ -444,7 +444,24 @@ export function EmailComposer({
   const toRecipient = (r: { name?: string; email?: string }): Recipient =>
     ({ name: r.name && r.name !== r.email ? r.name : undefined, email: r.email ?? "" });
 
-  const ownIdentityEmails = identities.map(i => i.email).filter((e): e is string => Boolean(e));
+  // Replies resolve catch-all senders against the account that holds the
+  // original (see resolveCatchAllReplyFrom below).
+  const sourceCatchAllDomains = useMemo(() => {
+    const { client: ownClient, getClientForAccount } = useAuthStore.getState();
+    const sourceClient = sourceAccountId && sourceAccountId !== activeAccountId
+      ? getClientForAccount(sourceAccountId)
+      : ownClient;
+    return sourceClient?.getCatchAllDomains?.() ?? [];
+  }, [sourceAccountId, activeAccountId]);
+  // The catch-all address a reply goes out from is the user's own, so
+  // reply-all leaves it out of the recipients like an identity's address.
+  const replyCatchAllEmail = mode === 'reply' || mode === 'replyAll'
+    ? resolveCatchAllReplyFrom(sourceAccountIdentities, replyTo, sourceCatchAllDomains)?.overrideEmail
+    : undefined;
+  const ownIdentityEmails = [
+    ...identities.map(i => i.email),
+    ...(replyCatchAllEmail ? [replyCatchAllEmail] : []),
+  ].filter((e): e is string => Boolean(e));
 
   // Initialize with reply/forward data if provided
   const getInitialTo = (): Recipient[] => {
@@ -824,13 +841,6 @@ export function EmailComposer({
   const composerCatchAllSenders = composerAccountId ? catchAllSenders[composerAccountId] : undefined;
   const isOnComposerAccount = (identity: Identity) =>
     stripCrossAccountIdentityPrefix(identity.id).localAccountId === currentIdentityParts.localAccountId;
-  // Replies resolve against the account that holds the original.
-  const sourceCatchAllDomains = useMemo(() => {
-    const sourceClient = sourceAccountId && sourceAccountId !== activeAccountId
-      ? useAuthStore.getState().getClientForAccount(sourceAccountId)
-      : client;
-    return sourceClient?.getCatchAllDomains?.() ?? [];
-  }, [sourceAccountId, activeAccountId, client]);
 
   // Forwarded attachments and quoted inline images reference part blobs of the
   // original message, which only the account that holds it can resolve. When
