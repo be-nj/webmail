@@ -722,7 +722,8 @@
     "remove_sub_address": "Noņemt apakšadresi",
     "catch_all": {
       "pending": "{address} sūtot tiks saglabāta kā jauna identitāte.",
-      "create_failed": "Serveris nepieņēma {address} kā sūtītāju: {reason}"
+      "create_failed": "Serveris nepieņēma {address} kā sūtītāju: {reason}",
+      "via_shared": "Tiek nosūtīts caur {account} un saglabāts tā mapē Nosūtītie."
     },
     "from_override": {
       "toggle_off": "Pārrakstīt",

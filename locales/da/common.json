@@ -724,7 +724,8 @@
     "remove_sub_address": "Fjern underadresse",
     "catch_all": {
       "pending": "{address} gemmes som ny identitet, når du sender.",
-      "create_failed": "Serveren accepterede ikke {address} som afsender: {reason}"
+      "create_failed": "Serveren accepterede ikke {address} som afsender: {reason}",
+      "via_shared": "Sendes via {account} og gemmes i dens Sendt-mappe."
     },
     "from_override": {
       "toggle_off": "Tilsidesæt",

@@ -722,7 +722,8 @@
     "remove_sub_address": "서브 어드레스 삭제",
     "catch_all": {
       "pending": "보낼 때 {address}이(가) 새 ID로 저장됩니다.",
-      "create_failed": "서버가 {address}을(를) 보낸 사람으로 허용하지 않았습니다: {reason}"
+      "create_failed": "서버가 {address}을(를) 보낸 사람으로 허용하지 않았습니다: {reason}",
+      "via_shared": "{account}을(를) 통해 보내고 그 보낸편지함에 저장됩니다."
     },
     "from_override": {
       "toggle_off": "재정의",

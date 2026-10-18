@@ -25,7 +25,7 @@ vi.mock('@/hooks/use-pro-multi-account-identities', () => ({
 // ─── Store mocks ──────────────────────────────────────────────────────────────
 
 const catchAll = vi.hoisted(() => ({
-  createIdentity: vi.fn(),
+  ensureCatchAllIdentity: vi.fn(),
   refreshIdentities: vi.fn(async () => {}),
   updateSetting: vi.fn(),
   toastError: vi.fn(),
@@ -35,7 +35,9 @@ vi.mock('@/stores/auth-store', () => {
   const state = {
     client: {
       getCatchAllDomains: () => ['benj.email', 'bmn.email'],
-      createIdentity: catchAll.createIdentity,
+      ensureCatchAllIdentity: catchAll.ensureCatchAllIdentity,
+      getSharedCatchAllAccount: (email: string) =>
+        (email.endsWith('@bmn.email') ? { id: 'acc-group', name: 'mb@beck.ma' } : undefined),
       createDraft: async () => 'draft-1',
       hasDelayedSend: () => false,
       getMaxDelayedSend: () => 0,
@@ -227,7 +229,7 @@ describe('composer sending from a catch-all address', () => {
   });
 
   it('creates the identity on first send, then sends from the address', async () => {
-    catchAll.createIdentity.mockResolvedValue({ id: 'id-new', email: 'firma@benj.email', name: 'Shop' });
+    catchAll.ensureCatchAllIdentity.mockResolvedValue({ accountId: 'acc-own', created: true });
     const onSend = vi.fn();
     render(<EmailComposer initialData={{ ...DRAFT, fromOverrideEmail: 'Firma@benj.email' }} onSend={onSend} />);
 
@@ -236,8 +238,8 @@ describe('composer sending from a catch-all address', () => {
     expect(screen.queryByText('from_override.envelope_notice')).not.toBeInTheDocument();
 
     const sent = await send(onSend);
-    expect(catchAll.createIdentity).toHaveBeenCalledWith('Shop', 'firma@benj.email');
-    expect(catchAll.createIdentity.mock.invocationCallOrder[0]).toBeLessThan(onSend.mock.invocationCallOrder[0]);
+    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('firma@benj.email', 'Shop');
+    expect(catchAll.ensureCatchAllIdentity.mock.invocationCallOrder[0]).toBeLessThan(onSend.mock.invocationCallOrder[0]);
     expect(sent.envelopeMailFrom?.toLowerCase()).toBe('firma@benj.email');
     expect(catchAll.refreshIdentities).toHaveBeenCalled();
     expect(catchAll.updateSetting).toHaveBeenCalledWith('catchAllSenders', {
@@ -246,7 +248,7 @@ describe('composer sending from a catch-all address', () => {
   });
 
   it('does not send when the server refuses the address', async () => {
-    catchAll.createIdentity.mockRejectedValue(new Error('invalidProperties'));
+    catchAll.ensureCatchAllIdentity.mockRejectedValue(new Error('invalidProperties'));
     const onSend = vi.fn();
     render(<EmailComposer initialData={{ ...DRAFT, fromOverrideEmail: 'taken@bmn.email' }} onSend={onSend} />);
 
@@ -261,7 +263,21 @@ describe('composer sending from a catch-all address', () => {
     expect(screen.queryByText('catch_all.pending')).not.toBeInTheDocument();
 
     await send(onSend);
-    expect(catchAll.createIdentity).not.toHaveBeenCalled();
+    expect(catchAll.ensureCatchAllIdentity).not.toHaveBeenCalled();
+  });
+
+  it("names the group account a group's catch-all address is sent through", async () => {
+    catchAll.ensureCatchAllIdentity.mockResolvedValue({ accountId: 'acc-group', created: true });
+    const onSend = vi.fn();
+    render(<EmailComposer initialData={{ ...DRAFT, fromOverrideEmail: 'xyz@bmn.email' }} onSend={onSend} />);
+
+    expect(screen.getByText('catch_all.via_shared')).toBeInTheDocument();
+    expect(screen.queryByText('catch_all.pending')).not.toBeInTheDocument();
+
+    await send(onSend);
+    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('xyz@bmn.email', 'Shop');
+    // The new identity lives in the group's account, not in this one's list.
+    expect(catchAll.refreshIdentities).not.toHaveBeenCalled();
   });
 
   it('leaves addresses outside the catch-all domains alone', async () => {
@@ -270,7 +286,7 @@ describe('composer sending from a catch-all address', () => {
     expect(screen.getByText('from_override.envelope_notice')).toBeInTheDocument();
 
     await send(onSend);
-    expect(catchAll.createIdentity).not.toHaveBeenCalled();
+    expect(catchAll.ensureCatchAllIdentity).not.toHaveBeenCalled();
   });
 
   it('replies from the catch-all address the message was sent to', async () => {
