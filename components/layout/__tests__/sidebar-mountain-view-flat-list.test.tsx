@@ -154,6 +154,65 @@ describe('Sidebar under Mountain View', () => {
     localStorage.removeItem('sidebarExpandedSharedAccounts');
   });
 
+  describe('next to a shared mailbox', () => {
+    const shared = [
+      { id: 'g-inbox', name: 'Inbox', role: 'inbox', parentId: null, totalEmails: 4, unreadEmails: 2, sortOrder: 0, myRights: { mayAddItems: true }, isShared: true, accountId: 'd', accountName: 'mb@beck.ma' },
+      { id: 'g-junk', name: 'Junk', role: 'junk', parentId: null, totalEmails: 0, unreadEmails: 0, sortOrder: 1, myRights: { mayAddItems: true }, isShared: true, accountId: 'd', accountName: 'mb@beck.ma' },
+      { id: 'g-projects', name: 'Projects', parentId: null, totalEmails: 0, unreadEmails: 0, sortOrder: 2, myRights: { mayAddItems: true }, isShared: true, accountId: 'd', accountName: 'mb@beck.ma' },
+    ] as unknown as Mailbox[];
+    const ownInbox = { ...mailboxes[0], unreadEmails: 3 } as Mailbox;
+    const all = [ownInbox, ...mailboxes.slice(1), ...shared];
+    const row = (container: HTMLElement, id: string) => container.querySelector(`[data-mailbox-id="${id}"]`);
+
+    beforeEach(() => {
+      localStorage.removeItem('sidebarExpandedSharedAccounts');
+      localStorage.removeItem('sidebarOwnAccountExpanded');
+    });
+
+    it('gives your own account a row level with the shared one, and no Shared heading', () => {
+      const { container } = render(<Sidebar mailboxes={all} selectedMailbox="inbox" mvShell />);
+
+      const own = container.querySelector('[data-folder-name="mv-own-account"]')!;
+      const sharedRow = container.querySelector('[data-folder-name="mb@beck.ma"]')!;
+      expect(own).not.toBeNull();
+      expect(screen.queryByText('shared')).toBeNull();
+      const indent = (el: Element) => (el.firstElementChild as HTMLElement).style.paddingLeft;
+      expect(indent(own)).toBe(indent(sharedRow));
+      // Your folders sit one level under your account row.
+      expect(indent(row(container, 'inbox')!)).not.toBe(indent(own));
+    });
+
+    it('closes your own account like a shared one, keeping its unread count on the row', () => {
+      const { container } = render(<Sidebar mailboxes={all} selectedMailbox="inbox" mvShell />);
+      const own = container.querySelector('[data-folder-name="mv-own-account"]')!;
+
+      fireEvent.click(own.querySelector('button:last-of-type')!);
+      expect(row(container, 'inbox')).toBeNull();
+      expect(own).toHaveTextContent('3');
+      expect(own).toHaveAttribute('data-selected', 'true');
+      expect(localStorage.getItem('sidebarOwnAccountExpanded')).toBe('false');
+
+      fireEvent.click(own.querySelector('button:last-of-type')!);
+      expect(row(container, 'inbox')).not.toBeNull();
+    });
+
+    it("holds a shared account's other system folders behind its own More", () => {
+      const { container } = render(<Sidebar mailboxes={all} selectedMailbox="inbox" mvShell />);
+      const sharedRow = container.querySelector('[data-folder-name="mb@beck.ma"]')!;
+      fireEvent.click(sharedRow.querySelector('button:last-of-type')!);
+
+      const section = container.querySelector('[data-mv-shared]')!;
+      expect(row(container, 'g-inbox')).not.toBeNull();
+      expect(row(container, 'g-projects')).not.toBeNull();
+      expect(row(container, 'g-junk')).toBeNull();
+
+      // Each account opens its own More; yours stays shut.
+      fireEvent.click(section.querySelector('[data-folder-name="mv-more"] button:last-of-type')!);
+      expect(row(container, 'g-junk')).not.toBeNull();
+      expect(folderRow('Trash')).toBeNull();
+    });
+  });
+
   it('leaves the default layout its sections and every folder', () => {
     render(<Sidebar mailboxes={mailboxes} selectedMailbox="inbox" />);
 
