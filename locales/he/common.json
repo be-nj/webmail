@@ -738,6 +738,10 @@
     "sending": "שולח…",
     "add_link": "הוסף קישור",
     "link_url_prompt": "הזן את כתובת ה־URL",
+    "catch_all": {
+      "pending": "{address} תישמר כזהות חדשה בעת השליחה.",
+      "create_failed": "השרת לא קיבל את {address} כשולח: {reason}"
+    },
     "from_override": {
       "toggle_off": "עקוף",
       "toggle_on": "בטל עקיפה",
@@ -2707,13 +2711,23 @@
       "recent_tags": "תגים אחרונים",
       "suggested_tags": "מוצע",
       "use_address": "השתמש בכתובת זו",
+      "tab_tag": "תג",
+      "tab_catch_all": "כתובת אחרת",
+      "catch_all_title": "שליחה מכתובת אחרת",
+      "local_part_placeholder": "כתובת, למשל company",
+      "domain_label": "דומיין",
+      "recent_addresses": "בשימוש לאחרונה",
+      "catch_all_help": "דואר לכל כתובת בדומיינים האלה מגיע אליך, ולכן אפשר לשלוח מכל אחת מהן. בשליחה הראשונה הכתובת נשמרת כזהות.",
       "invalid_tag": "התג חייב להיות אלפאנומרי ומקפים בלבד",
       "tag_too_long": "התג חייב להכיל 30 תווים או פחות",
       "help_text": "הודעות דוא\"ל שנשלחות אל user{delimiter}tag@domain.com יגיעו לתיבת הדואר הנכנס שלך",
       "validation": {
         "empty": "התג לא יכול להיות ריק",
         "too_long": "התג חייב להיות{max}תווים או פחות",
-        "invalid_chars": "התג חייב להכיל רק אותיות, מספרים ומקפים"
+        "invalid_chars": "התג חייב להכיל רק אותיות, מספרים ומקפים",
+        "local_part_empty": "הכתובת לא יכולה להיות ריקה",
+        "local_part_too_long": "החלק שלפני ה-@ יכול להכיל עד {max} תווים",
+        "local_part_invalid": "הכתובת מכילה תווים לא מותרים"
       }
     },
     "badge": {

@@ -720,6 +720,10 @@
       "to": "Do: {recipients}"
     },
     "remove_sub_address": "Usuń podadres",
+    "catch_all": {
+      "pending": "{address} zostanie zapisany jako nowa tożsamość przy wysyłaniu.",
+      "create_failed": "Serwer nie zaakceptował {address} jako nadawcy: {reason}"
+    },
     "from_override": {
       "toggle_off": "Zastąp",
       "toggle_on": "Anuluj zastąpienie",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Ostatnie tagi",
       "suggested_tags": "Sugerowane",
       "use_address": "Użyj tego adresu",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Inny adres",
+      "catch_all_title": "Wyślij z innego adresu",
+      "local_part_placeholder": "Adres, np. firma",
+      "domain_label": "Domena",
+      "recent_addresses": "Ostatnio używane",
+      "catch_all_help": "Poczta wysłana na dowolny adres w tych domenach trafia do Ciebie, więc możesz wysyłać z każdego z nich. Przy pierwszym wysłaniu adres zostanie zapisany jako tożsamość.",
       "invalid_tag": "Tag może zawierać tylko litery, cyfry i myślniki",
       "tag_too_long": "Tag może mieć maksymalnie 30 znaków",
       "help_text": "Wiadomości wysłane na adres user{delimiter}tag@domain.com trafią do Twojej skrzynki odbiorczej",
       "validation": {
         "empty": "Tag nie może być pusty",
         "too_long": "Tag może mieć maksymalnie {max} znaków",
-        "invalid_chars": "Tag może zawierać tylko litery, cyfry i myślniki"
+        "invalid_chars": "Tag może zawierać tylko litery, cyfry i myślniki",
+        "local_part_empty": "Adres nie może być pusty",
+        "local_part_too_long": "Część przed @ może mieć maksymalnie {max} znaków",
+        "local_part_invalid": "Adres zawiera niedozwolone znaki"
       }
     },
     "badge": {

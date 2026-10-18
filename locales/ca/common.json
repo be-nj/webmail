@@ -723,6 +723,10 @@
       "to": "Per a: {recipients}"
     },
     "remove_sub_address": "Elimina el subadreçament",
+    "catch_all": {
+      "pending": "{address} es desarà com a identitat nova en enviar.",
+      "create_failed": "El servidor no ha acceptat {address} com a remitent: {reason}"
+    },
     "from_override": {
       "toggle_off": "Sobreescriu",
       "toggle_on": "Cancel·la la sobreescriptura",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Etiquetes recents",
       "suggested_tags": "Suggerides",
       "use_address": "Utilitza aquesta adreça",
+      "tab_tag": "Etiqueta",
+      "tab_catch_all": "Una altra adreça",
+      "catch_all_title": "Envia des d'una altra adreça",
+      "local_part_placeholder": "Adreça, p. ex. empresa",
+      "domain_label": "Domini",
+      "recent_addresses": "Usades recentment",
+      "catch_all_help": "El correu adreçat a qualsevol adreça d'aquests dominis us arriba, així que podeu enviar des de qualsevol d'elles. En el primer enviament, l'adreça es desa com a identitat.",
       "invalid_tag": "L'etiqueta només pot contenir caràcters alfanumèrics i guions",
       "tag_too_long": "L'etiqueta ha de tenir com a màxim 30 caràcters",
       "help_text": "Els correus enviats a user{delimiter}tag@domain.com arribaran a la vostra safata d'entrada",
       "validation": {
         "empty": "L'etiqueta no pot estar buida",
         "too_long": "L'etiqueta ha de tenir com a màxim {max} caràcters",
-        "invalid_chars": "L'etiqueta només pot contenir lletres, números i guions"
+        "invalid_chars": "L'etiqueta només pot contenir lletres, números i guions",
+        "local_part_empty": "L'adreça no pot estar buida",
+        "local_part_too_long": "La part abans de l'@ pot tenir com a màxim {max} caràcters",
+        "local_part_invalid": "L'adreça conté caràcters no permesos"
       }
     },
     "badge": {

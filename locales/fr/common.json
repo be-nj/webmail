@@ -720,6 +720,10 @@
       "to": "À : {recipients}"
     },
     "remove_sub_address": "Retirer le sous-adressage",
+    "catch_all": {
+      "pending": "{address} sera enregistrée comme nouvelle identité lors de l'envoi.",
+      "create_failed": "Le serveur n'a pas accepté {address} comme expéditeur : {reason}"
+    },
     "from_override": {
       "toggle_off": "Remplacer",
       "toggle_on": "Annuler le remplacement",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Tags récents",
       "suggested_tags": "Suggérés",
       "use_address": "Utiliser cette adresse",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Autre adresse",
+      "catch_all_title": "Envoyer depuis une autre adresse",
+      "local_part_placeholder": "Adresse, p. ex. societe",
+      "domain_label": "Domaine",
+      "recent_addresses": "Utilisées récemment",
+      "catch_all_help": "Les e-mails envoyés à n'importe quelle adresse de ces domaines vous parviennent, vous pouvez donc envoyer depuis chacune d'elles. Au premier envoi, l'adresse est enregistrée comme identité.",
       "invalid_tag": "Le tag doit contenir uniquement des lettres, chiffres et tirets",
       "tag_too_long": "Le tag doit faire 30 caractères ou moins",
       "help_text": "Les emails envoyés à utilisateur{delimiter}tag@domaine.com arriveront dans votre boîte de réception",
       "validation": {
         "empty": "Le tag ne peut pas être vide",
         "too_long": "Le tag doit faire {max} caractères ou moins",
-        "invalid_chars": "Le tag doit contenir uniquement des lettres, chiffres et tirets"
+        "invalid_chars": "Le tag doit contenir uniquement des lettres, chiffres et tirets",
+        "local_part_empty": "L'adresse ne doit pas être vide",
+        "local_part_too_long": "La partie avant le @ ne doit pas dépasser {max} caractères",
+        "local_part_invalid": "L'adresse contient des caractères non autorisés"
       }
     },
     "badge": {

@@ -720,6 +720,10 @@
       "to": "An: {recipients}"
     },
     "remove_sub_address": "Sub-Adresse entfernen",
+    "catch_all": {
+      "pending": "{address} wird beim Senden als neue Identität gespeichert.",
+      "create_failed": "Der Server hat {address} nicht als Absender angenommen: {reason}"
+    },
     "from_override": {
       "toggle_off": "Überschreiben",
       "toggle_on": "Überschreibung aufheben",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Letzte Tags",
       "suggested_tags": "Vorgeschlagen",
       "use_address": "Diese Adresse verwenden",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Andere Adresse",
+      "catch_all_title": "Von anderer Adresse senden",
+      "local_part_placeholder": "Adresse, z. B. firma",
+      "domain_label": "Domain",
+      "recent_addresses": "Zuletzt verwendet",
+      "catch_all_help": "Mails an jede Adresse dieser Domains erreichen Sie, deshalb können Sie auch von jeder davon senden. Beim ersten Senden wird die Adresse als Identität gespeichert.",
       "invalid_tag": "Tag darf nur alphanumerisch und Bindestriche enthalten",
       "tag_too_long": "Tag darf maximal 30 Zeichen lang sein",
       "help_text": "E-Mails an benutzer{delimiter}tag@domain.de werden in Ihrem Posteingang ankommen",
       "validation": {
         "empty": "Tag darf nicht leer sein",
         "too_long": "Tag darf maximal {max} Zeichen lang sein",
-        "invalid_chars": "Tag darf nur Buchstaben, Zahlen und Bindestriche enthalten"
+        "invalid_chars": "Tag darf nur Buchstaben, Zahlen und Bindestriche enthalten",
+        "local_part_empty": "Adresse darf nicht leer sein",
+        "local_part_too_long": "Der Teil vor dem @ darf höchstens {max} Zeichen lang sein",
+        "local_part_invalid": "Die Adresse enthält nicht erlaubte Zeichen"
       }
     },
     "badge": {

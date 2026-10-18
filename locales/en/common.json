@@ -724,6 +724,10 @@
       "to": "To: {recipients}"
     },
     "remove_sub_address": "Remove sub-address",
+    "catch_all": {
+      "pending": "{address} will be saved as a new identity when you send.",
+      "create_failed": "The server did not accept {address} as a sender: {reason}"
+    },
     "from_override": {
       "toggle_off": "Override",
       "toggle_on": "Cancel override",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Recent Tags",
       "suggested_tags": "Suggested",
       "use_address": "Use This Address",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Other address",
+      "catch_all_title": "Send from another address",
+      "local_part_placeholder": "Address, e.g. company",
+      "domain_label": "Domain",
+      "recent_addresses": "Recently used",
+      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity.",
       "invalid_tag": "Tag must be alphanumeric and dashes only",
       "tag_too_long": "Tag must be 30 characters or less",
       "help_text": "Emails sent to user{delimiter}tag@domain.com will arrive in your inbox",
       "validation": {
         "empty": "Tag cannot be empty",
         "too_long": "Tag must be {max} characters or less",
-        "invalid_chars": "Tag must contain only letters, numbers, and dashes"
+        "invalid_chars": "Tag must contain only letters, numbers, and dashes",
+        "local_part_empty": "Address must not be empty",
+        "local_part_too_long": "The part before the @ may be at most {max} characters",
+        "local_part_invalid": "The address contains characters that are not allowed"
       }
     },
     "badge": {

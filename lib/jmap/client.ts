@@ -309,6 +309,8 @@ const SUBMISSION_USING = [
 ] as const;
 
 export const KEYWORDS_CAPABILITY = 'https://bulwarkmail.com/ns/jmap/keywords';
+/** Per-account catch-all sender domains, from the beckm4nn Stalwart build. */
+export const CATCH_ALL_SENDER_CAPABILITY = 'https://beckm4nn.net/jmap/catch-all-sender';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JMAPResponseResult = Record<string, any>;
@@ -5297,6 +5299,18 @@ export class JMAPClient implements IJMAPClient {
   getAccountCapability(capability: string, accountId?: string): unknown {
     const id = accountId || this.accountId;
     return this.session?.accounts?.[id]?.accountCapabilities?.[capability];
+  }
+
+  /**
+   * Domains whose catch-all delivers to this account (or one of its groups),
+   * so `Identity/set` accepts any local part on them. Only a Stalwart built
+   * with the catch-all sender patch advertises this; elsewhere it is empty.
+   */
+  getCatchAllDomains(accountId?: string): string[] {
+    const cap = this.getAccountCapability(CATCH_ALL_SENDER_CAPABILITY, accountId) as
+      { catchAllDomains?: unknown } | undefined;
+    const domains = Array.isArray(cap?.catchAllDomains) ? cap.catchAllDomains : [];
+    return domains.filter((d): d is string => typeof d === 'string' && d.length > 0).map((d) => d.toLowerCase());
   }
 
   /** Check whether a capability is present on the primary account. */

@@ -723,6 +723,10 @@
       "to": "收件者：{recipients}"
     },
     "remove_sub_address": "刪除子地址",
+    "catch_all": {
+      "pending": "寄送時 {address} 將儲存為新身分。",
+      "create_failed": "伺服器未接受 {address} 作為寄件者：{reason}"
+    },
     "from_override": {
       "toggle_off": "覆寫",
       "toggle_on": "取消覆寫",
@@ -2789,13 +2793,23 @@
       "recent_tags": "最近的標籤",
       "suggested_tags": "建議",
       "use_address": "使用此電子郵件地址",
+      "tab_tag": "標籤",
+      "tab_catch_all": "其他地址",
+      "catch_all_title": "從其他地址寄送",
+      "local_part_placeholder": "地址，例如 company",
+      "domain_label": "網域",
+      "recent_addresses": "最近使用",
+      "catch_all_help": "寄往這些網域下任何地址的郵件都會送達您，因此您也可以從其中任何地址寄送。首次寄送時，該地址會儲存為身分。",
       "invalid_tag": "標籤只能包含英文字母、數字與連字號",
       "tag_too_long": "標籤不得超過 30 個字元",
       "help_text": "傳送到 user{delimiter}tag@domain.com 的郵件將送達您的收件匣",
       "validation": {
         "empty": "標籤不能為空",
         "too_long": "標籤不得超過 {max} 個字元",
-        "invalid_chars": "標籤只能包含英文字母、數字與連字號"
+        "invalid_chars": "標籤只能包含英文字母、數字與連字號",
+        "local_part_empty": "地址不能為空",
+        "local_part_too_long": "@ 前面的部分最多 {max} 個字元",
+        "local_part_invalid": "地址包含不允許的字元"
       }
     },
     "badge": {

@@ -720,6 +720,10 @@
       "to": "至：{recipients}"
     },
     "remove_sub_address": "删除子地址",
+    "catch_all": {
+      "pending": "发送时 {address} 将保存为新身份。",
+      "create_failed": "服务器未接受 {address} 作为发件人：{reason}"
+    },
     "from_override": {
       "toggle_off": "覆盖",
       "toggle_on": "取消覆盖",
@@ -2789,13 +2793,23 @@
       "recent_tags": "最近的标签",
       "suggested_tags": "建议",
       "use_address": "使用此地址",
+      "tab_tag": "标签",
+      "tab_catch_all": "其他地址",
+      "catch_all_title": "从其他地址发送",
+      "local_part_placeholder": "地址，例如 company",
+      "domain_label": "域名",
+      "recent_addresses": "最近使用",
+      "catch_all_help": "发往这些域名下任意地址的邮件都会送达您，因此您也可以从其中任意地址发送。首次发送时，该地址会保存为身份。",
       "invalid_tag": "标签只能是字母数字和破折号",
       "tag_too_long": "标签不得超过 30 个字符",
       "help_text": "发送到 user{delimiter}tag@domain.com 的邮件将送达您的收件箱",
       "validation": {
         "empty": "标签不能为空",
         "too_long": "标签不得超过 {max} 个字符",
-        "invalid_chars": "标签只能包含字母、数字和破折号"
+        "invalid_chars": "标签只能包含字母、数字和破折号",
+        "local_part_empty": "地址不能为空",
+        "local_part_too_long": "@ 前面的部分最多 {max} 个字符",
+        "local_part_invalid": "地址包含不允许的字符"
       }
     },
     "badge": {

@@ -645,6 +645,12 @@ interface SettingsState {
   // per account because JMAP identity ids are account-scoped and would collide.
   preferredIdentityIds: Record<string, string>;
 
+  // Identities Bulwark created on its own to send from a catch-all address,
+  // keyed by AccountEntry.id -> lowercased address -> last use (ms). The From
+  // dropdown leaves these out unless used lately, so ad-hoc addresses don't
+  // pile up there. Synced like preferredIdentityIds, for the same reasons.
+  catchAllSenders: Record<string, Record<string, number>>;
+
   // Email Display
   disableThreading: boolean; // Show emails as individual messages instead of grouped by conversation
 
@@ -924,6 +930,7 @@ const DEFAULT_SETTINGS = {
 
   allMailFolderIds: {} as Record<string, string[]>,
   preferredIdentityIds: {} as Record<string, string>,
+  catchAllSenders: {} as Record<string, Record<string, number>>,
 
   enableCrossUnreadView: false,
   enableCrossStarredView: false,
@@ -1266,6 +1273,7 @@ export const useSettingsStore = create<SettingsState>()(
           unifiedCrossAccount: state.unifiedCrossAccount,
           allMailFolderIds: state.allMailFolderIds,
           preferredIdentityIds: state.preferredIdentityIds,
+          catchAllSenders: state.catchAllSenders,
           enableCrossUnreadView: state.enableCrossUnreadView,
           enableCrossStarredView: state.enableCrossStarredView,
           enableCrossAllView: state.enableCrossAllView,
@@ -1415,7 +1423,7 @@ export const useSettingsStore = create<SettingsState>()(
               }
               // Per-account map (accountId -> identityId); ignore any legacy
               // global/non-record value rather than corrupting the map.
-              if (key === 'preferredIdentityIds' && !isPlainRecord(settings[key])) {
+              if ((key === 'preferredIdentityIds' || key === 'catchAllSenders') && !isPlainRecord(settings[key])) {
                 return;
               }
               if (key === 'hiddenSharedMailAccounts' && !isPlainRecord(settings[key])) {
@@ -1449,7 +1457,7 @@ export const useSettingsStore = create<SettingsState>()(
               // the map and the composer picks another account's default sender
               // (login-order dependent). File imports (no serverAccountId)
               // still replace wholesale.
-              if (opts?.serverAccountId && (key === 'preferredIdentityIds' || key === 'allMailFolderIds' || key === 'hiddenSharedMailAccounts')) {
+              if (opts?.serverAccountId && (key === 'preferredIdentityIds' || key === 'allMailFolderIds' || key === 'hiddenSharedMailAccounts' || key === 'catchAllSenders')) {
                 const existing = (get() as unknown as Record<string, unknown>)[key];
                 const merged: Record<string, unknown> = isPlainRecord(existing) ? { ...existing } : {};
                 const incoming = settings[key] as Record<string, unknown>;
@@ -1800,6 +1808,9 @@ export const useSettingsStore = create<SettingsState>()(
               state.explicitSettings = [];
             }
             state.notificationMutes = normalizeNotificationMutes(state.notificationMutes);
+            if (!isPlainRecord(state.catchAllSenders)) {
+              state.catchAllSenders = {};
+            }
             state.messageListOrder = sanitizeSortLevels(state.messageListOrder);
             if (state.messageListOrderScope !== 'inbox' && state.messageListOrderScope !== 'all') {
               state.messageListOrderScope = 'inbox';

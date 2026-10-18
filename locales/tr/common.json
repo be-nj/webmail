@@ -723,6 +723,10 @@
       "to": "Kime: {recipients}"
     },
     "remove_sub_address": "Alt adresi kaldır",
+    "catch_all": {
+      "pending": "{address} gönderirken yeni bir kimlik olarak kaydedilecek.",
+      "create_failed": "Sunucu {address} adresini gönderen olarak kabul etmedi: {reason}"
+    },
     "from_override": {
       "toggle_off": "Geçersiz kıl",
       "toggle_on": "Geçersiz kılmayı iptal et",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Son Etiketler",
       "suggested_tags": "Önerilen",
       "use_address": "Bu Adresi Kullan",
+      "tab_tag": "Etiket",
+      "tab_catch_all": "Başka adres",
+      "catch_all_title": "Başka bir adresten gönder",
+      "local_part_placeholder": "Adres, ör. firma",
+      "domain_label": "Alan adı",
+      "recent_addresses": "Son kullanılanlar",
+      "catch_all_help": "Bu alan adlarındaki herhangi bir adrese gelen e-postalar size ulaşır, bu yüzden herhangi birinden gönderebilirsiniz. İlk gönderimde adres bir kimlik olarak kaydedilir.",
       "invalid_tag": "Etiket yalnızca harf, rakam ve tire içermelidir",
       "tag_too_long": "Etiket en fazla 30 karakter olmalıdır",
       "help_text": "kullanici{delimiter}etiket@domain.com adresine gönderilen e-postalar gelen kutunuza ulaşır",
       "validation": {
         "empty": "Etiket boş olamaz",
         "too_long": "Etiket en fazla {max} karakter olmalıdır",
-        "invalid_chars": "Etiket yalnızca harf, rakam ve tire içermelidir"
+        "invalid_chars": "Etiket yalnızca harf, rakam ve tire içermelidir",
+        "local_part_empty": "Adres boş olamaz",
+        "local_part_too_long": "@ işaretinden önceki kısım en fazla {max} karakter olabilir",
+        "local_part_invalid": "Adres izin verilmeyen karakterler içeriyor"
       }
     },
     "badge": {

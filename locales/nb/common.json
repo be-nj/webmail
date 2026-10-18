@@ -723,6 +723,10 @@
       "to": "Til: {recipients}"
     },
     "remove_sub_address": "Fjern underadressen",
+    "catch_all": {
+      "pending": "{address} lagres som ny identitet når du sender.",
+      "create_failed": "Serveren godtok ikke {address} som avsender: {reason}"
+    },
     "from_override": {
       "toggle_off": "Endre avsender",
       "toggle_on": "Avbryt endringen",
@@ -2789,13 +2793,23 @@
       "recent_tags": "Nylige koder",
       "suggested_tags": "Foreslåtte koder",
       "use_address": "Bruk denne adressen",
+      "tab_tag": "Tagg",
+      "tab_catch_all": "Annen adresse",
+      "catch_all_title": "Send fra en annen adresse",
+      "local_part_placeholder": "Adresse, f.eks. firma",
+      "domain_label": "Domene",
+      "recent_addresses": "Nylig brukt",
+      "catch_all_help": "E-post til enhver adresse på disse domenene når frem til deg, så du kan også sende fra alle. Ved første sending lagres adressen som identitet.",
       "invalid_tag": "Koden kan bare inneholde bokstaver, tall og bindestreker",
       "tag_too_long": "Koden kan inneholde opptil 30 tegn",
       "help_text": "E-poster som sendes til user{delimiter}tag@domain.com, havner i innboksen din",
       "validation": {
         "empty": "Koden kan ikke være tom",
         "too_long": "Koden kan inneholde opptil {max} tegn",
-        "invalid_chars": "Koden kan bare inneholde bokstaver, tall og bindestreker"
+        "invalid_chars": "Koden kan bare inneholde bokstaver, tall og bindestreker",
+        "local_part_empty": "Adressen kan ikke være tom",
+        "local_part_too_long": "Delen før @ kan være maks {max} tegn",
+        "local_part_invalid": "Adressen inneholder tegn som ikke er tillatt"
       }
     },
     "badge": {

@@ -720,6 +720,10 @@
       "to": "宛先: {recipients}"
     },
     "remove_sub_address": "サブアドレスを削除",
+    "catch_all": {
+      "pending": "{address} は送信時に新しい ID として保存されます。",
+      "create_failed": "サーバーは {address} を差出人として受け付けませんでした: {reason}"
+    },
     "from_override": {
       "toggle_off": "上書き",
       "toggle_on": "上書きを取り消す",
@@ -2789,13 +2793,23 @@
       "recent_tags": "最近のタグ",
       "suggested_tags": "候補",
       "use_address": "このアドレスを使用",
+      "tab_tag": "タグ",
+      "tab_catch_all": "別のアドレス",
+      "catch_all_title": "別のアドレスから送信",
+      "local_part_placeholder": "アドレス（例: company）",
+      "domain_label": "ドメイン",
+      "recent_addresses": "最近使用",
+      "catch_all_help": "これらのドメインの任意のアドレス宛てのメールはあなたに届くため、どのアドレスからでも送信できます。初回送信時にアドレスは ID として保存されます。",
       "invalid_tag": "タグは英数字とハイフンのみ使用できます",
       "tag_too_long": "タグは30文字以内にしてください",
       "help_text": "user{delimiter}tag@domain.comに送信されたメールは受信トレイに届きます",
       "validation": {
         "empty": "タグは空にできません",
         "too_long": "タグは{max}文字以内にしてください",
-        "invalid_chars": "タグは文字、数字、ハイフンのみ使用できます"
+        "invalid_chars": "タグは文字、数字、ハイフンのみ使用できます",
+        "local_part_empty": "アドレスを入力してください",
+        "local_part_too_long": "@ の前の部分は {max} 文字以内にしてください",
+        "local_part_invalid": "アドレスに使用できない文字が含まれています"
       }
     },
     "badge": {
