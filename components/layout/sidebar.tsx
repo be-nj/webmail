@@ -154,6 +154,8 @@ interface SidebarProps {
 }
 
 const ROW_PX_BASE = 8;
+/** Key of your own account among the Mountain View account rows. */
+const MV_OWN_ACCOUNT = 'own';
 const CHEVRON_SLOT = 20;
 const INDENT_STEP = 12;
 
@@ -963,11 +965,19 @@ function SidebarImpl({
   const [railHovered, setRailHovered] = useState(false);
   const hoverExpanded = mvShell && sidebarCollapsed && railHovered;
   const isCollapsed = sidebarCollapsed && !hoverExpanded;
-  const { primaryIdentity: _primaryIdentity, activeAccountId } = useAuthStore(useShallow((state) => ({ primaryIdentity: state.primaryIdentity, activeAccountId: state.activeAccountId })));
+  const { primaryIdentity, activeAccountId, username } = useAuthStore(useShallow((state) => ({ primaryIdentity: state.primaryIdentity, activeAccountId: state.activeAccountId, username: state.username })));
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set());
   const [showAllTags, setShowAllTags] = useState(false);
-  const [moreExpanded, setMoreExpanded] = useState(false);
+  // Which accounts have their "More" open in Mountain View, keyed by the
+  // account's row id (MV_OWN_ACCOUNT for your own).
+  const [mvMoreOpen, setMvMoreOpen] = useState<Set<string>>(new Set());
+  const [ownAccountExpanded, setOwnAccountExpanded] = useState(() => {
+    try {
+      const stored = localStorage.getItem('sidebarOwnAccountExpanded');
+      return stored !== null ? JSON.parse(stored) : true;
+    } catch { return true; }
+  });
   const [foldersExpanded, setFoldersExpanded] = useState(() => {
     try {
       const stored = localStorage.getItem('sidebarFoldersExpanded');
@@ -1175,7 +1185,17 @@ function SidebarImpl({
   const moreTree = secondaryTree.filter((node) => !!node.role);
   const labelTree = secondaryTree.filter((node) => !node.role);
   // Everything under "More" is hidden together, so one flag covers it.
-  const showSecondary = !mvFlat || moreExpanded;
+  const showSecondary = !mvFlat || mvMoreOpen.has(MV_OWN_ACCOUNT);
+  // With a shared mailbox next to it, your own account gets a row of its own,
+  // so both open and close the same way and neither looks like a part of the
+  // other.
+  const mvOwnAccountRow = mvFlat && sharedAccounts.length > 0;
+  const ownHoldsSelection = mvOwnAccountRow && !ownAccountExpanded
+    && (mvStarredSelected || containsMailbox(ownTree, treeSelection)
+      || (selectedMailbox === SCHEDULED_MAILBOX_ID && !scheduledAccountScope));
+  const ownAccountLabel = toUnicodeEmail(
+    accounts.find((a) => a.id === activeAccountId)?.email || primaryIdentity?.email || username || ''
+  );
 
   // With nesting off every tag is its own root, so the same rows render through
   // one path whether or not the ids describe a hierarchy.
@@ -1302,6 +1322,73 @@ function SidebarImpl({
     );
   };
 
+  // Mountain View lists every account's folders the same way: the ones mail
+  // goes to in view, the other system folders behind the account's own
+  // "More". `visible` and `more` arrive already indented to `depth`.
+  const renderMvAccountFolders = (key: string, visible: MailboxNode[], more: MailboxNode[], opts: {
+    depth: number;
+    /** A shared account's id; without it the folders are your own. */
+    scheduledAccountId?: string;
+    withStarred?: boolean;
+    withScheduled?: boolean;
+  }) => {
+    const moreOpen = mvMoreOpen.has(key);
+    const scheduled = opts.withScheduled
+      ? renderScheduledRow(`${key}-scheduled`, { accountId: opts.scheduledAccountId, depth: opts.depth })
+      : null;
+    const renderNode = (node: MailboxNode) => (
+      <MailboxTreeItem
+        node={node}
+        selectedMailbox={treeSelection}
+        expandedFolders={expandedFolders}
+        onMailboxSelect={onMailboxSelect}
+        onToggleExpand={handleToggleExpand}
+        isCollapsed={false}
+        onUnreadFilterClick={onUnreadFilterClick}
+        colorful={colorfulSidebarIcons}
+        onContextMenu={handleMailboxContextMenu}
+      />
+    );
+    return (
+      <>
+        {visible.map((node) => (
+          <Fragment key={node.id}>
+            {renderNode(node)}
+            {node.role === 'drafts' && scheduled}
+            {/* Mountain View lists Starred right under the Inbox. */}
+            {opts.withStarred && node.role === 'inbox' && onOpenStarred && (
+              <SidebarRow
+                // Drawn like the "All starred" row it stands in for.
+                icon={<Star className={getIconClass(mvStarredSelected, false, colorfulSidebarIcons)} />}
+                label={t("mailboxes.starred")}
+                testName="mv-starred"
+                depth={opts.depth}
+                isSelected={mvStarredSelected}
+                onClick={onOpenStarred}
+                isCollapsed={false}
+              />
+            )}
+          </Fragment>
+        ))}
+        {!visible.some((node) => node.role === 'drafts') && scheduled}
+        {more.length > 0 && (
+          <SidebarRow
+            icon={moreOpen
+              ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            label={moreOpen ? t("show_fewer") : t("show_more")}
+            testName="mv-more"
+            depth={opts.depth}
+            isSelected={false}
+            onClick={() => toggleMvMore(key)}
+            isCollapsed={false}
+          />
+        )}
+        {moreOpen && more.map((node) => <Fragment key={node.id}>{renderNode(node)}</Fragment>)}
+      </>
+    );
+  };
+
   const getUnifiedIcon = (role: UnifiedMailboxRole) => {
     switch (role) {
       case 'inbox': return Inbox;
@@ -1384,6 +1471,20 @@ function SidebarImpl({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       try { localStorage.setItem('sidebarExpandedSharedAccounts', JSON.stringify(Array.from(next))); } catch { /* */ }
+      return next;
+    });
+  };
+  const toggleOwnAccount = () => {
+    setOwnAccountExpanded((prev: boolean) => {
+      const next = !prev;
+      try { localStorage.setItem('sidebarOwnAccountExpanded', JSON.stringify(next)); } catch { /* */ }
+      return next;
+    });
+  };
+  const toggleMvMore = (id: string) => {
+    setMvMoreOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -1695,6 +1796,28 @@ function SidebarImpl({
                   <div className="px-4 py-2 text-sm text-muted-foreground">
                     {!isCollapsed && t("loading_mailboxes")}
                   </div>
+                ) : mvOwnAccountRow ? (
+                  <>
+                    <SidebarRow
+                      icon={<User className={getIconClass(ownHoldsSelection, false, colorfulSidebarIcons)} />}
+                      label={ownAccountLabel}
+                      testName="mv-own-account"
+                      depth={0}
+                      isSelected={ownHoldsSelection}
+                      unread={ownAccountExpanded ? undefined : ownTree.find((node) => node.role === 'inbox')?.unreadEmails}
+                      hasChildren
+                      isExpanded={ownAccountExpanded}
+                      onExpandToggle={toggleOwnAccount}
+                      onClick={toggleOwnAccount}
+                      isCollapsed={false}
+                    />
+                    {ownAccountExpanded && renderMvAccountFolders(
+                      MV_OWN_ACCOUNT, indentNodes(primaryTree), indentNodes(moreTree),
+                      { depth: 1, withStarred: true, withScheduled: true },
+                    )}
+                  </>
+                ) : mvFlat ? (
+                  renderMvAccountFolders(MV_OWN_ACCOUNT, primaryTree, moreTree, { depth: 0, withStarred: true, withScheduled: true })
                 ) : (
                   <>
                     {primaryTree.map((node) => (
@@ -1711,49 +1834,9 @@ function SidebarImpl({
                           onContextMenu={handleMailboxContextMenu}
                         />
                         {node.role === 'drafts' && renderScheduledRow('scheduled')}
-                        {/* Mountain View lists Starred right under the Inbox. */}
-                        {mvFlat && node.role === 'inbox' && onOpenStarred && (
-                          <SidebarRow
-                            // Drawn like the "All starred" row it stands in for.
-                            icon={<Star className={getIconClass(mvStarredSelected, false, colorfulSidebarIcons)} />}
-                            label={t("mailboxes.starred")}
-                            testName="mv-starred"
-                            depth={0}
-                            isSelected={mvStarredSelected}
-                            onClick={onOpenStarred}
-                            isCollapsed={false}
-                          />
-                        )}
                       </Fragment>
                     ))}
                     {!primaryTree.some((node) => node.role === 'drafts') && renderScheduledRow('scheduled')}
-                    {mvFlat && (
-                      <SidebarRow
-                        icon={moreExpanded
-                          ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                          : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                        label={moreExpanded ? t("show_fewer") : t("show_more")}
-                        testName="mv-more"
-                        depth={0}
-                        isSelected={false}
-                        onClick={() => setMoreExpanded((prev) => !prev)}
-                        isCollapsed={false}
-                      />
-                    )}
-                    {mvFlat && moreExpanded && moreTree.map((node) => (
-                      <MailboxTreeItem
-                        key={node.id}
-                        node={node}
-                        selectedMailbox={treeSelection}
-                        expandedFolders={expandedFolders}
-                        onMailboxSelect={onMailboxSelect}
-                        onToggleExpand={handleToggleExpand}
-                        isCollapsed={isCollapsed}
-                        onUnreadFilterClick={onUnreadFilterClick}
-                        colorful={colorfulSidebarIcons}
-                        onContextMenu={handleMailboxContextMenu}
-                      />
-                    ))}
                   </>
                 )}
               </>
@@ -1767,19 +1850,21 @@ function SidebarImpl({
         })}
 
         {/* Mailboxes shared with you, such as a group address, are places mail
-            goes too, so Mountain View keeps them in view under their own
-            heading rather than behind "More". Each one opens like a folder. */}
+            goes too, so Mountain View keeps them in view rather than behind
+            "More": each one a row level with your own account, opening onto
+            its folders the way yours do. */}
         {mvFlat && !useMultiAccount && sharedAccounts.length > 0 && (
           <div data-mv-shared="">
-            <div className="ps-[26px] pe-3 pt-4 pb-1">
-              <span className="text-base font-medium text-foreground">{t("shared")}</span>
-            </div>
             {sharedAccounts.map((account) => {
               const accountExpanded = expandedSharedAccounts.has(account.id);
               const menuAccountId = sharedAccountMenuId(account.accountId);
               // A closed account stands in for the folder open inside it.
               const holdsSelection = !accountExpanded && containsMailbox(account.children, treeSelection);
               const inbox = account.children.find((child) => child.role === 'inbox');
+              const children = indentNodes(account.children);
+              // A shared account has no Labels of its own, so the folders made
+              // in it stay in view next to its Inbox.
+              const inView = (node: MailboxNode) => isPrimaryFolder(node) || !node.role;
               return (
                 <div key={account.id}>
                   <SidebarRow
@@ -1800,28 +1885,11 @@ function SidebarImpl({
                       : undefined}
                     isCollapsed={false}
                   />
-                  {accountExpanded && (
-                    <>
-                      {indentNodes(account.children).map((child) => (
-                        <Fragment key={child.id}>
-                          <MailboxTreeItem
-                            node={child}
-                            selectedMailbox={treeSelection}
-                            expandedFolders={expandedFolders}
-                            onMailboxSelect={onMailboxSelect}
-                            onToggleExpand={handleToggleExpand}
-                            isCollapsed={false}
-                            onUnreadFilterClick={onUnreadFilterClick}
-                            colorful={colorfulSidebarIcons}
-                            onContextMenu={handleMailboxContextMenu}
-                          />
-                          {child.role === 'drafts' && menuAccountId
-                            && renderScheduledRow(`${account.id}-scheduled`, { accountId: menuAccountId, depth: 1 })}
-                        </Fragment>
-                      ))}
-                      {menuAccountId && !account.children.some((child) => child.role === 'drafts')
-                        && renderScheduledRow(`${account.id}-scheduled`, { accountId: menuAccountId, depth: 1 })}
-                    </>
+                  {accountExpanded && renderMvAccountFolders(
+                    account.id,
+                    children.filter(inView),
+                    children.filter((node) => !inView(node)),
+                    { depth: 1, scheduledAccountId: menuAccountId, withScheduled: !!menuAccountId },
                   )}
                 </div>
               );
