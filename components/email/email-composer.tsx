@@ -541,6 +541,20 @@ export function EmailComposer({
   const toRecipient = (r: { name?: string; email?: string }): Recipient =>
     ({ name: r.name && r.name !== r.email ? r.name : undefined, email: r.email ?? "" });
 
+  // Replies resolve catch-all senders against the account that holds the
+  // original (see resolveCatchAllReplyFrom below).
+  const sourceCatchAllDomains = useMemo(() => {
+    const { client: ownClient, getClientForAccount } = useAuthStore.getState();
+    const sourceClient = sourceAccountId && sourceAccountId !== activeAccountId
+      ? getClientForAccount(sourceAccountId)
+      : ownClient;
+    return sourceClient?.getCatchAllDomains?.() ?? [];
+  }, [sourceAccountId, activeAccountId]);
+  // The catch-all address a reply goes out from is the user's own, so
+  // reply-all leaves it out of the recipients like an identity's address.
+  const replyCatchAllEmail = mode === 'reply' || mode === 'replyAll'
+    ? resolveCatchAllReplyFrom(sourceAccountIdentities, replyTo, sourceCatchAllDomains)?.overrideEmail
+    : undefined;
   // Identities can still be loading when the composer opens (cold start, PWA
   // relaunch), so the account's own addresses stand in until they arrive (#803).
   const composerAccount = activeAccountId ? useAccountStore.getState().getAccountById(activeAccountId) : undefined;
@@ -548,7 +562,7 @@ export function EmailComposer({
     ? useAccountStore.getState().getAccountById(sourceAccountId)
     : undefined;
   const ownIdentityEmails = ownReplyAddresses(
-    identities.map(i => i.email),
+    [...identities.map(i => i.email), ...(replyCatchAllEmail ? [replyCatchAllEmail] : [])],
     [composerAccount?.email, composerAccount?.username, replyAccount?.email, replyAccount?.username],
   );
   // "Self-sent" means sent by the account holding the original. A message
@@ -1009,13 +1023,6 @@ export function EmailComposer({
   const composerCatchAllSenders = composerAccountId ? catchAllSenders[composerAccountId] : undefined;
   const isOnComposerAccount = (identity: Identity) =>
     stripCrossAccountIdentityPrefix(identity.id).localAccountId === currentIdentityParts.localAccountId;
-  // Replies resolve against the account that holds the original.
-  const sourceCatchAllDomains = useMemo(() => {
-    const sourceClient = sourceAccountId && sourceAccountId !== activeAccountId
-      ? useAuthStore.getState().getClientForAccount(sourceAccountId)
-      : client;
-    return sourceClient?.getCatchAllDomains?.() ?? [];
-  }, [sourceAccountId, activeAccountId, client]);
 
   // Forwarded attachments and quoted inline images reference part blobs of the
   // original message, which only the account that holds it can resolve. When
