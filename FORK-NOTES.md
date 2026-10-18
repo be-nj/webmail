@@ -54,6 +54,7 @@ Hashes mit derselben Betreffzeile.
 | (1.14.2) | Mountain View: Einstellung „Listenzeilen“ (Darstellung), Standard zweizeilig: Vorschau in eigener Zeile unter dem Betreff statt mit „-“ dahinter; einzeilig bleibt wie Gmail |
 | (1.14.2) | Mountain View: „Mit Stern“ ist als aktiver Eintrag markiert, auch wenn er ohne „Alle mit Stern“-Ansicht nur eine Stern-Suche ist; ein Ordnerklick verlässt diese Suche immer |
 | (1.14.2) | Mountain View: Absender-Avatar in den Listenzeilen (zwischen Stern und Name), damit BIMI-Logo und Vertrauens-Badge auch in der Liste stehen; Lese-Buttons der Auswahl nur aktiv, wenn sie etwas ändern |
+| (1.14.2) | Mountain View: mit geteiltem Postfach bekommt das eigene Konto eine eigene Zeile, gleichrangig mit den geteilten (beide einklappbar, ohne Überschrift „Geteilt“); jedes Konto hat sein eigenes „Mehr“ für die übrigen Systemordner, eigene Ordner eines geteilten Kontos bleiben sichtbar |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
