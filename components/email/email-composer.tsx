@@ -896,7 +896,12 @@ export function EmailComposer({
     && !overrideHasIdentity && !overrideCatchAll
     ? currentIdentity.email
     : null;
-  const catchAllIdentityPending = overrideCatchAll && !overrideHasIdentity ? overrideAddress : null;
+  // A group's catch-all address goes out through the group's account and is
+  // filed in its Sent folder; the row names the account instead.
+  const overrideSharedAccount = overrideCatchAll && !overrideHasIdentity
+    ? composerClient?.getSharedCatchAllAccount?.(overrideAddress)
+    : undefined;
+  const catchAllIdentityPending = overrideCatchAll && !overrideHasIdentity && !overrideSharedAccount ? overrideAddress : null;
   // An address picked in the sub-address popover's catch-all tab: its
   // identity when one exists already, else a From override that becomes one
   // on send.
@@ -2635,11 +2640,12 @@ export function EmailComposer({
     // identity's address in Return-Path.
     const sentFrom = (fromEmail || '').trim().toLowerCase();
     let createdCatchAllIdentity = false;
-    if (overrideActive && composerClient && isCatchAllAddress(sentFrom, catchAllDomains)
+    if (overrideActive && composerClient?.ensureCatchAllIdentity && isCatchAllAddress(sentFrom, catchAllDomains)
       && !identities.some((identity) => identity.email.toLowerCase() === sentFrom && isOnComposerAccount(identity))) {
+      let ensured: { accountId: string; created: boolean };
       try {
-        await composerClient.createIdentity(fromName || '', sentFrom);
-        createdCatchAllIdentity = true;
+        ensured = await composerClient.ensureCatchAllIdentity(sentFrom, fromName || '');
+        createdCatchAllIdentity = ensured.created;
       } catch (error) {
         toast.error(t('catch_all.create_failed', {
           address: sentFrom,
@@ -2649,7 +2655,8 @@ export function EmailComposer({
         setIsSending(false);
         return;
       }
-      if (onComposerAccount && !currentIdentityParts.localAccountId) {
+      if (ensured.created && !composerClient.getSharedCatchAllAccount?.(sentFrom)
+        && onComposerAccount && !currentIdentityParts.localAccountId) {
         void useAuthStore.getState().refreshIdentities();
       }
     }
@@ -3412,6 +3419,11 @@ export function EmailComposer({
               </Button>
             </div>
           </div>
+          {overrideSharedAccount && (
+            <p className="ps-[4.5rem] md:ps-[5.5rem] pe-4 py-1.5 text-xs text-muted-foreground border-b border-border/50">
+              {t('catch_all.via_shared', { account: overrideSharedAccount.name })}
+            </p>
+          )}
           {catchAllIdentityPending && (
             <p className="ps-[4.5rem] md:ps-[5.5rem] pe-4 py-1.5 text-xs text-muted-foreground border-b border-border/50">
               {t('catch_all.pending', { address: catchAllIdentityPending })}

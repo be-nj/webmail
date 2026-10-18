@@ -698,7 +698,8 @@
     "remove_sub_address": "Sub-adres verwijderen",
     "catch_all": {
       "pending": "{address} wordt bij het verzenden als nieuwe identiteit opgeslagen.",
-      "create_failed": "De server heeft {address} niet als afzender geaccepteerd: {reason}"
+      "create_failed": "De server heeft {address} niet als afzender geaccepteerd: {reason}",
+      "via_shared": "Wordt verzonden via {account} en daar in Verzonden opgeslagen."
     },
     "from_override": {
       "toggle_off": "Overschrijven",

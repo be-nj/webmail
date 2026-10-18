@@ -701,7 +701,8 @@
     "remove_sub_address": "Alcím eltávolítása",
     "catch_all": {
       "pending": "A(z) {address} küldéskor új identitásként mentődik.",
-      "create_failed": "A szerver nem fogadta el a(z) {address} címet feladóként: {reason}"
+      "create_failed": "A szerver nem fogadta el a(z) {address} címet feladóként: {reason}",
+      "via_shared": "A(z) {account} fiókon keresztül megy el, és annak Elküldött mappájába kerül."
     },
     "from_override": {
       "toggle_off": "Felülbírálás",

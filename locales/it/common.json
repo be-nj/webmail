@@ -698,7 +698,8 @@
     "remove_sub_address": "Rimuovi sotto-indirizzo",
     "catch_all": {
       "pending": "{address} verrà salvato come nuova identità all'invio.",
-      "create_failed": "Il server non ha accettato {address} come mittente: {reason}"
+      "create_failed": "Il server non ha accettato {address} come mittente: {reason}",
+      "via_shared": "Inviato tramite {account} e archiviato nella sua posta inviata."
     },
     "from_override": {
       "toggle_off": "Sovrascrivi",

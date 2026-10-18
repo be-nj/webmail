@@ -75,6 +75,10 @@ export interface IJMAPClient {
   getMaxSizeAttachmentsPerEmail?(): number;
   /** Catch-all sender domains of the account; absent or empty when unsupported. */
   getCatchAllDomains?(accountId?: string): string[];
+  /** The shared (group) account whose catch-all takes this address's domain. */
+  getSharedCatchAllAccount?(email: string): { id: string; name: string } | undefined;
+  /** Create the identity for a catch-all address where it sends from, if missing. */
+  ensureCatchAllIdentity?(email: string, name: string): Promise<{ accountId: string; created: boolean }>;
   getMaxCallsInRequest(): number;
   getMaxObjectsInGet(): number;
   getMaxObjectsInSet(): number;

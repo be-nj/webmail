@@ -698,7 +698,8 @@
     "remove_sub_address": "サブアドレスを削除",
     "catch_all": {
       "pending": "{address} は送信時に新しい ID として保存されます。",
-      "create_failed": "サーバーは {address} を差出人として受け付けませんでした: {reason}"
+      "create_failed": "サーバーは {address} を差出人として受け付けませんでした: {reason}",
+      "via_shared": "{account} 経由で送信され、その送信済みフォルダーに保存されます。"
     },
     "from_override": {
       "toggle_off": "上書き",

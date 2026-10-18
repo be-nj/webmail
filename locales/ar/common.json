@@ -701,7 +701,8 @@
     "remove_sub_address": "إزالة العنوان الفرعي",
     "catch_all": {
       "pending": "سيُحفظ {address} كهوية جديدة عند الإرسال.",
-      "create_failed": "لم يقبل الخادم {address} كمرسل: {reason}"
+      "create_failed": "لم يقبل الخادم {address} كمرسل: {reason}",
+      "via_shared": "يُرسل عبر {account} ويُحفظ في مجلد المرسل الخاص به."
     },
     "from_override": {
       "toggle_off": "تجاوز",

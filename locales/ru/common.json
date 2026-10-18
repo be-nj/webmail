@@ -698,7 +698,8 @@
     "remove_sub_address": "Удалить суб-адрес",
     "catch_all": {
       "pending": "{address} будет сохранён как новый идентификатор при отправке.",
-      "create_failed": "Сервер не принял {address} как отправителя: {reason}"
+      "create_failed": "Сервер не принял {address} как отправителя: {reason}",
+      "via_shared": "Отправляется через {account} и сохраняется в его папке «Отправленные»."
     },
     "from_override": {
       "toggle_off": "Переопределить",

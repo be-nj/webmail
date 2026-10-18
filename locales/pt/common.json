@@ -698,7 +698,8 @@
     "remove_sub_address": "Remover sub-endereço",
     "catch_all": {
       "pending": "{address} será guardado como nova identidade ao enviar.",
-      "create_failed": "O servidor não aceitou {address} como remetente: {reason}"
+      "create_failed": "O servidor não aceitou {address} como remetente: {reason}",
+      "via_shared": "Enviado através de {account} e guardado nos respetivos enviados."
     },
     "from_override": {
       "toggle_off": "Substituir",

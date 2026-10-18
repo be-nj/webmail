@@ -701,7 +701,8 @@
     "remove_sub_address": "Alt adresi kaldır",
     "catch_all": {
       "pending": "{address} gönderirken yeni bir kimlik olarak kaydedilecek.",
-      "create_failed": "Sunucu {address} adresini gönderen olarak kabul etmedi: {reason}"
+      "create_failed": "Sunucu {address} adresini gönderen olarak kabul etmedi: {reason}",
+      "via_shared": "{account} üzerinden gönderilir ve oradaki Gönderilenler klasörüne kaydedilir."
     },
     "from_override": {
       "toggle_off": "Geçersiz kıl",

@@ -698,7 +698,8 @@
     "remove_sub_address": "Видалити підадресу",
     "catch_all": {
       "pending": "{address} буде збережено як нову ідентичність під час надсилання.",
-      "create_failed": "Сервер не прийняв {address} як відправника: {reason}"
+      "create_failed": "Сервер не прийняв {address} як відправника: {reason}",
+      "via_shared": "Надсилається через {account} і зберігається в його папці «Надіслані»."
     },
     "from_override": {
       "toggle_off": "Замінити",

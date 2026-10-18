@@ -3709,11 +3709,12 @@ export class JMAPClient implements IJMAPClient {
     replyTo?: EmailAddress[] | null,
     bcc?: EmailAddress[] | null,
     textSignature?: string | null,
-    htmlSignature?: string | null
+    htmlSignature?: string | null,
+    accountId: string = this.accountId
   ): Promise<Identity> {
     const response = await this.request([
       ["Identity/set", {
-        accountId: this.accountId,
+        accountId,
         create: {
           "new-identity": {
             name,
@@ -3740,7 +3741,10 @@ export class JMAPClient implements IJMAPClient {
 
       const createdId = result.created?.["new-identity"]?.id;
       if (createdId) {
-        const identities = await this.getIdentities();
+        const identities = accountId === this.accountId
+          ? await this.getIdentities()
+          : ((await this.request([["Identity/get", { accountId, ids: [createdId] }, "0"]]))
+              .methodResponses?.[0]?.[1]?.list || []) as Identity[];
         const identity = identities.find(i => i.id === createdId);
         if (identity) return identity;
       }
@@ -4013,9 +4017,15 @@ export class JMAPClient implements IJMAPClient {
   ): Promise<SendEmailResult> {
     const holdForSeconds = delayedUntil ? this.validateDelayedUntil(delayedUntil) : undefined;
     const emailId = `send-${Date.now()}`;
-    const targetAccountId = (fromEmail && Object.keys(this.accounts).find(id =>
-      this.accounts[id]?.name?.toLowerCase() === fromEmail.toLowerCase()
-    )) || this.accountId;
+    // A From that names a shared account goes through it, and so does an
+    // address on a group's catch-all domain (catchAllSendAccountId): either
+    // way the copy is filed in that account's Sent folder.
+    const fromAddress = fromEmail ? parseRecipientString(fromEmail).email : '';
+    const targetAccountId = (fromAddress && Object.keys(this.accounts).find(id =>
+      this.accounts[id]?.name?.toLowerCase() === fromAddress.toLowerCase()
+    )) || (fromAddress && this.getSharedCatchAllAccount(fromAddress)
+      ? await this.catchAllSendAccountId(fromAddress)
+      : this.accountId);
     const mboxResp = await this.request([
       ["Mailbox/get", { accountId: targetAccountId }, "0"]
     ]);
@@ -5179,6 +5189,51 @@ export class JMAPClient implements IJMAPClient {
       { catchAllDomains?: unknown } | undefined;
     const domains = Array.isArray(cap?.catchAllDomains) ? cap.catchAllDomains : [];
     return domains.filter((d): d is string => typeof d === 'string' && d.length > 0).map((d) => d.toLowerCase());
+  }
+
+  /**
+   * The shared account a catch-all address belongs with: one other than the
+   * primary that lists the address's domain, i.e. a group whose catch-all
+   * takes that mail. Mail to the address lands in that group's mailbox, so
+   * mail from it is sent through it and filed in its Sent folder.
+   */
+  getSharedCatchAllAccount(email: string): { id: string; name: string } | undefined {
+    const domain = email.slice(email.lastIndexOf('@') + 1).trim().toLowerCase();
+    if (!email.includes('@') || !domain) return undefined;
+    const id = Object.keys(this.accounts).find(
+      (accountId) => accountId !== this.accountId && this.getCatchAllDomains(accountId).includes(domain),
+    );
+    return id ? { id, name: this.accounts[id]?.name ?? id } : undefined;
+  }
+
+  /**
+   * The account to send a catch-all address through: its group's shared
+   * account (see getSharedCatchAllAccount), unless the primary account has an
+   * identity with exactly that address - an address of its own that happens
+   * to sit on the group's domain.
+   */
+  private async catchAllSendAccountId(email: string): Promise<string> {
+    const shared = this.getSharedCatchAllAccount(email);
+    if (!shared) return this.accountId;
+    const response = await this.request([["Identity/get", { accountId: this.accountId }, "0"]]);
+    const own = (response.methodResponses?.[0]?.[1]?.list || []) as Identity[];
+    return own.some((identity) => identity.email.toLowerCase() === email.toLowerCase()) ? this.accountId : shared.id;
+  }
+
+  /**
+   * Make sure an identity exists for a catch-all address in the account it
+   * sends through, creating it if needed. Throws when the server refuses the
+   * address, e.g. because another account owns it on that domain.
+   */
+  async ensureCatchAllIdentity(email: string, name: string): Promise<{ accountId: string; created: boolean }> {
+    const accountId = await this.catchAllSendAccountId(email);
+    const response = await this.request([["Identity/get", { accountId }, "0"]]);
+    const identities = (response.methodResponses?.[0]?.[1]?.list || []) as Identity[];
+    if (identities.some((identity) => identity.email.toLowerCase() === email.toLowerCase())) {
+      return { accountId, created: false };
+    }
+    await this.createIdentity(name, email, undefined, undefined, undefined, undefined, accountId);
+    return { accountId, created: true };
   }
 
   /** Check whether a capability is present on the primary account. */
