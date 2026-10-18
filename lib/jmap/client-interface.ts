@@ -127,6 +127,8 @@ export interface IJMAPClient {
   getMaxSizeAttachmentsPerEmail?(): number;
   /** Calendars capability maxParticipantsPerEvent of the account (null = not advertised). */
   getMaxParticipantsPerEvent?(accountId?: string): number | null;
+  /** Catch-all sender domains of the account; absent or empty when unsupported. */
+  getCatchAllDomains?(accountId?: string): string[];
   getMaxCallsInRequest(): number;
   getMaxObjectsInGet(): number;
   getMaxObjectsInSet(): number;

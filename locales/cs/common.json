@@ -737,6 +737,10 @@
       "to": "Komu: {recipients}"
     },
     "remove_sub_address": "Odebrat subadresu",
+    "catch_all": {
+      "pending": "{address} se při odeslání uloží jako nová identita.",
+      "create_failed": "Server nepřijal {address} jako odesílatele: {reason}"
+    },
     "from_override": {
       "toggle_off": "Přepsat",
       "toggle_on": "Zrušit přepsání",
@@ -2846,13 +2850,23 @@
       "recent_tags": "Nedávné štítky",
       "suggested_tags": "Doporučené",
       "use_address": "Použít tuto adresu",
+      "tab_tag": "Štítek",
+      "tab_catch_all": "Jiná adresa",
+      "catch_all_title": "Odeslat z jiné adresy",
+      "local_part_placeholder": "Adresa, např. firma",
+      "domain_label": "Doména",
+      "recent_addresses": "Nedávno použité",
+      "catch_all_help": "Pošta na libovolnou adresu těchto domén dorazí k vám, proto můžete odesílat z kterékoli z nich. Při prvním odeslání se adresa uloží jako identita.",
       "invalid_tag": "Štítek může obsahovat pouze písmena, číslice a pomlčky",
       "tag_too_long": "Štítek může mít maximálně 30 znaků",
       "help_text": "Zprávy odeslané na adresu uzivatel{delimiter}stitek@domena.cz budou doručeny do vaší doručené pošty",
       "validation": {
         "empty": "Štítek nesmí být prázdný",
         "too_long": "Štítek může mít maximálně {max} znaků",
-        "invalid_chars": "Štítek může obsahovat pouze písmena, číslice a pomlčky"
+        "invalid_chars": "Štítek může obsahovat pouze písmena, číslice a pomlčky",
+        "local_part_empty": "Adresa nesmí být prázdná",
+        "local_part_too_long": "Část před @ může mít nejvýše {max} znaků",
+        "local_part_invalid": "Adresa obsahuje nepovolené znaky"
       }
     },
     "badge": {

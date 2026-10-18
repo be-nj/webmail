@@ -740,6 +740,10 @@
       "to": "به: {recipients}"
     },
     "remove_sub_address": "حذف زیرآدرس",
+    "catch_all": {
+      "pending": "{address} هنگام ارسال به‌عنوان هویت جدید ذخیره می‌شود.",
+      "create_failed": "سرور {address} را به‌عنوان فرستنده نپذیرفت: {reason}"
+    },
     "from_override": {
       "toggle_off": "بازنویسی",
       "toggle_on": "لغو بازنویسی",
@@ -2846,13 +2850,23 @@
       "recent_tags": "برچسب‌های اخیر",
       "suggested_tags": "پیشنهادی",
       "use_address": "استفاده از این آدرس",
+      "tab_tag": "برچسب",
+      "tab_catch_all": "نشانی دیگر",
+      "catch_all_title": "ارسال از نشانی دیگر",
+      "local_part_placeholder": "نشانی، مثلاً company",
+      "domain_label": "دامنه",
+      "recent_addresses": "اخیراً استفاده‌شده",
+      "catch_all_help": "نامه به هر نشانی در این دامنه‌ها به شما می‌رسد، پس می‌توانید از هر کدام از آن‌ها هم ارسال کنید. در اولین ارسال، نشانی به‌عنوان هویت ذخیره می‌شود.",
       "invalid_tag": "فقط حروف و خط تیره",
       "tag_too_long": "حداکثر ۳۰ کاراکتر",
       "help_text": "ایمیل به user{delimiter}tag@domain.com به صندوق ورودی می‌رسد",
       "validation": {
         "empty": "برچسب نمی‌تواند خالی باشد",
         "too_long": "حداکثر {max} کاراکتر",
-        "invalid_chars": "فقط حروف، اعداد و خط تیره"
+        "invalid_chars": "فقط حروف، اعداد و خط تیره",
+        "local_part_empty": "نشانی نمی‌تواند خالی باشد",
+        "local_part_too_long": "بخش پیش از @ حداکثر می‌تواند {max} نویسه باشد",
+        "local_part_invalid": "نشانی شامل نویسه‌های غیرمجاز است"
       }
     },
     "badge": {

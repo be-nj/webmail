@@ -740,6 +740,10 @@
       "to": "Către: {recipients}"
     },
     "remove_sub_address": "Eliminați subadresa",
+    "catch_all": {
+      "pending": "{address} va fi salvată ca identitate nouă la trimitere.",
+      "create_failed": "Serverul nu a acceptat {address} ca expeditor: {reason}"
+    },
     "from_override": {
       "toggle_off": "Suprascrieți",
       "toggle_on": "Anulare suprascriere",
@@ -2846,13 +2850,23 @@
       "recent_tags": "Etichete recente",
       "suggested_tags": "Sugestii",
       "use_address": "Utilizați această adresă",
+      "tab_tag": "Etichetă",
+      "tab_catch_all": "Altă adresă",
+      "catch_all_title": "Trimite de la altă adresă",
+      "local_part_placeholder": "Adresă, ex. firma",
+      "domain_label": "Domeniu",
+      "recent_addresses": "Folosite recent",
+      "catch_all_help": "E-mailurile trimise la orice adresă din aceste domenii ajung la dvs., deci puteți trimite de la oricare dintre ele. La prima trimitere, adresa este salvată ca identitate.",
       "invalid_tag": "Eticheta trebuie să conțină doar caractere alfanumerice și liniuțe",
       "tag_too_long": "Eticheta trebuie să aibă cel mult 30 de caractere",
       "help_text": "E-mailurile trimise către adresele {delimiter} și tag@domain.com vor ajunge în căsuța dvs. de e-mail primite",
       "validation": {
         "empty": "Câmpul „Tag” nu poate fi gol",
         "too_long": "Eticheta trebuie să conțină cel mult{max}e",
-        "invalid_chars": "Eticheta trebuie să conțină numai litere, cifre și liniuțe"
+        "invalid_chars": "Eticheta trebuie să conțină numai litere, cifre și liniuțe",
+        "local_part_empty": "Adresa nu poate fi goală",
+        "local_part_too_long": "Partea dinaintea @ poate avea cel mult {max} caractere",
+        "local_part_invalid": "Adresa conține caractere nepermise"
       }
     },
     "badge": {

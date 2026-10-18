@@ -739,6 +739,10 @@
       "to": "Til: {recipients}"
     },
     "remove_sub_address": "Fjern underadresse",
+    "catch_all": {
+      "pending": "{address} gemmes som ny identitet, når du sender.",
+      "create_failed": "Serveren accepterede ikke {address} som afsender: {reason}"
+    },
     "from_override": {
       "toggle_off": "Tilsidesæt",
       "toggle_on": "Annuller tilsidesættelse",
@@ -2846,13 +2850,23 @@
       "recent_tags": "Seneste tags",
       "suggested_tags": "Foreslået",
       "use_address": "Brug denne adresse",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Anden adresse",
+      "catch_all_title": "Send fra en anden adresse",
+      "local_part_placeholder": "Adresse, f.eks. firma",
+      "domain_label": "Domæne",
+      "recent_addresses": "Senest brugt",
+      "catch_all_help": "Mail til enhver adresse på disse domæner når frem til dig, så du kan også sende fra dem alle. Ved første afsendelse gemmes adressen som identitet.",
       "invalid_tag": "Tag må kun indeholde bogstaver, tal og bindestreger",
       "tag_too_long": "Tag skal være 30 tegn eller mindre",
       "help_text": "E-mails sendt til bruger{delimiter}tag@domæne.dk ankommer i din indbakke",
       "validation": {
         "empty": "Tag kan ikke være tomt",
         "too_long": "Tag skal være {max} tegn eller mindre",
-        "invalid_chars": "Tag må kun indeholde bogstaver, tal og bindestreger"
+        "invalid_chars": "Tag må kun indeholde bogstaver, tal og bindestreger",
+        "local_part_empty": "Adressen må ikke være tom",
+        "local_part_too_long": "Delen før @ må højst være {max} tegn",
+        "local_part_invalid": "Adressen indeholder tegn, der ikke er tilladt"
       }
     },
     "badge": {

@@ -737,6 +737,10 @@
       "to": "받는 사람: {recipients}"
     },
     "remove_sub_address": "서브 어드레스 삭제",
+    "catch_all": {
+      "pending": "보낼 때 {address}이(가) 새 ID로 저장됩니다.",
+      "create_failed": "서버가 {address}을(를) 보낸 사람으로 허용하지 않았습니다: {reason}"
+    },
     "from_override": {
       "toggle_off": "재정의",
       "toggle_on": "재정의 취소",
@@ -2846,13 +2850,23 @@
       "recent_tags": "최근 태그",
       "suggested_tags": "추천",
       "use_address": "이 주소 사용하기",
+      "tab_tag": "태그",
+      "tab_catch_all": "다른 주소",
+      "catch_all_title": "다른 주소에서 보내기",
+      "local_part_placeholder": "주소, 예: company",
+      "domain_label": "도메인",
+      "recent_addresses": "최근 사용",
+      "catch_all_help": "이 도메인의 모든 주소로 오는 메일이 사용자에게 전달되므로 그중 어느 주소로든 보낼 수 있습니다. 처음 보낼 때 주소가 ID로 저장됩니다.",
       "invalid_tag": "태그는 알파벳, 숫자, 대시(-)만 쓸 수 있어요",
       "tag_too_long": "태그는 30자 이하여야 해요",
       "help_text": "user{delimiter}tag@domain.com 으로 보낸 메일은 내 받은편지함으로 들어와요",
       "validation": {
         "empty": "태그를 비워둘 수 없어요",
         "too_long": "태그는 {max}자 이하여야 해요",
-        "invalid_chars": "태그에는 영문, 숫자, 대시(-)만 쓸 수 있어요"
+        "invalid_chars": "태그에는 영문, 숫자, 대시(-)만 쓸 수 있어요",
+        "local_part_empty": "주소를 입력하세요",
+        "local_part_too_long": "@ 앞부분은 최대 {max}자까지 가능합니다",
+        "local_part_invalid": "주소에 허용되지 않는 문자가 있습니다"
       }
     },
     "badge": {
