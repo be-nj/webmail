@@ -307,6 +307,24 @@ describe('composer sending from a catch-all address', () => {
     expect(screen.getByLabelText('from_override.name_label')).toHaveValue('Me');
   });
 
+  it('leaves the catch-all address it replies from out of reply-all', async () => {
+    render(
+      <EmailComposer
+        mode="replyAll"
+        replyTo={{
+          from: [{ email: 'bob@other.com', name: 'Bob' }],
+          to: [{ email: 'dies-ist-ein-test@bmn.email' }, { email: 'carol@other.com', name: 'Carol' }],
+          subject: 'Test',
+        } as never}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByLabelText('from_override.email_label')).toHaveValue('dies-ist-ein-test@bmn.email'));
+    const chips = Array.from(screen.getByTestId('composer-to').querySelectorAll('[draggable]')).map((el) => el.textContent?.trim());
+    expect(chips.join(' ')).not.toContain('bmn.email');
+    expect(chips.join(' ')).toContain('Bob');
+  });
+
   it('keeps an old catch-all identity out of the From list, but not a recent one', () => {
     useSettingsStore.setState({ catchAllSenders: { 'acc-1': { 'old@benj.email': 0 } } });
     const { unmount } = render(<EmailComposer initialData={{ ...DRAFT, fromOverrideEnabled: false }} />);
