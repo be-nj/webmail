@@ -696,6 +696,10 @@
       "to": "A: {recipients}"
     },
     "remove_sub_address": "Rimuovi sotto-indirizzo",
+    "catch_all": {
+      "pending": "{address} verrà salvato come nuova identità all'invio.",
+      "create_failed": "Il server non ha accettato {address} come mittente: {reason}"
+    },
     "from_override": {
       "toggle_off": "Sovrascrivi",
       "toggle_on": "Annulla sovrascrittura",
@@ -2708,13 +2712,23 @@
       "recent_tags": "Tag recenti",
       "suggested_tags": "Suggeriti",
       "use_address": "Usa questo indirizzo",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Altro indirizzo",
+      "catch_all_title": "Invia da un altro indirizzo",
+      "local_part_placeholder": "Indirizzo, ad es. azienda",
+      "domain_label": "Dominio",
+      "recent_addresses": "Usati di recente",
+      "catch_all_help": "La posta inviata a qualsiasi indirizzo di questi domini arriva a te, quindi puoi inviare da ciascuno di essi. Al primo invio l'indirizzo viene salvato come identità.",
       "invalid_tag": "Il tag deve contenere solo caratteri alfanumerici e trattini",
       "tag_too_long": "Il tag deve essere di massimo 30 caratteri",
       "help_text": "I messaggi inviati a utente{delimiter}tag@dominio.com arriveranno nella tua casella di posta",
       "validation": {
         "empty": "Il tag non può essere vuoto",
         "too_long": "Il tag deve essere di massimo {max} caratteri",
-        "invalid_chars": "Il tag deve contenere solo lettere, numeri e trattini"
+        "invalid_chars": "Il tag deve contenere solo lettere, numeri e trattini",
+        "local_part_empty": "L'indirizzo non può essere vuoto",
+        "local_part_too_long": "La parte prima della @ può contenere al massimo {max} caratteri",
+        "local_part_invalid": "L'indirizzo contiene caratteri non consentiti"
       }
     },
     "badge": {

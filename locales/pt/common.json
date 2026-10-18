@@ -696,6 +696,10 @@
       "to": "Para: {recipients}"
     },
     "remove_sub_address": "Remover sub-endereço",
+    "catch_all": {
+      "pending": "{address} será guardado como nova identidade ao enviar.",
+      "create_failed": "O servidor não aceitou {address} como remetente: {reason}"
+    },
     "from_override": {
       "toggle_off": "Substituir",
       "toggle_on": "Cancelar substituição",
@@ -2708,13 +2712,23 @@
       "recent_tags": "Tags Recentes",
       "suggested_tags": "Sugeridas",
       "use_address": "Usar Este Endereço",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Outro endereço",
+      "catch_all_title": "Enviar de outro endereço",
+      "local_part_placeholder": "Endereço, p. ex. empresa",
+      "domain_label": "Domínio",
+      "recent_addresses": "Usados recentemente",
+      "catch_all_help": "E-mails para qualquer endereço destes domínios chegam até você, por isso pode enviar de qualquer um deles. No primeiro envio, o endereço é guardado como identidade.",
       "invalid_tag": "A tag deve conter apenas caracteres alfanuméricos e hífens",
       "tag_too_long": "A tag deve ter no máximo 30 caracteres",
       "help_text": "E-mails enviados para usuario{delimiter}tag@dominio.com chegarão na sua caixa de entrada",
       "validation": {
         "empty": "A tag não pode estar vazia",
         "too_long": "A tag deve ter no máximo {max} caracteres",
-        "invalid_chars": "A tag deve conter apenas letras, números e hífens"
+        "invalid_chars": "A tag deve conter apenas letras, números e hífens",
+        "local_part_empty": "O endereço não pode estar vazio",
+        "local_part_too_long": "A parte antes do @ pode ter no máximo {max} caracteres",
+        "local_part_invalid": "O endereço contém caracteres não permitidos"
       }
     },
     "badge": {

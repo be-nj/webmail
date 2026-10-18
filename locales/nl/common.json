@@ -696,6 +696,10 @@
       "to": "Aan: {recipients}"
     },
     "remove_sub_address": "Sub-adres verwijderen",
+    "catch_all": {
+      "pending": "{address} wordt bij het verzenden als nieuwe identiteit opgeslagen.",
+      "create_failed": "De server heeft {address} niet als afzender geaccepteerd: {reason}"
+    },
     "from_override": {
       "toggle_off": "Overschrijven",
       "toggle_on": "Overschrijven annuleren",
@@ -2708,13 +2712,23 @@
       "recent_tags": "Recente tags",
       "suggested_tags": "Voorgesteld",
       "use_address": "Dit adres gebruiken",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Ander adres",
+      "catch_all_title": "Verzenden vanaf een ander adres",
+      "local_part_placeholder": "Adres, bijv. bedrijf",
+      "domain_label": "Domein",
+      "recent_addresses": "Recent gebruikt",
+      "catch_all_help": "Mail naar elk adres op deze domeinen komt bij u aan, dus u kunt ook vanaf elk ervan verzenden. Bij de eerste verzending wordt het adres als identiteit opgeslagen.",
       "invalid_tag": "Tag mag alleen letters, cijfers en streepjes bevatten",
       "tag_too_long": "Tag mag maximaal 30 tekens bevatten",
       "help_text": "E-mails verzonden naar gebruiker{delimiter}tag@domein.nl komen in je postvak IN aan",
       "validation": {
         "empty": "Tag mag niet leeg zijn",
         "too_long": "Tag mag maximaal {max} tekens bevatten",
-        "invalid_chars": "Tag mag alleen letters, cijfers en streepjes bevatten"
+        "invalid_chars": "Tag mag alleen letters, cijfers en streepjes bevatten",
+        "local_part_empty": "Adres mag niet leeg zijn",
+        "local_part_too_long": "Het deel vóór de @ mag maximaal {max} tekens lang zijn",
+        "local_part_invalid": "Het adres bevat niet-toegestane tekens"
       }
     },
     "badge": {

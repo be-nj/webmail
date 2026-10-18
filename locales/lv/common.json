@@ -696,6 +696,10 @@
       "to": "Kam: {recipients}"
     },
     "remove_sub_address": "Noņemt apakšadresi",
+    "catch_all": {
+      "pending": "{address} sūtot tiks saglabāta kā jauna identitāte.",
+      "create_failed": "Serveris nepieņēma {address} kā sūtītāju: {reason}"
+    },
     "from_override": {
       "toggle_off": "Pārrakstīt",
       "toggle_on": "Atcelt pārrakstīšanu",
@@ -2708,13 +2712,23 @@
       "recent_tags": "Nesenie tagi",
       "suggested_tags": "Ieteikumi",
       "use_address": "Izmantot šo adresi",
+      "tab_tag": "Birka",
+      "tab_catch_all": "Cita adrese",
+      "catch_all_title": "Sūtīt no citas adreses",
+      "local_part_placeholder": "Adrese, piem. uznemums",
+      "domain_label": "Domēns",
+      "recent_addresses": "Nesen izmantotās",
+      "catch_all_help": "Pasts uz jebkuru šo domēnu adresi nonāk pie jums, tāpēc varat sūtīt arī no jebkuras no tām. Pirmajā sūtīšanā adrese tiek saglabāta kā identitāte.",
       "invalid_tag": "Tags var saturēt tikai burtus, ciparus un domuzīmes",
       "tag_too_long": "Tags nedrīkst pārsniegt 30 rakstzīmes",
       "help_text": "Vēstules uz lietotajs{delimiter}tags@domens.lv nonāks jūsu pastkastē",
       "validation": {
         "empty": "Tags nevar būt tukšs",
         "too_long": "Tags nedrīkst pārsniegt {max} rakstzīmes",
-        "invalid_chars": "Tags var saturēt tikai burtus, ciparus un domuzīmes"
+        "invalid_chars": "Tags var saturēt tikai burtus, ciparus un domuzīmes",
+        "local_part_empty": "Adrese nedrīkst būt tukša",
+        "local_part_too_long": "Daļa pirms @ drīkst būt ne garāka par {max} rakstzīmēm",
+        "local_part_invalid": "Adrese satur neatļautas rakstzīmes"
       }
     },
     "badge": {

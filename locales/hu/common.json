@@ -699,6 +699,10 @@
       "to": "Címzett: {recipients}"
     },
     "remove_sub_address": "Alcím eltávolítása",
+    "catch_all": {
+      "pending": "A(z) {address} küldéskor új identitásként mentődik.",
+      "create_failed": "A szerver nem fogadta el a(z) {address} címet feladóként: {reason}"
+    },
     "from_override": {
       "toggle_off": "Felülbírálás",
       "toggle_on": "Felülbírálás megszüntetése",
@@ -2708,13 +2712,23 @@
       "recent_tags": "Legutóbbi címkék",
       "suggested_tags": "Javasolt",
       "use_address": "Cím használata",
+      "tab_tag": "Címke",
+      "tab_catch_all": "Másik cím",
+      "catch_all_title": "Küldés másik címről",
+      "local_part_placeholder": "Cím, pl. ceg",
+      "domain_label": "Domain",
+      "recent_addresses": "Legutóbb használt",
+      "catch_all_help": "Ezeknek a domaineknek bármely címére érkező levél Önhöz jut, így bármelyikről küldhet is. Az első küldéskor a cím identitásként mentődik.",
       "invalid_tag": "A címke csak betűket, számokat és kötőjeleket tartalmazhat",
       "tag_too_long": "A címke legfeljebb 30 karakter lehet",
       "help_text": "A felhasználó{delimiter}cimke@domain.com címre küldött e-mailek a beérkeződbe érkeznek",
       "validation": {
         "empty": "A címke nem lehet üres",
         "too_long": "A címke legfeljebb {max} karakter lehet",
-        "invalid_chars": "A címke csak betűket, számokat és kötőjeleket tartalmazhat"
+        "invalid_chars": "A címke csak betűket, számokat és kötőjeleket tartalmazhat",
+        "local_part_empty": "A cím nem lehet üres",
+        "local_part_too_long": "A @ előtti rész legfeljebb {max} karakter lehet",
+        "local_part_invalid": "A cím nem engedélyezett karaktereket tartalmaz"
       }
     },
     "badge": {

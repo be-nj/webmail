@@ -66,7 +66,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { FilePickerDialog } from "@/components/files/file-picker-dialog";
 import type { IJMAPClient } from "@/lib/jmap/client-interface";
-import type { AuthenticationResults, FileNode } from "@/lib/jmap/types";
+import type { AuthenticationResults, FileNode, Identity } from "@/lib/jmap/types";
 import { failsSenderCheck } from "@/lib/sender-trust";
 import { useContactStore, getContactDisplayName, getContactPrimaryEmail } from "@/stores/contact-store";
 import { useTemplateStore } from "@/stores/template-store";
@@ -78,7 +78,8 @@ import { TemplateForm } from "@/components/templates/template-form";
 import type { EmailTemplate } from "@/lib/template-types";
 import { appendPlainTextSignature, getPlainTextSignature, plainTextBodyHasSignature, plainTextBodyWithoutSignature } from "@/lib/signature-utils";
 import { wantsSignatureSeparator } from "@/lib/signature-delimiter";
-import { findComposeIdentityId, findDraftIdentityId, findReplyIdentityId, resolveReplyFrom } from "@/lib/reply-identity";
+import { findComposeIdentityId, findDraftIdentityId, findReplyIdentityId, resolveCatchAllReplyFrom, resolveReplyFrom } from "@/lib/reply-identity";
+import { isCatchAllAddress, isDormantCatchAllSender, recentCatchAllSenders, withCatchAllSenderUse } from "@/lib/catch-all-sender";
 import { buildReplyRecipients, isSelfSent } from "@/lib/reply-recipients";
 import { computeReplyThreadingHeaders, type ReplyThreadingHeaders } from "@/lib/email-threading";
 import { RecipientsRejectedError, RequestTimeoutError, ScheduleTooLateError, SendUnconfirmedError, formatRejectedRecipients } from "@/lib/jmap/client";
@@ -327,6 +328,7 @@ function getDefaultScheduleValue(): string {
 // pinned From/To/Cc/Bcc/Subject fields. Below it the fields scroll away with
 // the body instead (#1114).
 const PINNED_FIELDS_MIN_BODY_HEIGHT = 200;
+const NO_CATCH_ALL_SENDERS: Record<string, Record<string, number>> = {};
 
 export function EmailComposer({
   onSend,
@@ -814,6 +816,21 @@ export function EmailComposer({
   const currentIdentityRawId = currentIdentityParts.rawId ?? currentIdentity?.id;
   // Login that owns the blobs uploaded through `composerClient`.
   const composerAccountId = currentIdentityParts.localAccountId ?? activeAccountId ?? undefined;
+  // Domains whose catch-all reaches the composing account: any address on
+  // them can send, through an identity created on first use. Empty unless the
+  // server advertises them (the beckm4nn Stalwart build).
+  const catchAllDomains = useMemo(() => composerClient?.getCatchAllDomains?.() ?? [], [composerClient]);
+  const catchAllSenders = useSettingsStore((state) => state.catchAllSenders) ?? NO_CATCH_ALL_SENDERS;
+  const composerCatchAllSenders = composerAccountId ? catchAllSenders[composerAccountId] : undefined;
+  const isOnComposerAccount = (identity: Identity) =>
+    stripCrossAccountIdentityPrefix(identity.id).localAccountId === currentIdentityParts.localAccountId;
+  // Replies resolve against the account that holds the original.
+  const sourceCatchAllDomains = useMemo(() => {
+    const sourceClient = sourceAccountId && sourceAccountId !== activeAccountId
+      ? useAuthStore.getState().getClientForAccount(sourceAccountId)
+      : client;
+    return sourceClient?.getCatchAllDomains?.() ?? [];
+  }, [sourceAccountId, activeAccountId, client]);
 
   // Forwarded attachments and quoted inline images reference part blobs of the
   // original message, which only the account that holds it can resolve. When
@@ -870,11 +887,39 @@ export function EmailComposer({
   // then shows in the Return-Path. Unless one of the account's identities owns
   // the override address - the send goes through that one - say so (#1009).
   const overrideAddress = fromOverrideEnabled ? fromOverrideEmail.trim().toLowerCase() : '';
+  const overrideHasIdentity = !!overrideAddress
+    && identities.some((identity) => identity.email.toLowerCase() === overrideAddress && isOnComposerAccount(identity));
+  // A catch-all address gets an identity of its own on send, so the fallback
+  // does not apply to it; the row says the identity will be created instead.
+  const overrideCatchAll = !!overrideAddress && isCatchAllAddress(overrideAddress, catchAllDomains);
   const overrideEnvelopeFallback = overrideAddress && currentIdentity?.email
-    && !identities.some((identity) => identity.email.toLowerCase() === overrideAddress
-      && stripCrossAccountIdentityPrefix(identity.id).localAccountId === currentIdentityParts.localAccountId)
+    && !overrideHasIdentity && !overrideCatchAll
     ? currentIdentity.email
     : null;
+  const catchAllIdentityPending = overrideCatchAll && !overrideHasIdentity ? overrideAddress : null;
+  // An address picked in the sub-address popover's catch-all tab: its
+  // identity when one exists already, else a From override that becomes one
+  // on send.
+  const selectCatchAllAddress = (email: string) => {
+    setSubAddressTag('');
+    const existing = identities.find((identity) => identity.email.toLowerCase() === email && isOnComposerAccount(identity));
+    if (existing) {
+      setFromOverrideEnabled(false);
+      setSelectedIdentityId(existing.id);
+      return;
+    }
+    setFromOverrideEnabled(true);
+    setFromOverrideEmail(email);
+    if (!fromOverrideName && currentIdentity?.name) setFromOverrideName(currentIdentity.name);
+  };
+  // The From dropdown leaves out catch-all identities Bulwark created that
+  // have not been used lately, unless one is the current sender.
+  const shownIdentityId = selectedIdentityId || primaryIdentity?.id;
+  const isShownInFromList = (identity: Identity) => identity.id === shownIdentityId
+    || !isDormantCatchAllSender(
+      identity.email,
+      catchAllSenders[stripCrossAccountIdentityPrefix(identity.id).localAccountId ?? activeAccountId ?? ''],
+    );
   // Alias identities often lack a configured signature - fall back to the primary
   // identity's signature so replies (which auto-select a matching alias) still
   // populate the user's signature.
@@ -1021,6 +1066,20 @@ export function EmailComposer({
       return;
     }
 
+    // A catch-all the server confirms is no guess: the message reached the
+    // user through that address, so the reply goes out from it without the
+    // opt-in the domain heuristic below needs. Its identity is created on send.
+    if (mode !== 'forward' && !fromOverrideEnabled) {
+      const catchAll = resolveCatchAllReplyFrom(sourceAccountIdentities, recipients, sourceCatchAllDomains);
+      if (catchAll?.overrideEmail) {
+        setSelectedIdentityId(catchAll.identityId);
+        setFromOverrideEnabled(true);
+        setFromOverrideEmail(catchAll.overrideEmail);
+        if (catchAll.overrideName) setFromOverrideName(catchAll.overrideName);
+        return;
+      }
+    }
+
     // Catch-all From rewrite: opt-in, and never on a forward. A reply continues
     // a thread whose participants already know the addressing; a forward
     // introduces the rewritten From to a recipient the user just typed, who has
@@ -1059,6 +1118,7 @@ export function EmailComposer({
     identities,
     sourceAccountIdentities,
     sourceAccountId,
+    sourceCatchAllDomains,
     activeAccountId,
     initialData?.selectedIdentityId,
     mode,
@@ -2567,6 +2627,42 @@ export function EmailComposer({
       : (currentIdentity?.name || undefined);
     const envelopeMailFrom = overrideActive ? fromEmail : undefined;
 
+    // EmailSubmission takes only an identity's own address as envelope sender,
+    // so a catch-all address goes out through an identity of its own, created
+    // on the first send from it. The client then picks that identity for the
+    // requested MAIL FROM. A refusal - the address belongs to another account
+    // on that domain - stops the send instead of falling back to the
+    // identity's address in Return-Path.
+    const sentFrom = (fromEmail || '').trim().toLowerCase();
+    let createdCatchAllIdentity = false;
+    if (overrideActive && composerClient && isCatchAllAddress(sentFrom, catchAllDomains)
+      && !identities.some((identity) => identity.email.toLowerCase() === sentFrom && isOnComposerAccount(identity))) {
+      try {
+        await composerClient.createIdentity(fromName || '', sentFrom);
+        createdCatchAllIdentity = true;
+      } catch (error) {
+        toast.error(t('catch_all.create_failed', {
+          address: sentFrom,
+          reason: error instanceof Error ? error.message : String(error),
+        }));
+        isSendingRef.current = false;
+        setIsSending(false);
+        return;
+      }
+      if (onComposerAccount && !currentIdentityParts.localAccountId) {
+        void useAuthStore.getState().refreshIdentities();
+      }
+    }
+    // Remember when each such address was last used, which keeps it in the
+    // From dropdown for a while (see isDormantCatchAllSender).
+    if (composerAccountId && (createdCatchAllIdentity || composerCatchAllSenders?.[sentFrom] !== undefined)) {
+      const all = useSettingsStore.getState().catchAllSenders ?? NO_CATCH_ALL_SENDERS;
+      useSettingsStore.getState().updateSetting('catchAllSenders', {
+        ...all,
+        [composerAccountId]: withCatchAllSenderUse(all[composerAccountId], sentFrom),
+      });
+    }
+
     // Body is already HTML from the rich text editor (or plain text in plain
     // text mode). Where the signature is already part of it (compose mode,
     // above-quote replies, a re-opened draft) `signatureAlreadyInBody` is set
@@ -3228,7 +3324,7 @@ export function EmailComposer({
                   {identityGroups.length > 0
                     ? identityGroups.map((group) => (
                         <optgroup key={group.localAccountId} label={toUnicodeEmail(group.accountLabel)}>
-                          {group.identities.map((identity) => {
+                          {group.identities.filter(isShownInFromList).map((identity) => {
                             const displayEmail = toUnicodeEmail(subAddressTag
                               ? generateSubAddress(identity.email, subAddressTag, subAddressDelimiter)
                               : identity.email);
@@ -3240,7 +3336,7 @@ export function EmailComposer({
                           })}
                         </optgroup>
                       ))
-                    : identities.map((identity) => {
+                    : identities.filter(isShownInFromList).map((identity) => {
                         const displayEmail = toUnicodeEmail(subAddressTag
                           ? generateSubAddress(identity.email, subAddressTag, subAddressDelimiter)
                           : identity.email);
@@ -3275,6 +3371,9 @@ export function EmailComposer({
                   }
                   recipientEmails={withInput(to, toInput).map(r => r.email)}
                   onSelectTag={setSubAddressTag}
+                  catchAllDomains={catchAllDomains}
+                  recentCatchAllAddresses={recentCatchAllSenders(composerCatchAllSenders, catchAllDomains)}
+                  onSelectAddress={selectCatchAllAddress}
                 />
               )}
               {!fromOverrideEnabled && subAddressTag && (
@@ -3313,6 +3412,11 @@ export function EmailComposer({
               </Button>
             </div>
           </div>
+          {catchAllIdentityPending && (
+            <p className="ps-[4.5rem] md:ps-[5.5rem] pe-4 py-1.5 text-xs text-muted-foreground border-b border-border/50">
+              {t('catch_all.pending', { address: catchAllIdentityPending })}
+            </p>
+          )}
           {overrideEnvelopeFallback && (
             <p className="ps-[4.5rem] md:ps-[5.5rem] pe-4 py-1.5 text-xs text-muted-foreground border-b border-border/50">
               {t('from_override.envelope_notice', { identity: overrideEnvelopeFallback })}

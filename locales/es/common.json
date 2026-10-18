@@ -696,6 +696,10 @@
       "to": "Para: {recipients}"
     },
     "remove_sub_address": "Eliminar sub-dirección",
+    "catch_all": {
+      "pending": "{address} se guardará como nueva identidad al enviar.",
+      "create_failed": "El servidor no aceptó {address} como remitente: {reason}"
+    },
     "from_override": {
       "toggle_off": "Anular",
       "toggle_on": "Cancelar anulación",
@@ -2708,13 +2712,23 @@
       "recent_tags": "Etiquetas Recientes",
       "suggested_tags": "Sugeridas",
       "use_address": "Usar Esta Dirección",
+      "tab_tag": "Etiqueta",
+      "tab_catch_all": "Otra dirección",
+      "catch_all_title": "Enviar desde otra dirección",
+      "local_part_placeholder": "Dirección, p. ej. empresa",
+      "domain_label": "Dominio",
+      "recent_addresses": "Usadas recientemente",
+      "catch_all_help": "El correo enviado a cualquier dirección de estos dominios te llega, así que puedes enviar desde cualquiera de ellas. En el primer envío, la dirección se guarda como identidad.",
       "invalid_tag": "La etiqueta debe ser solo alfanumérica y guiones",
       "tag_too_long": "La etiqueta debe tener 30 caracteres o menos",
       "help_text": "Los correos enviados a usuario{delimiter}etiqueta@dominio.com llegarán a su bandeja de entrada",
       "validation": {
         "empty": "La etiqueta no puede estar vacía",
         "too_long": "La etiqueta debe tener {max} caracteres o menos",
-        "invalid_chars": "La etiqueta debe contener solo letras, números y guiones"
+        "invalid_chars": "La etiqueta debe contener solo letras, números y guiones",
+        "local_part_empty": "La dirección no puede estar vacía",
+        "local_part_too_long": "La parte antes de la @ puede tener como máximo {max} caracteres",
+        "local_part_invalid": "La dirección contiene caracteres no permitidos"
       }
     },
     "badge": {

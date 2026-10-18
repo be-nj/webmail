@@ -302,3 +302,43 @@ export function resolveReplyFrom(
 
   return null;
 }
+/**
+ * Reply-From for a message that reached the user through a domain catch-all
+ * the server confirms (`catchAllDomains` from the session), so the reply goes
+ * out from the address the sender wrote to. Run after `findReplyIdentityId`
+ * found no configured identity.
+ *
+ * Only an unambiguous recipient counts: on a group's catch-all domain the
+ * other addresses in To/Cc may belong to colleagues with accounts of their
+ * own, and replying as one of them is refused by the server anyway. So the
+ * one catch-all address in To wins; with none there, the one in Cc; with two
+ * or more, nothing is picked and the user chooses.
+ */
+export function resolveCatchAllReplyFrom(
+  identities: Identity[],
+  recipients: ReplyRecipients | undefined,
+  catchAllDomains: string[],
+): ReplyFromResolution | null {
+  if (identities.length === 0 || !recipients || catchAllDomains.length === 0) {
+    return null;
+  }
+  const domains = new Set(catchAllDomains.map((d) => d.toLowerCase()));
+  const identityEmails = new Set(identities.map((i) => normalizeEmailAddress(i.email)));
+  const identityBaseEmails = new Set(identities.map((i) => normalizeBaseEmailAddress(i.email)));
+  const candidates = (list?: ReplyRecipient[]) => [
+    ...new Set((list || []).flatMap((r) => {
+      const email = r.email ? normalizeEmailAddress(r.email) : '';
+      if (!email || !domains.has(domainOf(email))) return [];
+      if (identityEmails.has(email) || identityBaseEmails.has(normalizeBaseEmailAddress(email))) return [];
+      return [email];
+    })),
+  ];
+
+  const inTo = candidates(recipients.to);
+  const inCc = inTo.length === 0 ? candidates(recipients.cc) : [];
+  const picked = inTo.length === 1 ? inTo[0] : inTo.length === 0 && inCc.length === 1 ? inCc[0] : null;
+  if (!picked) return null;
+
+  const anchor = identities.find((i) => domainOf(i.email) === domainOf(picked)) || identities[0];
+  return { identityId: anchor.id, overrideEmail: picked, overrideName: anchor.name || undefined };
+}

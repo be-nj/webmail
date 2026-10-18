@@ -699,6 +699,10 @@
       "to": "إلى: {recipients}"
     },
     "remove_sub_address": "إزالة العنوان الفرعي",
+    "catch_all": {
+      "pending": "سيُحفظ {address} كهوية جديدة عند الإرسال.",
+      "create_failed": "لم يقبل الخادم {address} كمرسل: {reason}"
+    },
     "from_override": {
       "toggle_off": "تجاوز",
       "toggle_on": "إلغاء التجاوز",
@@ -2708,13 +2712,23 @@
       "recent_tags": "الوسوم الأخيرة",
       "suggested_tags": "مقترح",
       "use_address": "استخدام هذا العنوان",
+      "tab_tag": "وسم",
+      "tab_catch_all": "عنوان آخر",
+      "catch_all_title": "الإرسال من عنوان آخر",
+      "local_part_placeholder": "العنوان، مثل company",
+      "domain_label": "النطاق",
+      "recent_addresses": "المستخدمة مؤخرًا",
+      "catch_all_help": "يصلك البريد المرسل إلى أي عنوان في هذه النطاقات، لذا يمكنك الإرسال من أي منها. عند الإرسال الأول يُحفظ العنوان كهوية.",
       "invalid_tag": "يجب أن يتكون الوسم من أحرف وأرقام وشرطات فقط",
       "tag_too_long": "يجب ألا يتجاوز الوسم 30 حرفًا",
       "help_text": "الرسائل المرسلة إلى user{delimiter}tag@domain.com ستصل إلى بريدك الوارد",
       "validation": {
         "empty": "لا يمكن أن يكون الوسم فارغًا",
         "too_long": "يجب ألا يتجاوز الوسم {max} حرفًا",
-        "invalid_chars": "يجب أن يحتوي الوسم على أحرف وأرقام وشرطات فقط"
+        "invalid_chars": "يجب أن يحتوي الوسم على أحرف وأرقام وشرطات فقط",
+        "local_part_empty": "لا يمكن أن يكون العنوان فارغًا",
+        "local_part_too_long": "يجب ألا يتجاوز الجزء الذي يسبق @ {max} حرفًا",
+        "local_part_invalid": "يحتوي العنوان على أحرف غير مسموح بها"
       }
     },
     "badge": {

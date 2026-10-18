@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findComposeIdentityId, findDraftIdentityId, findReplyIdentityId, resolveComposeAccountEmail, resolveReplyFrom } from '../reply-identity';
+import { findComposeIdentityId, findDraftIdentityId, findReplyIdentityId, resolveCatchAllReplyFrom, resolveComposeAccountEmail, resolveReplyFrom } from '../reply-identity';
 import type { Identity } from '../jmap/types';
 
 const identities: Identity[] = [
@@ -256,5 +256,48 @@ describe('resolveComposeAccountEmail', () => {
     // Same call on an own folder keeps the primary identity.
     const own = resolveComposeAccountEmail(mailboxes, 'a-inbox', 'me@primary.example');
     expect(findComposeIdentityId(identities, own)).toBe('primary');
+  });
+});
+
+describe('resolveCatchAllReplyFrom', () => {
+  const domains = ['benj.email', 'secondary.com'];
+
+  it('replies from the catch-all address the message was sent to', () => {
+    expect(resolveCatchAllReplyFrom(identities, { to: [{ email: 'Firma@Benj.Email', name: 'Firma' }] }, domains)).toEqual({
+      identityId: 'primary',
+      overrideEmail: 'firma@benj.email',
+      overrideName: 'Harry Primary',
+    });
+  });
+
+  it('anchors on an identity of the same domain when there is one', () => {
+    expect(resolveCatchAllReplyFrom(identities, { to: [{ email: 'shop@secondary.com' }] }, domains)?.identityId)
+      .toBe('secondary');
+  });
+
+  it('needs the domain confirmed by the server, not just shared with an identity', () => {
+    expect(resolveCatchAllReplyFrom(identities, { to: [{ email: 'shop@primary.com' }] }, domains)).toBeNull();
+    expect(resolveCatchAllReplyFrom(identities, { to: [{ email: 'firma@benj.email' }] }, [])).toBeNull();
+  });
+
+  it('skips addresses that are identities already', () => {
+    expect(resolveCatchAllReplyFrom(identities, { to: [{ email: 'harry+news@secondary.com' }] }, domains)).toBeNull();
+  });
+
+  it('prefers the one address in To over Cc', () => {
+    expect(resolveCatchAllReplyFrom(identities, {
+      to: [{ email: 'firma@benj.email' }],
+      cc: [{ email: 'colleague@benj.email' }],
+    }, domains)?.overrideEmail).toBe('firma@benj.email');
+    expect(resolveCatchAllReplyFrom(identities, {
+      to: [{ email: 'bob@other.com' }],
+      cc: [{ email: 'firma@benj.email' }],
+    }, domains)?.overrideEmail).toBe('firma@benj.email');
+  });
+
+  it('picks nothing when two catch-all addresses compete', () => {
+    expect(resolveCatchAllReplyFrom(identities, {
+      to: [{ email: 'firma@benj.email' }, { email: 'colleague@benj.email' }],
+    }, domains)).toBeNull();
   });
 });
