@@ -639,9 +639,25 @@
       "copy_failed": "Koodi kopeerimine ebaõnnestus"
     },
     "mv_position": "{index} / {total}",
+    "copy": "Kopeeri",
     "plugin_panel_show": "Näita pistikprogrammi paneeli",
     "plugin_panel_hide": "Peida pistikprogrammi paneel",
-    "copy": "Kopeeri"
+    "impersonation_warning": {
+      "title": "Not from your trusted sender",
+      "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."
+    },
+    "sender_trust": {
+      "mark": "Mark as trusted",
+      "unmark": "Remove trust mark",
+      "label": "Trusted sender",
+      "trusted": "Trusted sender – sender verification passed",
+      "impersonated": "Claims to be a trusted sender – sender verification failed"
+    },
+    "create_event": {
+      "action": "Create event",
+      "open_message": "Open message",
+      "from_message": "From the message from {sender}, {date}"
+    }
   },
   "email_composer": {
     "select_from_directory": "Vali kataloogist",
@@ -708,6 +724,11 @@
       "to": "Saajad: {recipients}"
     },
     "remove_sub_address": "Eemalda alamaadress",
+    "catch_all": {
+      "pending": "{address} will be saved as a new identity when you send.",
+      "create_failed": "The server did not accept {address} as a sender: {reason}",
+      "via_shared": "Sent through {account} and filed in its Sent folder."
+    },
     "from_override": {
       "toggle_off": "Muuda saatjat",
       "toggle_on": "Tühista saatja muutmine",
@@ -753,6 +774,8 @@
     "send_offline": "Paistab, et oled võrgust väljas. Kiri on alles, saada see uuesti, kui oled taas ühenduses.",
     "send_timeout": "Server lakkas vastamast. Enne uuesti saatmist kontrolli oma saadetud kirjade kausta — sõnum võis siiski välja minna.",
     "send_recipients_rejected": "Ei saadetud - server lükkas kõik adressaadid tagasi.",
+    "cut": "Lõika",
+    "copy": "Kopeeri",
     "send_plugin_failed": "Ei saadetud - saatmist käsitlev pistikprogramm ebaõnnestus või võttis liiga kaua aega. Kontrolli enne uuesti saatmist kausta Saadetud.",
     "send_some_recipients_rejected": "Saadetud, kuid mitte neile adressaatidele - server lükkas nad tagasi.",
     "continue_draft": "Jätka mustandiga",
@@ -844,9 +867,7 @@
     },
     "send_filing_warning": "Saadetud - kuid saatmisjärgne koristus ebaõnnestus, mustand võib alles jääda.",
     "pop_out": "Ava vastus eraldi aknas",
-    "send_guard_failed": "Ei saadetud - kirju enne saatmist kontrolliv pistikprogramm ebaõnnestus või ei vastanud.",
-    "cut": "Lõika",
-    "copy": "Kopeeri"
+    "send_guard_failed": "Ei saadetud - kirju enne saatmist kontrolliv pistikprogramm ebaõnnestus või ei vastanud."
   },
   "confirm_dialog": {
     "confirm": "Kinnita",
@@ -1145,6 +1166,12 @@
         "description": "Kus asuvad otsing, navigeerimine ja tööriistaribad",
         "default": "Vaikimisi",
         "mountain_view": "Mountain View"
+      },
+      "mv_row_lines": {
+        "label": "List rows",
+        "description": "Mountain View: subject and preview on one line like Gmail, or the preview on its own line",
+        "two": "Two lines",
+        "one": "One line"
       },
       "animations": {
         "label": "Luba animatsioonid",
@@ -1684,6 +1711,13 @@
         "label": "Allkirjad",
         "description": "Igal e-posti aadressil on oma allkiri. Muuda neid koos oma aadressidega.",
         "button": "E-posti aadressid"
+      },
+      "marked_senders": {
+        "label": "Trusted senders",
+        "description": "Senders you marked yourself. Their messages show a handshake when the sender check passes.",
+        "modal_title": "Trusted senders",
+        "empty_title": "No trusted senders yet",
+        "empty_description": "Open a message from the sender and click \"Mark as trusted\" in its details."
       }
     },
     "account": {
@@ -2165,6 +2199,10 @@
         "backup_description": "Säilita oma seaded brauserite ja seadmete vahel.",
         "fix": "Probleemide lahendamine",
         "fix_description": "Kui vaade tundub aegunud või vale või soovid otsast alustada."
+      },
+      "sender_bimi_logos": {
+        "label": "Sender Brand Logos (BIMI)",
+        "description": "Show the logo of brands whose mark is certified for the sender domain (BIMI with a verified mark certificate), only on messages that passed sender verification. Never for freemail providers."
       }
     },
     "sidebar_apps": {
@@ -2497,9 +2535,9 @@
     },
     "advanced_switch": {
       "label": "Kuva täpsemad seaded",
-      "show": "Kuva täpsemad seaded",
       "badge": "Täpsem",
-      "hidden_count": "{count, plural, one {Sellel lehel on peidetud 1 täpsem seade.} other {Sellel lehel on peidetud # täpsemat seadet.}}"
+      "hidden_count": "{count, plural, one {Sellel lehel on peidetud 1 täpsem seade.} other {Sellel lehel on peidetud # täpsemat seadet.}}",
+      "show": "Kuva täpsemad seaded"
     },
     "message_list": {
       "title": "Kirjade loend",
@@ -2756,13 +2794,23 @@
       "recent_tags": "Hiljutised sildid",
       "suggested_tags": "Soovitatud",
       "use_address": "Kasuta seda aadressi",
+      "tab_tag": "Tag",
+      "tab_catch_all": "Other address",
+      "catch_all_title": "Send from another address",
+      "local_part_placeholder": "Address, e.g. company",
+      "domain_label": "Domain",
+      "recent_addresses": "Recently used",
+      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity.",
       "invalid_tag": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse",
       "tag_too_long": "Silt tohib olla kuni 30 tähemärki",
       "help_text": "Aadressile user{delimiter}tag@domain.com saadetud kirjad jõuavad sinu postkasti",
       "validation": {
         "empty": "Silt ei tohi olla tühi",
         "too_long": "Silt tohib olla kuni {max} tähemärki",
-        "invalid_chars": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse"
+        "invalid_chars": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse",
+        "local_part_empty": "Address must not be empty",
+        "local_part_too_long": "The part before the @ may be at most {max} characters",
+        "local_part_invalid": "The address contains characters that are not allowed"
       }
     },
     "badge": {
@@ -3672,7 +3720,12 @@
       "select_view": "Muuda vaadet, praegu {view}"
     },
     "other_calendars": "Muud kalendrid",
-    "calendar_options": "Kalendri {name} valikud"
+    "calendar_options": "Kalendri {name} valikud",
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Keegi",
