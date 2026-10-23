@@ -39,7 +39,7 @@ describe('settings search index (English messages)', () => {
     expect(labelsFor('notifications')).toContain('Unread count on the tab and app icon');
     expect(labelsFor('message_list')).toContain('Sender favicons');
     expect(labelsFor('message_list')).toContain('Clear search when switching folders');
-    expect(labelsFor('reading')).toContain('Trusted senders');
+    expect(labelsFor('reading')).toContain('Always load images from');
     expect(labelsFor('composing')).toContain('Undo send / send delay');
     expect(labelsFor('general')).toContain('Time zone');
     expect(labelsFor('organize')).toContain('Nested tags');

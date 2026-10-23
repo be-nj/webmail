@@ -75,7 +75,7 @@ beforeEach(() => {
   resetActions();
   dispatch.mockClear();
   setActionDispatcher(dispatch);
-  useSettingsStore.setState(initialSettings, true);
+  useSettingsStore.setState({ ...initialSettings, interfaceLayout: 'default' }, true);
 });
 
 afterEach(() => {

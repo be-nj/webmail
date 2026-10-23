@@ -80,6 +80,7 @@ beforeEach(() => {
   useEmailStore.setState(initialEmailState, true);
   useEmailStore.setState({ selectedMailbox: 'inbox', emails: THREAD });
   useMessageListTabsStore.setState(initialTabsState, true);
+  useSettingsStore.setState({ interfaceLayout: 'default' } as never);
 });
 
 afterEach(() => {
