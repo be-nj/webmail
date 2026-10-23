@@ -866,7 +866,23 @@
     "read_aloud_pause": "Peata",
     "read_aloud_resume": "Jätka",
     "read_aloud_stop": "Lõpeta ettelugemine",
-    "reader_view": "Lugemisvaade"
+    "reader_view": "Lugemisvaade",
+    "impersonation_warning": {
+      "title": "Not from your trusted sender",
+      "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."
+    },
+    "sender_trust": {
+      "mark": "Mark as trusted",
+      "unmark": "Remove trust mark",
+      "label": "Trusted sender",
+      "trusted": "Trusted sender – sender verification passed",
+      "impersonated": "Claims to be a trusted sender – sender verification failed"
+    },
+    "create_event": {
+      "action": "Create event",
+      "open_message": "Open message",
+      "from_message": "From the message from {sender}, {date}"
+    }
   },
   "external_mail": {
     "sender_label": "Väline",
@@ -1156,6 +1172,11 @@
       "skip": "Jäta vahele",
       "edit": "Muuda pildi kirjeldust",
       "plain_text": "[Pilt: {alt}]"
+    },
+    "catch_all": {
+      "pending": "{address} will be saved as a new identity when you send.",
+      "create_failed": "The server did not accept {address} as a sender: {reason}",
+      "via_shared": "Sent through {account} and filed in its Sent folder."
     }
   },
   "confirm_dialog": {
@@ -1579,6 +1600,12 @@
         "label": "Teksti suurus ja liikumine",
         "description": "Teksti suurus, kirjatüübid, vahed ja vähendatud liikumine on lehel Juurdepääsetavus.",
         "button": "Juurdepääsetavus"
+      },
+      "mv_row_lines": {
+        "label": "List rows",
+        "description": "Mountain View: subject and preview on one line like Gmail, or the preview on its own line",
+        "two": "Two lines",
+        "one": "One line"
       }
     },
     "keywords": {
@@ -2047,6 +2074,13 @@
         "label": "Allkirjad",
         "description": "Igal e-posti aadressil on oma allkiri. Muuda neid koos oma aadressidega.",
         "button": "E-posti aadressid"
+      },
+      "marked_senders": {
+        "label": "Trusted senders",
+        "description": "Senders you marked yourself. Their messages show a handshake when the sender check passes.",
+        "modal_title": "Trusted senders",
+        "empty_title": "No trusted senders yet",
+        "empty_description": "Open a message from the sender and click \"Mark as trusted\" in its details."
       }
     },
     "account": {
@@ -2561,6 +2595,10 @@
         "backup_description": "Säilita oma seaded brauserite ja seadmete vahel.",
         "fix": "Probleemide lahendamine",
         "fix_description": "Kui vaade tundub aegunud või vale või soovid otsast alustada."
+      },
+      "sender_bimi_logos": {
+        "label": "Sender Brand Logos (BIMI)",
+        "description": "Show the logo of brands whose mark is certified for the sender domain (BIMI with a verified mark certificate), only on messages that passed sender verification. Never for freemail providers."
       }
     },
     "sidebar_apps": {
@@ -3707,8 +3745,18 @@
       "validation": {
         "empty": "Silt ei tohi olla tühi",
         "too_long": "Silt tohib olla kuni {max} tähemärki",
-        "invalid_chars": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse"
-      }
+        "invalid_chars": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse",
+        "local_part_empty": "Address must not be empty",
+        "local_part_too_long": "The part before the @ may be at most {max} characters",
+        "local_part_invalid": "The address contains characters that are not allowed"
+      },
+      "tab_tag": "Tag",
+      "tab_catch_all": "Other address",
+      "catch_all_title": "Send from another address",
+      "local_part_placeholder": "Address, e.g. company",
+      "domain_label": "Domain",
+      "recent_addresses": "Recently used",
+      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity."
     },
     "badge": {
       "sent_via": "kaudu",
@@ -4816,7 +4864,12 @@
       "results": "{count, plural, one {Leiti # sündmus} other {Leiti # sündmust}}"
     },
     "mini_has_events": "on sündmusi",
-    "mini_week_number": "Nädal {week}"
+    "mini_week_number": "Nädal {week}",
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    }
   },
   "calendar_event_notifications": {
     "someone": "Keegi",

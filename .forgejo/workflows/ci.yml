@@ -12,7 +12,7 @@
 # older branches still get checked but never roll out.
 #
 # Every push:
-#   1. check   eslint + typecheck                        (quick runner)
+#   1. check   eslint + typecheck                        (heavy runner)
 #   2. test    vitest, the same flags as upstream's tests.yml
 #   3. gate    is this the default branch, still at this commit?
 # Default branch only:
@@ -45,7 +45,9 @@ env:
 jobs:
   check:
     name: eslint + typecheck
-    runs-on: quick
+    # tsc over the app needs more than the quick runner's 2 GB job limit
+    # (1.17 gets killed with exit 137), so this runs on the 6 GB runner.
+    runs-on: ubuntu-latest
     container:
       image: node:22-bookworm
     steps:
