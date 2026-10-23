@@ -48,7 +48,7 @@ describe('theme font (#1278)', () => {
 
   it('defaults --font-sans to the app stack, Thai fallbacks included', () => {
     expect(declValue(':root, :host', '--font-sans', '@layer theme')).toBe(
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif',
+      'var(--font-roboto), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif',
     );
   });
 });
