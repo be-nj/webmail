@@ -161,9 +161,16 @@ vi.mock('@/lib/plugin-hooks', () => ({
     onRecipientChipsChange: { transform: async (chips: unknown) => chips },
     onDraftChange: { emit: () => {} },
     onBeforeDraftAutoSave: { transform: async (draft: unknown) => draft },
-    onBeforeEmailSend: { intercept: async () => true },
+    onBeforeEmailSend: { intercept: async () => true, interceptOutcome: async () => 'allowed' },
     onComposeSend: { takeOver: async () => 'default' },
     onTransformOutgoingEmail: { transform: async (email: unknown) => email },
+  },
+  identityHooks: {
+    onIdentitiesLoaded: { size: 0, emit: () => {} },
+    onBeforeIdentityChange: { intercept: async () => true },
+    onIdentityCreate: { emit: () => {} },
+    onIdentitySelected: { emit: () => {} },
+    onSignatureRender: { size: 0, transform: async (v: unknown) => v },
   },
   contactHooks: {
     search: { call: async () => [] },

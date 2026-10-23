@@ -52,7 +52,7 @@ describe('a trusted address that passes neither SPF nor DKIM', () => {
 
   it('keeps trust when SPF or a DKIM signature passes', () => {
     const spfPass = parseAuthenticationResults('mx; spf=pass smtp.mailfrom=bounce.web.de; dmarc=none header.from=web.de');
-    const dkimPass = parseAuthenticationResults('mx; spf=none smtp.mailfrom=x.example; dkim=pass header.d=esp.example; dmarc=none header.from=web.de');
+    const dkimPass = parseAuthenticationResults('mx; spf=none smtp.mailfrom=x.example; dkim=pass header.d=web.de; dmarc=none header.from=web.de');
     expect(failsSenderCheck(message('max.musterl@web.de', spfPass))).toBe(false);
     expect(failsSenderCheck(message('max.musterl@web.de', dkimPass))).toBe(false);
     expect(senderTrustSignal(message('max.musterl@web.de', spfPass), isTrusted)).toBeNull();

@@ -78,7 +78,7 @@ beforeEach(() => {
     getClientForAccount: () => client as never,
     getAllConnectedClients: () => new Map([['login', client]]) as never,
   });
-  useSettingsStore.setState({ enableUnifiedMailbox: false, mailLayout: 'split', sendDelaySeconds: 30 } as never);
+  useSettingsStore.setState({ interfaceLayout: 'default', enableUnifiedMailbox: false, mailLayout: 'split', sendDelaySeconds: 30 } as never);
   cancelUndoSend.mockReset();
   sendEmail.mockReset();
   clearAllHooks();
