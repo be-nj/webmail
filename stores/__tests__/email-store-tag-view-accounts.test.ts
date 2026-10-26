@@ -87,6 +87,7 @@ describe('tag view across the own and group accounts (#1038)', () => {
     } as never);
     useMessageListTabsStore.setState(useMessageListTabsStore.getInitialState());
     useSettingsStore.setState({
+      interfaceLayout: 'default',
       emailsPerPage: 50, messageListOrder: [], messageListOrderScope: 'inbox',
       emailKeywords: [{ id: label, label: 'Work', color: 'blue' }],
     } as never);
@@ -165,7 +166,7 @@ describe('tag view across the own and group accounts (#1038)', () => {
   });
 
   it('paginates the fan-out from the loaded position in every account', async () => {
-    useSettingsStore.setState({ emailsPerPage: 2 } as never);
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 2 } as never);
     useEmailStore.setState({ selectedMailbox: groupInbox.id });
     useEmailStore.getState().selectKeyword(label);
     await useEmailStore.getState().fetchEmails(client);

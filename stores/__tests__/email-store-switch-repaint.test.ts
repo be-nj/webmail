@@ -55,7 +55,7 @@ function makeClient() {
 beforeEach(() => {
   evictAll();
   forgetFolderLists();
-  useSettingsStore.setState({ emailsPerPage: 50, messageListOrder: UNREAD_FIRST, messageListOrderScope: 'inbox' });
+  useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 50, messageListOrder: UNREAD_FIRST, messageListOrderScope: 'inbox' });
   clearAllStores();
 });
 

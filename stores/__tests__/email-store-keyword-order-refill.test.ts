@@ -78,7 +78,7 @@ describe('keyword-ordered folder list refill (#718)', () => {
   beforeEach(() => {
     useAuthStore.setState(useAuthStore.getInitialState());
     useMessageListTabsStore.setState(useMessageListTabsStore.getInitialState());
-    useSettingsStore.setState({ emailsPerPage: 3, emailKeywords: [], messageListOrder: UNREAD_FIRST, messageListOrderScope: 'inbox' });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 3, emailKeywords: [], messageListOrder: UNREAD_FIRST, messageListOrderScope: 'inbox' });
     useEmailStore.setState({
       ...useEmailStore.getInitialState(),
       selectedMailbox: 'inbox', mailboxes: [inbox],

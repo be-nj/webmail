@@ -78,7 +78,7 @@ async function open(client: IJMAPClient, mailboxId: string) {
 describe('remembered folder lists', () => {
   beforeEach(() => {
     forgetFolderLists();
-    useSettingsStore.setState({ emailsPerPage: 50 });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 50 });
     useEmailStore.setState({
       selectedMailbox: 'inbox',
       mailboxes: [folder('inbox', 'inbox'), folder('work', null)],
@@ -177,7 +177,7 @@ describe('remembered folder lists', () => {
 describe('remembered folder lists with Email/changes', () => {
   beforeEach(() => {
     forgetFolderLists();
-    useSettingsStore.setState({ emailsPerPage: 50 });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 50 });
     useEmailStore.setState({
       selectedMailbox: 'inbox',
       mailboxes: [folder('inbox', 'inbox'), folder('work', null)],

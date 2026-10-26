@@ -34,6 +34,7 @@ describe('refreshing a folder with a category tab open (#1264)', () => {
     useAuthStore.setState(useAuthStore.getInitialState());
     useMessageListTabsStore.setState(useMessageListTabsStore.getInitialState());
     useSettingsStore.setState({
+      interfaceLayout: 'default',
       emailsPerPage: 25, messageListOrder: [], messageListOrderScope: 'inbox',
       notificationMutes: { accounts: [], mailboxes: {} },
     });

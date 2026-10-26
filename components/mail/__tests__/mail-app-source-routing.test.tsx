@@ -113,7 +113,7 @@ beforeEach(() => {
     getClientForAccount: (id: string) => (id === 'login-a' ? client : undefined) as never,
     getAllConnectedClients: () => new Map([['login-a', client]]) as never,
   });
-  useSettingsStore.setState({ enableUnifiedMailbox: false, mailLayout: 'split', archiveMode: 'single', deleteAction: 'trash' } as never);
+  useSettingsStore.setState({ interfaceLayout: 'default', enableUnifiedMailbox: false, mailLayout: 'split', archiveMode: 'single', deleteAction: 'trash' } as never);
   moveToMailbox.mockReset().mockResolvedValue(true);
   moveThreadToMailbox.mockReset().mockResolvedValue(true);
   useEmailStore.setState({

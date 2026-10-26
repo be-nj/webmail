@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Mailbox } from '@/lib/jmap/types';
 
@@ -80,9 +80,9 @@ describe('Sidebar Tags above the shared mailboxes', () => {
   it('keeps the tags right after the Labels list in Mountain View', () => {
     setGate(true);
     render(<Sidebar mailboxes={mailboxes} selectedMailbox="inbox" mvShell />);
-    fireEvent.click(screen.getByText('show_more'));
 
     expect(isBefore(document.querySelector('[data-mv-labels]'), tags())).toBe(true);
-    expect(isBefore(tags(), screen.getByTestId('section-shared'))).toBe(true);
+    // Fork: Mountain View lists shared accounts with your own, above Labels.
+    expect(isBefore(document.querySelector('[data-mv-shared]'), document.querySelector('[data-mv-labels]'))).toBe(true);
   });
 });
