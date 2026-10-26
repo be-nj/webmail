@@ -71,7 +71,7 @@ describe('refreshCurrentMailbox with rows removed while the query was out (#966)
   beforeEach(() => {
     vi.clearAllMocks();
     buildMock.mockResolvedValue([]);
-    useSettingsStore.setState({ emailsPerPage: 25 });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 25 });
     useEmailStore.setState({
       emails: [],
       totalEmails: 0,

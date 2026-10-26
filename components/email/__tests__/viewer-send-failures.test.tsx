@@ -76,7 +76,7 @@ function makeEmail(overrides: Record<string, unknown> = {}): Email {
 let toastError: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
-  useSettingsStore.setState({ quickReplyEnabled: true });
+  useSettingsStore.setState({ interfaceLayout: 'default', quickReplyEnabled: true });
   toastError = vi.spyOn(toast, 'error').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });

@@ -1483,7 +1483,6 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
                     email={latestEmail}
                     loadAttachments={loadAttachments}
                     onOpenAttachment={onOpenAttachment ? (a) => onOpenAttachment(latestEmail, a) : undefined}
-                    mvRow
                   />
                 )}
                 </>

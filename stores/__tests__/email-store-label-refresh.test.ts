@@ -51,7 +51,7 @@ describe('label views during refresh and navigation', () => {
   beforeEach(() => {
     useAuthStore.setState(useAuthStore.getInitialState());
     useMessageListTabsStore.setState(useMessageListTabsStore.getInitialState());
-    useSettingsStore.setState({ emailsPerPage: 2, emailKeywords: [], messageListOrder: [], messageListOrderScope: 'inbox' });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 2, emailKeywords: [], messageListOrder: [], messageListOrderScope: 'inbox' });
     useEmailStore.setState({
       ...useEmailStore.getInitialState(),
       selectedMailbox: 'inbox', selectedKeyword: label, mailboxes: [inbox],

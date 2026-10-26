@@ -88,7 +88,7 @@ const push = (changed: StateChange['changed']): StateChange => ({ '@type': 'Stat
 
 describe('Email/changes delta sync', () => {
   beforeEach(() => {
-    useSettingsStore.setState({ emailsPerPage: 3 });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 3 });
     useEmailStore.setState({
       selectedMailbox: 'inbox',
       mailboxes: [inbox],
@@ -278,7 +278,7 @@ describe('Email/changes delta sync', () => {
 
 describe('Mailbox/changes delta sync', () => {
   beforeEach(() => {
-    useSettingsStore.setState({ emailsPerPage: 3 });
+    useSettingsStore.setState({ interfaceLayout: 'default', emailsPerPage: 3 });
     useEmailStore.setState({
       selectedMailbox: 'inbox',
       mailboxes: [inbox, { ...inbox, id: 'sent', originalId: 'sent', role: 'sent', name: 'Sent' }],
