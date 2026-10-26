@@ -1,6 +1,6 @@
 # Fork-Notizen
 
-Stand: 12.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
+Stand: 26.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
 upstream (`bulwarkmail/webmail`). Sie beantwortet: *Was ist in diesem Fork
 eigen?* und *Was ist noch offen?*
 
@@ -12,11 +12,11 @@ Begründung für „Logos nur aus geprüften Marken, kein Favicon“ in
 
 ## 1. Stand
 
-Arbeitszweig: **`benj/on-1.14.2`** = Upstream-Tag `1.14.2` plus die Commits
+Arbeitszweig: **`benj/on-1.18.0`** = Upstream `1.18.0` plus die Commits
 unten. Live auf `webmail.beckm4nn.de` (Komodo-Stack `stalwart`, Dienst
 `bulwark`), Image-Tag = kurzer Commit-Hash.
 
-Vorgänger `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
+Vorgänger `benj/on-1.17.1`, `benj/on-1.14.2`, `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
 Beim Rebase auf 1.12.0 entfiel der eigene DMARC-Parser (`038059c4`): upstream
 1.11.1 liest DMARC ebenfalls nur aus dem obersten Authentication-Results und
 zusätzlich nur am Anfang eines Eintrags, was auch den `dmarc=pass` im
@@ -27,6 +27,13 @@ Beim Rebase auf 1.14.2 entfielen die Empfängerprüfung im Composer
 (`3efa370e`) behebt denselben Fehler (#795) auf eigene Art. Ungültige
 Eingaben werden dort rote Chips statt im Feld zu bleiben, und Senden bricht
 mit derselben Meldung ab. Übersetzt ist das in allen Sprachen.
+
+Beim Rebase auf 1.18.0 entfiel `4b49503a` (Zeilen mit Anhang-Chips
+ausrichten): Upstreams neue Mountain-View-Zeile (`mvRow`) macht dasselbe. Die
+Stalwart-1.0-Anpassungen (First-Party-OAuth-Client, Scopes, Loopback-Adresse,
+Ordner und Dateien) kommen jetzt von upstream. Die Tests, die Upstreams
+klassisches Listenverhalten prüfen, setzen `interfaceLayout: 'default'`, weil
+der Fork-Standard Mountain View ist.
 
 ## 2. Was der Fork gegenüber upstream enthält
 
