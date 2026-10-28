@@ -424,6 +424,7 @@ export function EmailList({
   const density = useSettingsStore((state) => state.density);
   const showPreview = useSettingsStore((state) => state.showPreview);
   const showVerificationCodes = useSettingsStore((state) => state.showVerificationCodes);
+  const interfaceLayout = useSettingsStore((state) => state.interfaceLayout);
   const { oneLine: isFocusedMailLayout, columns: listColumns } = useListRowShape();
   const showRecipientColumn = useEmailStore((state) => {
     const role = listMailboxRole(state);
@@ -457,12 +458,20 @@ export function EmailList({
     const item = items[index];
     if (item?.kind === 'header' || item?.kind === 'unread-empty') return 48;
     if (isFocusedMailLayout) {
-      const base = { 'extra-compact': 28, compact: 40, regular: 56, comfortable: 64 }[density];
+      const isMv = interfaceLayout === 'mountain-view';
+      const base = isMv
+        ? { 'extra-compact': 28, compact: 32, regular: 40, comfortable: 48 }[density]
+        : { 'extra-compact': 28, compact: 40, regular: 56, comfortable: 64 }[density];
       // Mountain View's two-line rows put the preview on a line of its own.
       const latestPreview = item?.kind === 'row' ? item.thread.latestEmail : undefined;
       const previewLine = mvTwoLines && showPreview && !!latestPreview
         && (!!cleanPreview(latestPreview.preview) || !!latestPreview.searchSnippet?.preview);
-      return base + (previewLine ? 18 : 0);
+      let size = base + (previewLine ? 22 : 0);
+      const hasCode = !!latestPreview && showVerificationCodes && !!listVerificationCode(latestPreview);
+      if (isMv && latestPreview && (hasCode || (onOpenAttachment && listRowShowsChips(latestPreview, loadAttachments)))) {
+        size += 46;
+      }
+      return size;
     }
     // Rows the list has not measured yet are placed by this guess, and each
     // one it gets wrong shifts the list when it is measured on the way back
@@ -479,7 +488,7 @@ export function EmailList({
     const hasCode = !!latest && showVerificationCodes && !!listVerificationCode(latest);
     if (latest && (hasCode || (onOpenAttachment && listRowShowsChips(latest, loadAttachments)))) size += 28;
     return size;
-  }, [density, isFocusedMailLayout, mvTwoLines, showPreview, showVerificationCodes, items, onOpenAttachment, loadAttachments]);
+  }, [density, isFocusedMailLayout, interfaceLayout, mvTwoLines, showPreview, showVerificationCodes, items, onOpenAttachment, loadAttachments]);
 
   // Stable per list, so the virtualizer does not rebuild every row's
   // measurement on each scroll render.

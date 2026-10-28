@@ -145,7 +145,7 @@ function RowChips({ email, loadAttachments, onOpenAttachment, mountainView, mvRo
 function MvPreviewLine({ preview, snippet, accountDot = false }: { preview: string; snippet: string | null; accountDot?: boolean }) {
   if (!preview && !snippet) return null;
   return (
-    <div className={cn("-mt-2 mb-2 truncate text-[13px] leading-[18px] text-muted-foreground", subjectIndent(accountDot))}>
+    <div className={cn("mt-0.5 mb-2 truncate text-[13px] leading-[18px] text-muted-foreground", subjectIndent(accountDot))}>
       {snippet ? <SearchSnippetText snippet={snippet} /> : preview}
     </div>
   );
@@ -182,7 +182,10 @@ function MvRowLead({
   starLabel: string;
 }) {
   return (
-    <div className="flex items-center gap-0.5 flex-shrink-0 self-center">
+    <div
+      className="flex items-center gap-0.5 flex-shrink-0 self-start"
+      style={{ height: 'var(--list-item-height)' }}
+    >
       <button
         type="button"
         role="checkbox"
@@ -625,7 +628,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
           </div>
         )}
         <div
-          className={cn('px-3', oneLineRow ? 'flex items-center' : 'flex items-start', mvRow && 'min-h-10', swipeEnabled && 'relative z-10 bg-inherit')}
+          className={cn('px-3', oneLineRow && !mvRow ? 'flex items-center' : 'flex items-start', swipeEnabled && 'relative z-10 bg-inherit')}
           style={{ gap: 'var(--density-item-gap)', paddingBlock: mvRow ? undefined : 'var(--density-item-py)', transform: swipeEnabled && offsetX ? `translateX(${offsetX}px)` : undefined, transition: swipeEnabled && offsetX === 0 ? 'transform 200ms ease-out' : undefined }}
         >
           {/* Checkbox - only for extra-compact density (no avatar) while in selection mode */}
@@ -666,7 +669,10 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
           {/* Fork: Mountain View rows keep the sender's avatar, so the BIMI
               logo and the trust badge show in the list as well. */}
           {mvRow && density !== 'extra-compact' && (
-            <div className="flex h-10 items-center flex-shrink-0 self-start">
+            <div
+              className="flex items-center flex-shrink-0 self-start"
+              style={{ height: 'var(--list-item-height)' }}
+            >
               <Avatar
                 name={sender?.name}
                 email={sender?.email}
@@ -705,7 +711,10 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
           <div className="flex-1 min-w-0">
             {oneLineRow ? (
               <>
-              <div className="flex items-center justify-between gap-3">
+              <div
+                className="flex items-center justify-between gap-3"
+                style={mvRow ? { minHeight: 'var(--list-item-height)' } : undefined}
+              >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   {/* In columns the dot sits inside the From cell, so a row
                       with it starts its columns where the header does. */}
@@ -947,6 +956,7 @@ const SingleEmailItem = React.forwardRef<HTMLDivElement, SingleEmailItemProps>(
             isInJunk={currentMailboxRole === 'junk'}
             spamApplicable={!['sent', 'drafts', 'scheduled'].includes(currentMailboxRole || '')}
             mailboxRole={currentMailboxRole ?? null}
+            firstLineOnly={mvRow}
           />
         )}
       </div>
@@ -1236,7 +1246,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
           style={{ minHeight: oneLineRow ? undefined : 'var(--list-item-height)' }}
         >
           <div
-            className={cn('px-3', oneLineRow ? 'flex items-center' : 'flex items-start', mvRow && 'min-h-10')}
+            className={cn('px-3', oneLineRow && !mvRow ? 'flex items-center' : 'flex items-start')}
             style={{ gap: 'var(--density-item-gap)', paddingBlock: mvRow ? undefined : 'var(--density-item-py)' }}
           >
             {/* Checkbox for thread selection - only for extra-compact density (no avatar) while in selection mode */}
@@ -1275,7 +1285,10 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
             )}
 
             {mvRow && density !== 'extra-compact' && (
-              <div className="flex h-10 items-center flex-shrink-0 self-start">
+              <div
+                className="flex items-center flex-shrink-0 self-start"
+                style={{ height: 'var(--list-item-height)' }}
+              >
                 <Avatar
                   name={avatarPerson?.name}
                   email={avatarPerson?.email}
@@ -1341,7 +1354,10 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
             <div className="flex-1 min-w-0">
               {oneLineRow ? (
                 <>
-                <div className="flex items-center justify-between gap-3">
+                <div
+                  className="flex items-center justify-between gap-3"
+                  style={mvRow ? { minHeight: 'var(--list-item-height)' } : undefined}
+                >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     {!columns && isUnifiedView && latestEmail.accountId && threadAccountColor && showAccountDot && (
                       <span
@@ -1636,6 +1652,7 @@ export const ThreadListItem = React.forwardRef<HTMLDivElement, ThreadListItemPro
               isInJunk={currentMailboxRole === 'junk'}
               spamApplicable={!['sent', 'drafts', 'scheduled'].includes(currentMailboxRole || '')}
               mailboxRole={currentMailboxRole ?? null}
+              firstLineOnly={mvRow}
             />
           )}
         </div>
