@@ -812,6 +812,18 @@ describe('ThreadListItem Mountain View desktop row', () => {
     expect(onEmailSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'b' }));
     expect(onToggleExpand).not.toHaveBeenCalled();
   });
+
+  it('pins the checkbox, star and first line to the density rhythm so two-line rows do not misalign or overlap', () => {
+    useSettingsStore.setState({ mvRowLines: 'two' });
+    const { container } = renderRow(makeEmail({ preview: 'Meeting notes inside' }));
+    const checkbox = container.querySelector('[role="checkbox"]') as HTMLElement;
+    expect(checkbox.firstElementChild?.className).toContain('h-[var(--list-item-height)]');
+
+    // The first line has its minimum height pinned to the density rhythm so the preview line below does not pull into it
+    const subjectEl = screen.getByText('Test Subject');
+    const firstLine = subjectEl.closest('.flex.items-center.justify-between') as HTMLElement;
+    expect(firstLine?.className).toContain('min-h-[var(--list-item-height)]');
+  });
 });
 
 describe('ThreadListItem prefetch on mouse press', () => {

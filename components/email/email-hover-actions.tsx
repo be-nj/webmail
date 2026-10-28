@@ -33,8 +33,9 @@ interface EmailHoverActionsProps {
   /** Role of the folder the row is listed in; plugin buttons can be limited to some. */
   mailboxRole?: string | null;
   /**
-   * Keep the actions on the row's first 40px line rather than centred on the
-   * whole row, as Gmail does when attachment chips make the row taller.
+   * Keep the actions on the row's first line rather than centred on the
+   * whole row, as Gmail does when attachment chips make the row taller. The
+   * line is --list-item-height tall, so the density setting counts.
    */
   pinToFirstLine?: boolean;
 }
@@ -345,7 +346,7 @@ export function EmailHoverActions({
 
   return (
     <div
-      className={cn("absolute end-0 top-0 z-10 items-center", pinToFirstLine ? "h-10" : "bottom-0", visibilityClass)}
+      className={cn("absolute end-0 top-0 z-10 items-center", pinToFirstLine ? "h-[var(--list-item-height)]" : "bottom-0", visibilityClass)}
     >
       <div
         className={cn(

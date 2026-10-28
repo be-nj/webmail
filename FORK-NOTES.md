@@ -28,9 +28,7 @@ Beim Rebase auf 1.14.2 entfielen die Empfängerprüfung im Composer
 Eingaben werden dort rote Chips statt im Feld zu bleiben, und Senden bricht
 mit derselben Meldung ab. Übersetzt ist das in allen Sprachen.
 
-Beim Rebase auf 1.18.0 entfiel `4b49503a` (Zeilen mit Anhang-Chips
-ausrichten): Upstreams neue Mountain-View-Zeile (`mvRow`) macht dasselbe. Die
-Stalwart-1.0-Anpassungen (First-Party-OAuth-Client, Scopes, Loopback-Adresse,
+Die Stalwart-1.0-Anpassungen (First-Party-OAuth-Client, Scopes, Loopback-Adresse,
 Ordner und Dateien) kommen jetzt von upstream. Die Tests, die Upstreams
 klassisches Listenverhalten prüfen, setzen `interfaceLayout: 'default'`, weil
 der Fork-Standard Mountain View ist.
@@ -42,6 +40,7 @@ Hashes mit derselben Betreffzeile.
 
 | Commit | Was |
 |---|---|
+| `4b49503a` | Mountain View: Zeilen mit Anhang-Chips oder zweizeiliger Vorschau sauber nach Dichte-Rhythmus ausrichten (Checkbox, Stern, Avatar und Hover-Aktionen auf Zeile 1 mit var(--list-item-height), kein Überschneiden) |
 | `66851b5a` | Entwürfe speichern keine kaputten Empfängerfragmente und behalten Anzeigenamen |
 | `3d9cc8ea` | `clearSearchOnFolderChange` standardmäßig an |
 | `cc12c782` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |

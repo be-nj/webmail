@@ -888,8 +888,18 @@
       "validation": {
         "empty": "แท็กต้องไม่ว่างเปล่า",
         "too_long": "แท็กต้องมีความยาวไม่เกิน {max} ตัวอักษร",
-        "invalid_chars": "แท็กต้องมีเฉพาะตัวอักษร ตัวเลข และขีดกลางเท่านั้น"
-      }
+        "invalid_chars": "แท็กต้องมีเฉพาะตัวอักษร ตัวเลข และขีดกลางเท่านั้น",
+        "local_part_empty": "Address must not be empty",
+        "local_part_invalid": "The address contains characters that are not allowed",
+        "local_part_too_long": "The part before the @ may be at most {max} characters"
+      },
+      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity.",
+      "catch_all_title": "Send from another address",
+      "domain_label": "Domain",
+      "local_part_placeholder": "Address, e.g. company",
+      "recent_addresses": "Recently used",
+      "tab_catch_all": "Other address",
+      "tab_tag": "Tag"
     },
     "badge": {
       "sent_via": "ผ่าน",
@@ -1349,6 +1359,11 @@
       "skip": "ข้าม",
       "edit": "แก้ไขคำอธิบายรูปภาพ",
       "plain_text": "[รูปภาพ: {alt}]"
+    },
+    "catch_all": {
+      "create_failed": "The server did not accept {address} as a sender: {reason}",
+      "pending": "{address} will be saved as a new identity when you send.",
+      "via_shared": "Sent through {account} and filed in its Sent folder."
     }
   },
   "email_viewer": {
@@ -1800,7 +1815,23 @@
     "read_aloud_pause": "หยุดชั่วคราว",
     "read_aloud_resume": "อ่านต่อ",
     "read_aloud_stop": "หยุดอ่าน",
-    "reader_view": "มุมมองการอ่าน"
+    "reader_view": "มุมมองการอ่าน",
+    "create_event": {
+      "action": "Create event",
+      "from_message": "From the message from {sender}, {date}",
+      "open_message": "Open message"
+    },
+    "impersonation_warning": {
+      "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them.",
+      "title": "Not from your trusted sender"
+    },
+    "sender_trust": {
+      "impersonated": "Claims to be a trusted sender – sender verification failed",
+      "label": "Trusted sender",
+      "mark": "Mark as trusted",
+      "trusted": "Trusted sender – sender verification passed",
+      "unmark": "Remove trust mark"
+    }
   },
   "external_mail": {
     "sender_label": "ภายนอก",
@@ -3777,7 +3808,12 @@
       "results": "{count, plural, other {พบ # กิจกรรม}}"
     },
     "mini_has_events": "มีกิจกรรม",
-    "mini_week_number": "สัปดาห์ที่ {week}"
+    "mini_week_number": "สัปดาห์ที่ {week}",
+    "attachments": {
+      "download": "Download {name}",
+      "file": "Attachment",
+      "title": "Attachments"
+    }
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -4015,6 +4051,12 @@
         "label": "ขนาดตัวอักษรและการเคลื่อนไหว",
         "description": "ขนาดตัวอักษร ฟอนต์ ระยะห่าง และการลดการเคลื่อนไหวอยู่ในหน้าการเข้าถึง",
         "button": "การเข้าถึง"
+      },
+      "mv_row_lines": {
+        "description": "Mountain View: subject and preview on one line like Gmail, or the preview on its own line",
+        "label": "List rows",
+        "one": "One line",
+        "two": "Two lines"
       }
     },
     "keywords": {
@@ -4483,6 +4525,13 @@
         "label": "ลายเซ็น",
         "description": "แต่ละที่อยู่อีเมลมีลายเซ็นของตนเอง แก้ไขลายเซ็นร่วมกับที่อยู่อีเมลของคุณ",
         "button": "ที่อยู่อีเมล"
+      },
+      "marked_senders": {
+        "description": "Senders you marked yourself. Their messages show a handshake when the sender check passes.",
+        "empty_description": "Open a message from the sender and click \"Mark as trusted\" in its details.",
+        "empty_title": "No trusted senders yet",
+        "label": "Trusted senders",
+        "modal_title": "Trusted senders"
       }
     },
     "account": {
@@ -4997,6 +5046,10 @@
         "backup_description": "รักษาการตั้งค่าของคุณไว้ข้ามเบราว์เซอร์และอุปกรณ์ต่างๆ",
         "fix": "แก้ไขปัญหา",
         "fix_description": "เมื่อมุมมองดูไม่อัปเดตหรือไม่ถูกต้อง หรือเมื่อคุณต้องการเริ่มต้นใหม่"
+      },
+      "sender_bimi_logos": {
+        "description": "Show the logo of brands whose mark is certified for the sender domain (BIMI with a verified mark certificate), only on messages that passed sender verification. Never for freemail providers.",
+        "label": "Sender Brand Logos (BIMI)"
       }
     },
     "sidebar_apps": {

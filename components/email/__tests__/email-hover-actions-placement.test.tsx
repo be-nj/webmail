@@ -27,14 +27,14 @@ beforeEach(() => {
 describe('row quick action placement', () => {
   it('stays on the first line of a Mountain View row', () => {
     const el = toolbar(true);
-    expect(el.className).toContain('h-10');
+    expect(el.className).toContain('h-[var(--list-item-height)]');
     expect(el.className).not.toContain('bottom-0');
   });
 
   it('spans the whole row otherwise', () => {
     const el = toolbar();
     expect(el.className).toContain('bottom-0');
-    expect(el.className).not.toContain('h-10');
+    expect(el.className).not.toContain('h-[var(--list-item-height)]');
   });
 });
 
