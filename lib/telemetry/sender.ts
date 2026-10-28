@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { effectiveConsent, endpointEnabled, loadState, saveState } from './state';
 import { buildPayload } from './payload';
-import { resolveEndpointAllowed } from './endpoint-guard';
+import { fetchTelemetryTarget, resolveEndpointAllowed } from './endpoint-guard';
 import { DEFAULT_ENDPOINT } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -20,6 +20,8 @@ export async function sendOnce(opts?: { reason?: string }): Promise<{
   status?: number;
   error?: string;
 }> {
+  // effectiveConsent() is off in the no-third-party mode, so this also stops
+  // a manual "send now" before any request (#903).
   const { consent, source, state } = await effectiveConsent();
   if (consent !== 'on') return { ok: false, error: `consent ${consent} (source ${source})` };
   const endpoint = state.endpoint || DEFAULT_ENDPOINT;
@@ -35,14 +37,13 @@ export async function sendOnce(opts?: { reason?: string }): Promise<{
 
   const payload = await buildPayload();
   try {
-    const res = await fetch(endpoint, {
+    // Never follows redirects: the endpoint guard only vetted the URL we
+    // were given, so a 3xx to an internal host would bypass it.
+    const res = await fetchTelemetryTarget(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(5000),
-      // Never follow redirects: the endpoint guard only vetted the URL we
-      // were given, so a 3xx to an internal host would bypass it.
-      redirect: 'manual',
     });
     const ok = res.ok;
     if (ok) {

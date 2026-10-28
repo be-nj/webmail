@@ -1,5 +1,6 @@
 import type { ContactCard, NameComponent, ContactOnlineService, AnniversaryDate, PartialDate } from "@/lib/jmap/types";
 import { generateUUID } from "@/lib/utils";
+import { parseBase64DataUri } from "@/lib/data-uri";
 
 // Convert RFC 9553 AnniversaryDate (PartialDate|Timestamp|string) to vCard date string
 function anniversaryDateToVcardString(date: AnniversaryDate): string {
@@ -530,6 +531,8 @@ function buildContact(raw: Record<string, string[]>): ContactCard | null {
 
       switch (propName) {
         case "FN":
+          // Keep the verbatim FN in `full` (RFC 9553): it feeds the mandatory
+          // vCard FN on re-export, which strict clients require (#430).
           if (!card.name) {
             const parts = val.split(" ");
             const components: NameComponent[] = [];
@@ -539,7 +542,9 @@ function buildContact(raw: Record<string, string[]>): ContactCard | null {
             } else if (parts.length === 1) {
               components.push({ kind: "given", value: parts[0] });
             }
-            card.name = { components, isOrdered: true };
+            card.name = { components, isOrdered: true, full: val };
+          } else if (!card.name.full) {
+            card.name.full = val;
           }
           break;
 
@@ -556,7 +561,8 @@ function buildContact(raw: Record<string, string[]>): ContactCard | null {
           if (nParts[0]) components.push({ kind: "surname", value: nParts[0] });
           if (nParts[4]) components.push({ kind: "generation", value: nParts[4] });
           if (components.length > 0) {
-            card.name = { components, isOrdered: true };
+            // Preserve `full` captured from FN when FN preceded N.
+            card.name = { ...card.name, components, isOrdered: true };
           }
           break;
         }
@@ -1399,19 +1405,28 @@ function generateSingleVCard(contact: ContactCard): string {
   if (contact.members) {
     for (const memberId of Object.keys(contact.members)) {
       if (contact.members[memberId]) {
-        lines.push(`MEMBER:urn:uuid:${memberId}`);
+        // Keys are URIs already for groups made here (members are keyed by
+        // uid, a urn:uuid:) and for groups from CardDAV clients (Stalwart
+        // keeps MEMBER values verbatim); only a bare key gets the prefix.
+        const uri = /^[a-z][a-z0-9+.-]*:/i.test(memberId) ? memberId : `urn:uuid:${memberId}`;
+        lines.push(`MEMBER:${uri}`);
       }
     }
   }
 
   if (contact.media) {
+    // Blob-only entries (Stalwart 1.0) are turned into data: URIs by the
+    // caller before export; there is nothing to write for them here.
     for (const media of Object.values(contact.media)) {
-      if (media.uri) {
+      if (media?.uri) {
         const prop = media.kind === "logo" ? "LOGO" : media.kind === "sound" ? "SOUND" : "PHOTO";
         if (media.uri.startsWith("data:")) {
-          const match = media.uri.match(/^data:([^;]+);base64,(.+)$/);
-          if (match) {
-            lines.push(`${prop};ENCODING=b;TYPE=${match[1]}:${match[2]}`);
+          // Stalwart writes photos without a media type as `data:;base64,`
+          // (0.16.x) and `data:base64,` (0.16.0); the card's mediaType fills in.
+          const parsed = parseBase64DataUri(media.uri);
+          if (parsed?.data) {
+            const type = parsed.type || media.mediaType;
+            lines.push(`${prop};ENCODING=b${type ? `;TYPE=${type}` : ""}:${parsed.data}`);
           }
         } else {
           const mt = media.mediaType ? `;MEDIATYPE=${media.mediaType}` : "";

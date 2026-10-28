@@ -16,6 +16,7 @@ import {
   extractUserAuthoredText,
   formatRecipientEntry,
   expandRecipients,
+  invalidRecipientAddresses,
   getQuoteBodies,
 } from '../email-composer-utils';
 
@@ -375,6 +376,19 @@ describe("parseRecipientList / formatRecipientList", () => {
   it("parses an empty string to an empty array", () => {
     expect(parseRecipientList("")).toEqual([]);
   });
+
+  it("keeps a display name with quotes as one recipient (no injected To)", () => {
+    // A sender named `Support", ceo@corp.example, "x` used to come back from
+    // the draft stash as three recipients, one of them the injected ceo.
+    const list = [{ name: 'Support", ceo@corp.example, "x', email: "help@vendor.example" }];
+    const serialized = formatRecipientList(list);
+    expect(parseRecipientList(serialized)).toEqual(list);
+  });
+
+  it("round-trips backslashes in a quoted name", () => {
+    const list = [{ name: 'a\\b, "c"', email: "x@example.com" }, { email: "y@example.com" }];
+    expect(parseRecipientList(formatRecipientList(list))).toEqual(list);
+  });
 });
 
 describe("splitPastedRecipients", () => {
@@ -579,6 +593,16 @@ describe('contact group recipients (RFC 5322 group syntax)', () => {
     const parsed = parseRecipientList('first@x.de, Team: a@x.de, b@x.de;, last@x.de');
     expect(parsed.map(r => r.email || r.name)).toEqual(['first@x.de', 'Team', 'last@x.de']);
     expect(parsed[1].group?.members).toHaveLength(2);
+  });
+
+  it('keeps typed text with a colon as a plain recipient when no member is an address', () => {
+    expect(parseRecipient('Subject: hello;')).toEqual({ email: 'Subject: hello;' });
+  });
+
+  it('lists group members that are not addresses as invalid', () => {
+    const parsed = parseRecipientList('ok@x.de, Team: a@x.de, junk;, nope');
+    expect(invalidRecipientAddresses(parsed)).toEqual(['junk', 'nope']);
+    expect(invalidRecipientAddresses([group])).toEqual([]);
   });
 
   it('expandRecipients flattens groups and dedupes against individuals', () => {

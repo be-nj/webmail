@@ -4,6 +4,7 @@ import { requireAdminAuth, getClientIP } from '@/lib/admin/session';
 import { getStalwartCredentials, type StalwartCredentials } from '@/lib/stalwart/credentials';
 import { fetchJmapServer } from '@/lib/stalwart/server-fetch';
 import { configManager } from '@/lib/admin/config-manager';
+import { isConfigReadOnly, ConfigReadOnlyError } from '@/lib/admin/paths';
 import { auditLog } from '@/lib/admin/audit';
 import { logger } from '@/lib/logger';
 import { locales as ALL_LOCALES } from '@/i18n/routing';
@@ -81,8 +82,38 @@ interface SetupRequestBody {
   oauthOnly?: boolean;
 }
 
+interface SetError {
+  type?: string;
+  properties?: unknown[];
+}
+
+/** A Stalwart that doesn't know the firstParty field (0.16) refused the set. */
+function refusedFirstParty(res: JmapMethodResponse): boolean {
+  const body = res.methodResponses?.[0]?.[1] as
+    | { notCreated?: Record<string, SetError>; notUpdated?: Record<string, SetError> }
+    | undefined;
+  return Object.values({ ...body?.notCreated, ...body?.notUpdated }).some((error) =>
+    error?.type === 'invalidPatch'
+    && Array.isArray(error.properties)
+    && error.properties.some((p) => String(p).replace(/^\//, '') === 'firstParty'));
+}
+
 function isValidOriginUrl(value: string): boolean {
   return /^https?:\/\/[^/]+$/.test(value);
+}
+
+// The setup acts as the mail account signed in to this webmail, not as the
+// admin: a login to the Stalwart web admin sets no cookie here.
+const NOT_SIGNED_IN =
+  'Sign in to this webmail with a Stalwart admin account in this browser, then retry. '
+  + 'A login to the Stalwart web admin does not count.';
+
+/** Which mail account the setup would run as, so the page can say before it starts. */
+export async function GET(request: NextRequest) {
+  const auth = await requireAdminAuth(request);
+  if ('error' in auth) return auth.error;
+  const creds = await getStalwartCredentials(request);
+  return NextResponse.json(creds ? { signedIn: true, username: creds.username } : { signedIn: false });
 }
 
 export async function POST(request: NextRequest) {
@@ -90,13 +121,20 @@ export async function POST(request: NextRequest) {
     const auth = await requireAdminAuth(request);
     if ('error' in auth) return auth.error;
 
+    // The setup ends by saving the client secret here. Refuse before
+    // touching Stalwart, or a read-only config leaves an orphaned client
+    // (or a rotated secret nobody stored) on the server.
+    if (isConfigReadOnly()) {
+      return NextResponse.json(
+        { error: new ConfigReadOnlyError('set up OAuth').message },
+        { status: 409 },
+      );
+    }
+
     const ip = getClientIP(request);
     const creds = await getStalwartCredentials(request);
     if (!creds) {
-      return NextResponse.json(
-        { error: 'No Stalwart session available. Sign in to your mail account in another tab and retry.' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: NOT_SIGNED_IN }, { status: 400 });
     }
 
     const body = await request.json() as SetupRequestBody;
@@ -151,41 +189,47 @@ export async function POST(request: NextRequest) {
     const secret = randomBytes(32).toString('base64url');
     const redirectUris = buildRedirectUris(origin, localeList);
 
-    let setArgs: Record<string, unknown>;
-    let action: 'created' | 'updated';
-    if (existingIds.length > 0) {
-      const targetId = existingIds[0];
-      action = 'updated';
-      setArgs = {
-        accountId,
-        update: {
-          [targetId]: {
-            secret,
-            redirectUris,
-            description: CLIENT_DESCRIPTION,
+    const action: 'created' | 'updated' = existingIds.length > 0 ? 'updated' : 'created';
+    // Stalwart 1.0 gives a client full access to the account (its Stalwart
+    // settings too: password, TOTP, app passwords) only when it is first-party;
+    // any other client gets just the data scopes it was granted. 0.16 has no
+    // such field and refuses it as an invalid patch, so the setup retries
+    // without it there.
+    const buildSetArgs = (firstParty: boolean): Record<string, unknown> => {
+      const extra = firstParty ? { firstParty: true } : {};
+      return action === 'updated'
+        ? {
+          accountId,
+          update: {
+            [existingIds[0]]: {
+              secret,
+              redirectUris,
+              description: CLIENT_DESCRIPTION,
+              ...extra,
+            },
           },
-        },
-      };
-    } else {
-      action = 'created';
-      setArgs = {
-        accountId,
-        create: {
-          new: {
-            clientId: CLIENT_ID,
-            description: CLIENT_DESCRIPTION,
-            secret,
-            redirectUris,
-            contacts: { [creds.username]: true },
+        }
+        : {
+          accountId,
+          create: {
+            new: {
+              clientId: CLIENT_ID,
+              description: CLIENT_DESCRIPTION,
+              secret,
+              redirectUris,
+              contacts: { [creds.username]: true },
+              ...extra,
+            },
           },
-        },
-      };
-    }
-
-    const setRes = await jmapCall(creds, {
+        };
+    };
+    const callSet = (firstParty: boolean) => jmapCall(creds, {
       using: ['urn:ietf:params:jmap:core', 'urn:stalwart:jmap'],
-      methodCalls: [['x:OAuthClient/set', setArgs, '0']],
+      methodCalls: [['x:OAuthClient/set', buildSetArgs(firstParty), '0']],
     });
+
+    let setRes = await callSet(true);
+    if (refusedFirstParty(setRes)) setRes = await callSet(false);
 
     const setEntry = setRes.methodResponses?.[0];
     if (!setEntry || setEntry[0] === 'error') {
@@ -195,6 +239,7 @@ export async function POST(request: NextRequest) {
       }, { status: 403 });
     }
     const setBody = setEntry[1] as {
+      created?: Record<string, { id?: string }>;
       notCreated?: Record<string, unknown>;
       notUpdated?: Record<string, unknown>;
     };
@@ -219,7 +264,27 @@ export async function POST(request: NextRequest) {
       oauthIssuerUrl: issuerUrl,
     };
     if (oauthOnly) updates.oauthOnly = true;
-    await configManager.setAdminConfig(updates);
+    try {
+      await configManager.setAdminConfig(updates);
+    } catch (error) {
+      // Don't leave a client behind that this install never stored. An
+      // updated client can't be restored: Stalwart doesn't hand back the
+      // old secret.
+      if (action === 'created') {
+        const createdId = setBody.created?.new?.id;
+        if (createdId) {
+          await jmapCall(creds, {
+            using: ['urn:ietf:params:jmap:core', 'urn:stalwart:jmap'],
+            methodCalls: [['x:OAuthClient/set', { accountId, destroy: [createdId] }, '0']],
+          }).catch((rollbackError) => {
+            logger.error('Admin OAuth setup rollback failed', {
+              error: rollbackError instanceof Error ? rollbackError.message : 'Unknown error',
+            });
+          });
+        }
+      }
+      throw error;
+    }
 
     await auditLog('admin.oauth_setup', {
       action,

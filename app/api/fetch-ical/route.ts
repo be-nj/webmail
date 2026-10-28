@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectCrossOriginRequest } from '@/lib/security/same-origin';
 import { getStalwartCredentials } from '@/lib/stalwart/credentials';
 import { DisallowedUrlError, fetchPublicUrl, type PublicFetchResponse } from '@/lib/security/url-guard';
+import { readBodyCapped } from '@/lib/security/capped-body';
 
-const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB
-const FETCH_TIMEOUT_MS = 15000;
+const DEFAULT_MAX_BYTES = 25 * 1024 * 1024; // 25MB
+// Base budget for a default-sized feed; scaled up with the configured cap so a
+// larger allowed body is not cut off by the timer that fit the smaller one.
+const BASE_TIMEOUT_MS = 15000;
+
+/** Response cap from ICAL_MAX_BYTES (bytes), read per request so a deploy can raise it. (#692) */
+function getMaxResponseSize(): number {
+  const raw = process.env.ICAL_MAX_BYTES;
+  const parsed = raw ? parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_BYTES;
+}
+
+function getFetchTimeoutMs(maxBytes: number): number {
+  return Math.max(BASE_TIMEOUT_MS, Math.ceil(BASE_TIMEOUT_MS * (maxBytes / DEFAULT_MAX_BYTES)));
+}
+
+function tooLarge(maxBytes: number) {
+  const limitMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
+  return NextResponse.json(
+    { error: `Calendar feed is larger than the ${limitMb} MB limit (ICAL_MAX_BYTES)` },
+    { status: 413 },
+  );
+}
 
 function extractBasicAuth(rawUrl: string): { cleanUrl: string; authHeader: string | null } | null {
   let parsed: URL;
@@ -36,6 +59,10 @@ function extractBasicAuth(rawUrl: string): { cleanUrl: string; authHeader: strin
  * (GHSA-24w9-8r42-8jwm).
  */
 export async function POST(request: NextRequest) {
+  // CSRF gate (GHSA-9mvj-98f5-9q6g): this handler acts with the caller's
+  // session cookie, which SameSite=Lax still sends from a same-site page.
+  const crossOrigin = rejectCrossOriginRequest(request);
+  if (crossOrigin) return crossOrigin;
   const creds = await getStalwartCredentials(request);
   if (!creds) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -61,8 +88,9 @@ export async function POST(request: NextRequest) {
 
   const { cleanUrl, authHeader } = extracted;
 
+  const maxResponseSize = getMaxResponseSize();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), getFetchTimeoutMs(maxResponseSize));
 
   try {
     const MAX_REDIRECTS = 5;
@@ -113,13 +141,17 @@ export async function POST(request: NextRequest) {
     }
 
     const contentLength = response.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > MAX_RESPONSE_SIZE) {
-      return NextResponse.json({ error: 'File too large' }, { status: 413 });
+    if (contentLength && parseInt(contentLength) > maxResponseSize) {
+      return tooLarge(maxResponseSize);
     }
 
-    const buffer = await response.arrayBuffer();
-    if (buffer.byteLength > MAX_RESPONSE_SIZE) {
-      return NextResponse.json({ error: 'File too large' }, { status: 413 });
+    // Read up to the cap and no further: a chunked body with no
+    // Content-Length used to be buffered whole before it was measured, so a
+    // feed that streams for the whole timeout could take the process's
+    // memory with it.
+    const buffer = await readBodyCapped(response, maxResponseSize, controller);
+    if (!buffer) {
+      return tooLarge(maxResponseSize);
     }
 
     return new NextResponse(buffer, {

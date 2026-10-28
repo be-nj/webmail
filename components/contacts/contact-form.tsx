@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { X, Plus, ChevronDown, ChevronRight, User, Building, MapPin, Globe, Cake, Heart, Tag, StickyNote, Mail, Phone, Calendar, UserCircle, Book, Camera, Trash2 } from "lucide-react";
+import { X, Plus, ChevronDown, ChevronRight, User, Building, MapPin, Globe, Cake, Heart, Tag, StickyNote, Mail, Phone, Calendar, UserCircle, Book, Camera, Trash2 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
-import { normalizeContactPhotoUri } from "@/stores/contact-store";
+import { findContactPhotoEntry, getContactPhotoRef, type ContactPhotoRef } from "@/stores/contact-store";
+import type { ContactSaveOptions } from "@/lib/contact-media";
 import { cn } from "@/lib/utils";
+import { useBottomControls } from "@/hooks/use-bottom-controls";
 import type { ContactCard, ContactOnlineService, ContactAnniversary, ContactPersonalInfo, AddressBook, AnniversaryDate, PartialDate, ContactAddress, ContactMedia } from "@/lib/jmap/types";
 
 interface EmailEntry {
@@ -54,8 +57,71 @@ interface ContactFormProps {
   defaultAddressBookId?: string;
   /** Prefills the create form (ignored when `contact` is set). */
   prefill?: { email?: string; name?: string };
-  onSave: (data: Partial<ContactCard>) => Promise<void>;
+  /** `options.photoKey` names the `media` entry holding a newly picked photo. */
+  onSave: (data: Partial<ContactCard>, options?: ContactSaveOptions) => Promise<void>;
   onCancel: () => void;
+  /**
+   * Reads the card as the server has it now, or null when it can't. When the
+   * photo changed, `media` is rebuilt on it instead of on `contact`, which
+   * may be older.
+   */
+  loadCurrentMedia?: () => Promise<Pick<ContactCard, "media"> | null>;
+  /** Reports whether the form holds changes not yet saved. */
+  onDirtyChange?: (dirty: boolean) => void;
+}
+
+/** What the user did to the photo: nothing, picked a new one (a data: URI), or removed it. */
+type PhotoEdit =
+  | { kind: "unchanged" }
+  | { kind: "new"; uri: string; mediaType: string }
+  | { kind: "removed" };
+
+/** A `media` key for a new photo that no other entry uses. */
+function freeMediaKey(media: Record<string, ContactMedia>): string {
+  let key = "photo";
+  for (let n = 1; key in media; n++) key = `photo${n}`;
+  return key;
+}
+
+/**
+ * The `media` map to send for a photo edit, built on `base`: the card's media
+ * as the server has it now when it could be read, else the form's copy
+ * (`known`). `shownKey` is the photo the form showed.
+ *
+ * - A new photo takes the shown one's key and place, with its `pref`,
+ *   `label` and `contexts`, so on a card with several photos it is still the
+ *   one shown (the lowest pref wins).
+ * - Removing the photo removes every photo the form's copy had, not only the
+ *   shown one: the next would otherwise take its place after the save, while
+ *   the form showed none. Logos and sounds stay; so do photos added
+ *   elsewhere since.
+ */
+function mediaForPhotoEdit(
+  base: Record<string, ContactMedia>,
+  known: Record<string, ContactMedia>,
+  shownKey: string | undefined,
+  edit: Exclude<PhotoEdit, { kind: "unchanged" }>,
+): { media: Record<string, ContactMedia> | null; photoKey?: string } {
+  if (edit.kind === "removed") {
+    const others = Object.fromEntries(Object.entries(base).filter(
+      ([key, entry]) => !(entry?.kind === "photo" && known[key]?.kind === "photo"),
+    ));
+    return { media: Object.keys(others).length > 0 ? others : null };
+  }
+  const shown = shownKey ? (base[shownKey]?.kind === "photo" ? base[shownKey] : known[shownKey]) : undefined;
+  const photoKey = shownKey && (!base[shownKey] || base[shownKey]?.kind === "photo") ? shownKey : freeMediaKey(base);
+  const photo: ContactMedia = {
+    kind: "photo",
+    uri: edit.uri,
+    mediaType: edit.mediaType,
+    ...(shown?.pref !== undefined ? { pref: shown.pref } : {}),
+    ...(shown?.label !== undefined ? { label: shown.label } : {}),
+    ...(shown?.contexts !== undefined ? { contexts: shown.contexts } : {}),
+  };
+  const media: Record<string, ContactMedia> = {};
+  for (const [key, entry] of Object.entries(base)) media[key] = key === photoKey ? photo : entry;
+  media[photoKey] = photo;
+  return { media, photoKey };
 }
 
 function FormSection({ icon: Icon, title, children, collapsible, defaultOpen = true }: {
@@ -147,7 +213,7 @@ function Select({ value, onChange, children, className }: {
   );
 }
 
-export function ContactForm({ contact, addressBooks, allKeywords, defaultAddressBookId, prefill, onSave, onCancel }: ContactFormProps) {
+export function ContactForm({ contact, addressBooks, allKeywords, defaultAddressBookId, prefill, onSave, onCancel, loadCurrentMedia, onDirtyChange }: ContactFormProps) {
   const t = useTranslations("contacts.form");
   const isEditing = !!contact;
 
@@ -333,6 +399,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
   const [keywordsStr, setKeywordsStr] = useState(
     contact?.keywords ? Object.keys(contact.keywords).filter(k => contact.keywords![k]).join(", ") : ""
   );
+  // Text typed in the Categories field but not added with Enter yet: Save
+  // adds it, so it isn't lost.
+  const [categoryDraft, setCategoryDraft] = useState("");
 
   const [note, setNote] = useState(
     contact?.notes ? Object.values(contact.notes)[0]?.note || "" : ""
@@ -359,21 +428,24 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
     if (defaultAddressBookId && addressBooks?.some(b => b.id === defaultAddressBookId)) {
       return defaultAddressBookId;
     }
+    // New contacts land in the account's default book unless told otherwise -
+    // preselect it so the form shows where the contact will actually go.
+    if (!contact) {
+      const ownDefault = addressBooks?.find(b => b.isDefault && !b.isShared);
+      if (ownDefault) return ownDefault.id;
+    }
     return "";
   }, [contact, defaultAddressBookId, addressBooks]);
   const [selectedBookId, setSelectedBookId] = useState(currentBookId);
 
-  const initialPhotoEntry = useMemo(() => {
-    if (!contact?.media) return null;
-    for (const [key, m] of Object.entries(contact.media)) {
-      if (m.kind === "photo" && m.uri) {
-        return { key, uri: normalizeContactPhotoUri(m.uri, m.mediaType), mediaType: m.mediaType };
-      }
-    }
-    return null;
-  }, [contact]);
-  const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoEntry?.uri);
-  const [photoMediaType, setPhotoMediaType] = useState<string | undefined>(initialPhotoEntry?.mediaType);
+  // The stored photo may be a data: URI (Stalwart 0.16) or a blob (1.0); the
+  // form only ever writes the photo the user picks, never the one it shows.
+  const initialPhotoKey = useMemo(() => (contact ? findContactPhotoEntry(contact)?.[0] : undefined), [contact]);
+  const [photoEdit, setPhotoEdit] = useState<PhotoEdit>({ kind: "unchanged" });
+  const previewPhoto: ContactPhotoRef | null =
+    photoEdit.kind === "new" ? { uri: photoEdit.uri }
+      : photoEdit.kind === "unchanged" && contact ? getContactPhotoRef(contact) ?? null
+        : null;
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -381,6 +453,18 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailErrors, setEmailErrors] = useState<Record<number, string>>({});
+
+  // Everything the user can edit, to tell whether anything changed since the
+  // form opened (R5: leaving asks first).
+  const fields = JSON.stringify([
+    prefix, givenName, additionalName, surname, suffix, nickname, emails, phones, organization,
+    department, isOrg, jobTitle, role, addresses, onlineServices, anniversaries, personalInfoEntries,
+    keywordsStr, categoryDraft, note, genderSex, genderIdentity, calendarUri, schedulingUri, freeBusyUri, selectedBookId,
+  ]);
+  const [initialFields] = useState(fields);
+  const dirty = fields !== initialFields || photoEdit.kind !== "unchanged";
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+  const footerRef = useBottomControls();
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -398,8 +482,7 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
     setPhotoUploading(true);
     try {
       const { uri, mediaType } = await processImageFile(file);
-      setPhotoUri(uri);
-      setPhotoMediaType(mediaType);
+      setPhotoEdit({ kind: "new", uri, mediaType });
     } catch {
       setPhotoError(t("photo_invalid"));
     } finally {
@@ -408,8 +491,7 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
   };
 
   const handlePhotoRemove = () => {
-    setPhotoUri(undefined);
-    setPhotoMediaType(undefined);
+    setPhotoEdit({ kind: "removed" });
     setPhotoError(null);
   };
 
@@ -482,10 +564,18 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
       if (suffix.trim()) nameComponents.push({ kind: "generation" as const, value: suffix.trim() });
     }
 
+    // Always set `name.full` (RFC 9553): the vCard FN property is derived from it,
+    // and FN is mandatory (RFC 6350 §6.2.1) — strict CardDAV clients like Apple
+    // Contacts silently drop cards without it (#430).
+    const fullName = [prefix, givenName, additionalName, surname, suffix]
+      .map(s => s.trim())
+      .filter(Boolean)
+      .join(" ");
+
     // Without personal name components, carry the organization name in `name.full`
     // so servers and other clients have something to display.
     const nameValue: ContactCard["name"] = nameComponents.length > 0
-      ? { components: nameComponents, isOrdered: true }
+      ? { components: nameComponents, isOrdered: true, full: fullName || undefined }
       : { full: orgName };
 
     const titlesMap: Record<string, { name: string; kind?: "title" | "role" }> = {};
@@ -529,27 +619,14 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
     });
 
     const keywordsMap: Record<string, boolean> = {};
-    if (keywordsStr.trim()) {
-      keywordsStr.split(",").map(k => k.trim()).filter(Boolean).forEach(k => {
-        keywordsMap[k] = true;
-      });
-    }
-
-    const mediaMap: Record<string, ContactMedia> = {};
-    if (contact?.media) {
-      for (const [key, m] of Object.entries(contact.media)) {
-        if (m.kind !== "photo") mediaMap[key] = m;
-      }
-    }
-    if (photoUri) {
-      const photoKey = initialPhotoEntry?.key || "photo";
-      mediaMap[photoKey] = { kind: "photo", uri: photoUri, mediaType: photoMediaType };
-    }
-
-    // Set mediaVluae to null if we are removing media, so the server removes it
-    const hadMedia = !!contact?.media && Object.keys(contact.media).length > 0;
-    const mediaValue: Record<string, ContactMedia> | null | undefined =
-      Object.keys(mediaMap).length > 0 ? mediaMap : (hadMedia ? null : undefined);
+    keywordsStr.split(",").map(k => k.trim()).filter(Boolean).forEach(k => {
+      keywordsMap[k] = true;
+    });
+    // A typed category that matches an existing one takes its spelling.
+    categoryDraft.split(",").map(k => k.trim()).filter(Boolean).forEach(k => {
+      const existing = (allKeywords || []).find(kw => kw.toLowerCase() === k.toLowerCase());
+      keywordsMap[existing ?? k] = true;
+    });
 
     // Only send `kind` when this form owns the answer: switching a card between
     // person and organization. Leave other kinds (group, location, ...) untouched.
@@ -583,13 +660,28 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
       calendarUri: calendarUri.trim() || undefined,
       schedulingUri: schedulingUri.trim() || undefined,
       freeBusyUri: freeBusyUri.trim() || undefined,
-      media: mediaValue as Record<string, ContactMedia> | undefined,
       ...(selectedBookId ? { addressBookIds: { [selectedBookId]: true } } : {}),
     };
 
     setIsSaving(true);
     try {
-      await onSave(data);
+      // `media` goes out only when the photo changed. An update without it
+      // keeps every entry on the server, while a map replaces them all, and
+      // `null` deletes them. The other entries go back as the server has them
+      // now: a data: URI on 0.16, a blobId on 1.0, which resolves it again. A
+      // blobId from an older copy of the card, say of a logo changed
+      // elsewhere since, makes 1.0 refuse the whole update ("The following
+      // blobIds do not exist or are not accessible").
+      let photoKey: string | undefined;
+      if (photoEdit.kind === "new" || (photoEdit.kind === "removed" && initialPhotoKey)) {
+        const current = contact && loadCurrentMedia ? await loadCurrentMedia().catch(() => null) : null;
+        const known = contact?.media ?? {};
+        const edited = mediaForPhotoEdit(current ? current.media ?? {} : known, known, initialPhotoKey, photoEdit);
+        // Absent, not undefined: contactToWire sends an undefined key as null.
+        data.media = edited.media as Record<string, ContactMedia>;
+        photoKey = edited.photoKey;
+      }
+      await (photoKey ? onSave(data, { photoKey }) : onSave(data));
     } catch (err) {
       setError(err instanceof Error ? err.message : t("save_failed"));
     } finally {
@@ -601,20 +693,22 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
   const previewEmail = emails.find(e => e.address.trim())?.address.trim() || "";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full bg-background">
+    // The app checks the fields itself and says what is wrong inline; the
+    // browser's own bubble covered that message.
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full bg-background">
       <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
         <h2 className="text-lg font-semibold">
           {isEditing ? t("edit_title") : t("create_title")}
         </h2>
-        <button type="button" onClick={onCancel} className="p-1.5 rounded-md hover:bg-muted transition-colors duration-150 text-muted-foreground hover:text-foreground">
-          <X className="w-5 h-5" />
-        </button>
+        <IconButton label={t("close")} onClick={onCancel}>
+          <X />
+        </IconButton>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="px-6 py-4 max-w-3xl">
+        <div className="@container px-6 py-4 max-w-3xl">
           {error && (
-            <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 px-3 py-2 rounded-lg border border-red-200 dark:border-red-900 mb-4">
+            <div role="alert" className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md mb-4">
               {error}
             </div>
           )}
@@ -631,7 +725,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
               <Avatar
                 name={previewName || undefined}
                 email={previewEmail || undefined}
-                contactPhotoUri={photoUri}
+                contactPhoto={previewPhoto}
+                // Nothing typed yet: a neutral circle, not a coloured "?".
+                fallbackColor={previewName || previewEmail ? undefined : "var(--color-muted-foreground)"}
                 size="lg"
                 className="!w-20 !h-20 !text-xl"
               />
@@ -653,9 +749,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
             <div className="flex flex-col gap-1 min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">{t("photo_hint")}</p>
               {photoError && (
-                <p className="text-xs text-red-600 dark:text-red-400">{photoError}</p>
+                <p className="text-xs text-destructive">{photoError}</p>
               )}
-              {photoUri && (
+              {previewPhoto && (
                 <button
                   type="button"
                   onClick={handlePhotoRemove}
@@ -671,16 +767,17 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
           <div className="divide-y divide-border/60">
 
           {addressBooks && addressBooks.length > 1 && (
-            <FormSection icon={Book} title={t("section_address_book") || "Directory"}>
+            <FormSection icon={Book} title={t("section_address_book")}>
               <select
                 value={selectedBookId}
                 onChange={(e) => setSelectedBookId(e.target.value)}
                 className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value="">{t("select_address_book") || "Select a directory..."}</option>
+                <option value="">{t("select_address_book")}</option>
                 {addressBooks.map((book) => (
                   <option key={book.id} value={book.id}>
-                    {book.accountName ? `${book.name} (${book.accountName})` : book.name}
+                    {/* A shared book says whose it is, unless its name already does. */}
+                    {book.isShared && book.accountName && !book.name.includes(book.accountName) ? `${book.name} (${book.accountName})` : book.name}
                   </option>
                 ))}
               </select>
@@ -718,7 +815,7 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">
-                    {t("organization")} <span className="text-red-500">*</span>
+                    {t("organization")} <span className="text-destructive">*</span>
                   </label>
                   <Input value={organization} onChange={(e) => setOrganization(e.target.value)} placeholder={t("organization_placeholder")} autoFocus />
                 </div>
@@ -729,28 +826,28 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-2">
+                {/* Two columns in a narrow pane (title and first name, last name and
+                    suffix), one row once there is room, so no name gets cut. */}
+                <div className="grid grid-cols-2 @lg:grid-cols-[auto_1fr_1fr_auto] gap-2">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">{t("prefix")}</label>
-                    <Input value={prefix} onChange={(e) => setPrefix(e.target.value)} placeholder={t("prefix_placeholder")} className="w-20" />
+                    <Input value={prefix} onChange={(e) => setPrefix(e.target.value)} placeholder={t("prefix_placeholder")} className="@lg:w-20" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      {t("given_name")} <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("given_name")}</label>
                     <Input value={givenName} onChange={(e) => setGivenName(e.target.value)} placeholder={t("given_name")} autoFocus />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      {t("surname")} <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("surname")}</label>
                     <Input value={surname} onChange={(e) => setSurname(e.target.value)} placeholder={t("surname")} />
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">{t("suffix")}</label>
-                    <Input value={suffix} onChange={(e) => setSuffix(e.target.value)} placeholder={t("suffix_placeholder")} className="w-20" />
+                    <Input value={suffix} onChange={(e) => setSuffix(e.target.value)} placeholder={t("suffix_placeholder")} className="@lg:w-20" />
                   </div>
                 </div>
+                {/* Either name is enough (or an organization), so neither is starred. */}
+                <p className="text-xs text-muted-foreground -mt-1">{t("name_required")}</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">{t("middle_name")}</label>
@@ -785,7 +882,7 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
                       }}
                       onBlur={() => handleEmailBlur(i, entry.address)}
                       placeholder={t("email_placeholder")}
-                      className={cn("flex-1", emailErrors[i] && "border-red-500 focus:ring-red-500")}
+                      className={cn("flex-1", emailErrors[i] && "border-destructive focus-visible:border-destructive")}
                     />
                     <Select
                       value={entry.context}
@@ -800,13 +897,13 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
                       <option value="private">{t("context_private")}</option>
                     </Select>
                     {emails.length > 1 && (
-                      <Button type="button" variant="ghost" size="icon" onClick={() => setEmails(emails.filter((_, j) => j !== i))} className="h-8 w-8 shrink-0">
-                        <X className="w-3 h-3" />
-                      </Button>
+                      <IconButton label={t("remove_entry")} onClick={() => setEmails(emails.filter((_, j) => j !== i))} className="shrink-0">
+                        <X />
+                      </IconButton>
                     )}
                   </div>
                   {emailErrors[i] && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1 ms-1">{emailErrors[i]}</p>
+                    <p className="text-xs text-destructive mt-1 ms-1">{emailErrors[i]}</p>
                   )}
                 </div>
               ))}
@@ -863,9 +960,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
                     <option value="work">{t("context_work")}</option>
                     <option value="private">{t("context_private")}</option>
                   </Select>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setPhones(phones.filter((_, j) => j !== i))} className="h-8 w-8 shrink-0">
-                    <X className="w-3 h-3" />
-                  </Button>
+                  <IconButton label={t("remove_entry")} onClick={() => setPhones(phones.filter((_, j) => j !== i))} className="shrink-0">
+                    <X />
+                  </IconButton>
                 </div>
               ))}
               <Button type="button" variant="ghost" size="sm" onClick={() => setPhones([...phones, { number: "", context: "", feature: "" }])} className="text-xs">
@@ -905,9 +1002,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
             <div className="space-y-3">
               {addresses.map((addr, i) => (
                 <div key={i} className="rounded-md border border-border/60 bg-muted/20 p-3 space-y-2 relative">
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setAddresses(addresses.filter((_, j) => j !== i))} className="h-6 w-6 absolute top-2 right-2">
-                    <X className="w-3 h-3" />
-                  </Button>
+                  <IconButton label={t("remove_entry")} onClick={() => setAddresses(addresses.filter((_, j) => j !== i))} className="absolute top-1 end-1">
+                    <X />
+                  </IconButton>
                   <Input value={addr.street} onChange={(e) => { const n = [...addresses]; n[i] = { ...n[i], street: e.target.value }; setAddresses(n); }} placeholder={t("street")} />
                   <div className="grid grid-cols-2 gap-2">
                     <Input value={addr.locality} onChange={(e) => { const n = [...addresses]; n[i] = { ...n[i], locality: e.target.value }; setAddresses(n); }} placeholder={t("city")} />
@@ -951,9 +1048,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
                     placeholder={t("service_placeholder")}
                     className="w-24"
                   />
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setOnlineServices(onlineServices.filter((_, j) => j !== i))} className="h-8 w-8 shrink-0">
-                    <X className="w-3 h-3" />
-                  </Button>
+                  <IconButton label={t("remove_entry")} onClick={() => setOnlineServices(onlineServices.filter((_, j) => j !== i))} className="shrink-0">
+                    <X />
+                  </IconButton>
                 </div>
               ))}
               <Button type="button" variant="ghost" size="sm" onClick={() => setOnlineServices([...onlineServices, { uri: "", service: "", label: "" }])} className="text-xs">
@@ -983,9 +1080,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
                     <option value="death">{t("anniversary_death")}</option>
                     <option value="other">{t("anniversary_other")}</option>
                   </Select>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setAnniversaries(anniversaries.filter((_, j) => j !== i))} className="h-8 w-8 shrink-0">
-                    <X className="w-3 h-3" />
-                  </Button>
+                  <IconButton label={t("remove_entry")} onClick={() => setAnniversaries(anniversaries.filter((_, j) => j !== i))} className="shrink-0">
+                    <X />
+                  </IconButton>
                 </div>
               ))}
               <Button type="button" variant="ghost" size="sm" onClick={() => setAnniversaries([...anniversaries, { date: "", kind: "birth" }])} className="text-xs">
@@ -1024,9 +1121,9 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
                     <option value="medium">{t("level_medium")}</option>
                     <option value="low">{t("level_low")}</option>
                   </Select>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setPersonalInfoEntries(personalInfoEntries.filter((_, j) => j !== i))} className="h-8 w-8 shrink-0">
-                    <X className="w-3 h-3" />
-                  </Button>
+                  <IconButton label={t("remove_entry")} onClick={() => setPersonalInfoEntries(personalInfoEntries.filter((_, j) => j !== i))} className="shrink-0">
+                    <X />
+                  </IconButton>
                 </div>
               ))}
               <Button type="button" variant="ghost" size="sm" onClick={() => setPersonalInfoEntries([...personalInfoEntries, { value: "", kind: "hobby", level: "" }])} className="text-xs">
@@ -1041,6 +1138,8 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
             <CategoryComboBox
               keywordsStr={keywordsStr}
               onChange={setKeywordsStr}
+              inputValue={categoryDraft}
+              onInputChange={setCategoryDraft}
               allKeywords={allKeywords || []}
               placeholder={t("categories_placeholder")}
               hint={t("categories_hint")}
@@ -1101,7 +1200,8 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border flex-shrink-0">
+      {/* Toasts sit above Save and Cancel, not on them. */}
+      <div ref={footerRef} className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border flex-shrink-0">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>
           {t("cancel")}
         </Button>
@@ -1116,6 +1216,8 @@ export function ContactForm({ contact, addressBooks, allKeywords, defaultAddress
 function CategoryComboBox({
   keywordsStr,
   onChange,
+  inputValue,
+  onInputChange: setInputValue,
   allKeywords,
   placeholder,
   hint,
@@ -1123,13 +1225,16 @@ function CategoryComboBox({
 }: {
   keywordsStr: string;
   onChange: (value: string) => void;
+  /** The text typed but not added yet; the form adds it on Save. */
+  inputValue: string;
+  onInputChange: (value: string) => void;
   allKeywords: string[];
   placeholder: string;
   hint: string;
   addLabel: string;
 }) {
+  const t = useTranslations("contacts.form");
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Parse current keywords from comma-separated string
@@ -1157,7 +1262,7 @@ function CategoryComboBox({
     const next = [...currentKeywords, trimmed].join(", ");
     onChange(next);
     setInputValue("");
-  }, [currentKeywords, onChange]);
+  }, [currentKeywords, onChange, setInputValue]);
 
   const removeKeyword = useCallback((keyword: string) => {
     const next = currentKeywords.filter(k => k !== keyword).join(", ");
@@ -1190,6 +1295,8 @@ function CategoryComboBox({
               <button
                 type="button"
                 onClick={() => removeKeyword(kw)}
+                aria-label={t("remove_category", { name: kw })}
+                title={t("remove_category", { name: kw })}
                 className="hover:text-destructive transition-colors"
               >
                 <X className="w-3 h-3" />

@@ -3,10 +3,15 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settings-store";
-import { useContactStore, getContactPhotoUri } from "@/stores/contact-store";
+import { useContactStore, getContactPhotoIndex, type ContactPhotoRef } from "@/stores/contact-store";
 import { useConfig } from "@/hooks/use-config";
+import { useContactPhotoSrc } from "@/hooks/use-contact-photo";
 import { avatarHooks } from "@/lib/plugin-hooks";
 import { withBasePath } from "@/lib/browser-navigation";
+import { IS_LITE } from "@/lib/lite";
+import { avatarUrlAllowed, sampleAvatarsAllowed, senderFaviconsAllowed } from "@/lib/outgoing-hosts";
+import { useNoThirdPartyTraffic } from "@/hooks/use-third-party-mode";
+import { useFaviconRefreshStore, failedFaviconDomains } from "@/stores/favicon-refresh-store";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -62,9 +67,6 @@ function getRootDomain(domain: string): string {
   return parts.slice(-2).join(".");
 }
 
-// Module-level cache of domains whose favicons failed to load.
-// Shared across all Avatar instances to avoid re-requesting known-bad domains.
-const failedFaviconDomains = new Set<string>();
 // Personal email domains where the favicon is the mail provider logo, not the sender
 const PERSONAL_DOMAINS = new Set([
   "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com",
@@ -126,7 +128,7 @@ const CUSTOM_AVATARS: Record<string, string> = IS_DEV ? {
 // Mock-server-only: for personal-domain emails, deterministically pick a randomuser.me portrait.
 // Returns null for ~30% of addresses so not everyone has a photo.
 function getProfilePictureUrl(email: string, domain: string, devMode: boolean, name?: string): string | null {
-  if (!devMode) return null;
+  if (!devMode || !sampleAvatarsAllowed()) return null;
   if (!PERSONAL_DOMAINS.has(domain)) return null;
   const h = emailHash(email);
   if (h % 10 < 3) return null; // ~30% get no photo
@@ -138,7 +140,12 @@ function getProfilePictureUrl(email: string, domain: string, devMode: boolean, n
 interface AvatarProps {
   name?: string;
   email?: string;
-  contactPhotoUri?: string;
+  /**
+   * The photo of the contact this avatar stands for (see getContactPhotoRef).
+   * Left undefined, the email is looked up among the contacts; null means the
+   * contact has no photo, so no other card's photo is borrowed.
+   */
+  contactPhoto?: ContactPhotoRef | null;
   size?: "sm" | "md" | "lg";
   className?: string;
   /** When true, suppress all image sources (favicons, plugin avatars, profile pics, contact photos) and render initials only. */
@@ -149,13 +156,19 @@ interface AvatarProps {
   fallbackColor?: string;
 }
 
-export function Avatar({ name, email, contactPhotoUri, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor }: AvatarProps) {
+export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
   const [pluginAvatarUrl, setPluginAvatarUrl] = useState<string | null>(null);
   const [pluginAvatarFailed, setPluginAvatarFailed] = useState(false);
+  // A contact photo that downloaded but would not render (an SVG made inert,
+  // corrupt bytes) falls through to the next source instead of an empty circle.
+  const [failedContactPhoto, setFailedContactPhoto] = useState<string | null>(null);
   const senderFavicons = useSettingsStore((s) => s.senderFavicons);
+  const faviconRefreshedAt = useFaviconRefreshStore((s) => s.refreshedAt);
   const contacts = useContactStore((s) => s.contacts);
   const { devMode } = useConfig();
+  // Re-render when the config arrives: until then nothing outside is asked (#903).
+  useNoThirdPartyTraffic();
 
   // Ask plugins (e.g. Gravatar) to resolve an avatar URL for this email address.
   // Runs whenever email or name changes; resets plugin avatar state on each change.
@@ -164,28 +177,26 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
     setPluginAvatarFailed(false);
     if (!email || avatarHooks.onAvatarResolve.size === 0) return;
     let cancelled = false;
-    avatarHooks.onAvatarResolve
-      .transform(null as string | null, { email, name })
+    avatarHooks.onAvatarResolve.transform(null as string | null, { email, name })
       .then((url) => { if (!cancelled) setPluginAvatarUrl(url); })
       .catch(() => { if (!cancelled) setPluginAvatarFailed(true); });
     return () => { cancelled = true; };
   }, [email, name]);
 
-  // Look up contact photo by email from the contact store
-  const resolvedContactPhoto = useMemo(() => {
-    if (contactPhotoUri) return contactPhotoUri;
-    if (!email) return undefined;
-    const lowerEmail = email.toLowerCase();
-    for (const contact of contacts) {
-      if (!contact.emails) continue;
-      for (const e of Object.values(contact.emails)) {
-        if (e.address.toLowerCase() === lowerEmail) {
-          return getContactPhotoUri(contact);
-        }
-      }
-    }
-    return undefined;
-  }, [contactPhotoUri, email, contacts]);
+  // The caller's contact photo, else the photo of a contact with this address.
+  const photoRef = useMemo(() => {
+    if (disableImages) return null;
+    if (contactPhoto !== undefined) return contactPhoto;
+    if (!email) return null;
+    return getContactPhotoIndex(contacts).get(email.toLowerCase()) ?? null;
+  }, [disableImages, contactPhoto, email, contacts]);
+  const { src: contactPhotoSrc, observe } = useContactPhotoSrc(photoRef);
+  const resolvedContactPhoto = contactPhotoSrc && contactPhotoSrc !== failedContactPhoto && avatarUrlAllowed(contactPhotoSrc) ? contactPhotoSrc : undefined;
+
+  // A refresh of the sender icons gives a failed favicon another chance.
+  useEffect(() => {
+    setImgError(false);
+  }, [faviconRefreshedAt]);
 
   const domain = email?.split("@")[1]?.toLowerCase();
   // Use root domain for favicon lookups (e.g. newsletter.example.com → example.com)
@@ -230,18 +241,25 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
   };
 
   const profilePic = email && domain ? getProfilePictureUrl(email, domain, devMode, name) : null;
+  // Sender favicons come from the /api/favicon proxy, absent in the static
+  // build and off while third-party traffic is (#903).
   const showFavicon =
-    !disableFavicon && senderFavicons && faviconDomain && !PERSONAL_DOMAINS.has(faviconDomain) && !imgError && !domainFailed;
+    !IS_LITE && senderFaviconsAllowed() && !disableFavicon && senderFavicons && faviconDomain && !PERSONAL_DOMAINS.has(faviconDomain) && !imgError && !domainFailed;
 
   // Priority: contact photo > plugin avatar (e.g. Gravatar) > custom avatar > profile picture > company favicon > initials
-  const customAvatar = devMode && email ? CUSTOM_AVATARS[email.toLowerCase()] : null;
-  const pluginAvatar = pluginAvatarFailed ? null : pluginAvatarUrl;
+  const customAvatar = devMode && email && sampleAvatarsAllowed() ? CUSTOM_AVATARS[email.toLowerCase()] : null;
+  // Gravatar and the like are outside hosts: initials instead in the no-third-party mode.
+  const pluginAvatar = pluginAvatarFailed || !avatarUrlAllowed(pluginAvatarUrl) ? null : pluginAvatarUrl;
   const photoSrc = resolvedContactPhoto || pluginAvatar || customAvatar || profilePic || null;
-  const faviconSrc = !imgError && !domainFailed && showFavicon ? withBasePath(`/api/favicon?domain=${encodeURIComponent(faviconDomain!)}`) : null;
+  const faviconSrc = !imgError && !domainFailed && showFavicon ? withBasePath(`/api/favicon?domain=${encodeURIComponent(faviconDomain!)}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`) : null;
   const imgSrc = disableImages ? null : (photoSrc || faviconSrc);
   const isFavicon = imgSrc !== null && imgSrc === faviconSrc;
 
   const handleImgError = useCallback(() => {
+    if (resolvedContactPhoto && imgSrc === resolvedContactPhoto) {
+      setFailedContactPhoto(resolvedContactPhoto);
+      return;
+    }
     // If the plugin avatar just failed, mark it and fall through to the next source
     if (pluginAvatar && imgSrc === pluginAvatar) {
       setPluginAvatarFailed(true);
@@ -256,6 +274,7 @@ export function Avatar({ name, email, contactPhotoUri, size = "md", className, d
 
   return (
     <div
+      ref={observe}
       className={cn(
         "rounded-full flex items-center justify-center font-semibold text-white overflow-hidden",
         sizeClasses[size],

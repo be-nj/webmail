@@ -1,15 +1,19 @@
 import { create } from "zustand";
 import { Toast, ToastAction } from "@/components/ui/toast";
 import { generateUUID } from "@/lib/utils";
+import { toastHooks } from "@/lib/plugin-hooks";
+import { recordNotification } from "@/stores/notification-center-store";
 
 interface ToastStore {
   toasts: Toast[];
-  addToast: (toast: Omit<Toast, "id">) => void;
+  addToast: (toast: Omit<Toast, "id">) => string;
+  /** Change a shown toast in place, e.g. to move a progress toast along. */
+  updateToast: (id: string, patch: Partial<Omit<Toast, "id">>) => void;
   removeToast: (id: string) => void;
   clearToasts: () => void;
 }
 
-export const useToastStore = create<ToastStore>((set) => ({
+export const useToastStore = create<ToastStore>((set, get) => ({
   toasts: [],
 
   addToast: (toast) => {
@@ -27,12 +31,28 @@ export const useToastStore = create<ToastStore>((set) => ({
     set((state) => ({
       toasts: [...state.toasts, newToast],
     }));
+    void toastHooks.onToastShow.emit({
+      id, type: toast.type, title: toast.title, message: toast.message ?? "",
+    });
+    // Errors and warnings stay in the bell's list after the toast is gone.
+    if (toast.type === "error" || toast.type === "warning") {
+      recordNotification({ level: toast.type, title: toast.title, body: toast.message ?? "" });
+    }
+    return id;
+  },
+
+  updateToast: (id, patch) => {
+    set((state) => ({
+      toasts: state.toasts.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    }));
   },
 
   removeToast: (id) => {
+    if (!get().toasts.some((t) => t.id === id)) return;
     set((state) => ({
       toasts: state.toasts.filter((toast) => toast.id !== id),
     }));
+    void toastHooks.onToastDismiss.emit({ id });
   },
 
   clearToasts: () => {
@@ -44,7 +64,9 @@ interface ToastOptions {
   message?: string;
   action?: ToastAction;
   secondaryAction?: ToastAction;
+  tertiaryAction?: ToastAction;
   duration?: number;
+  pauseOnHover?: boolean;
 }
 
 function showToast(type: Toast["type"], title: string, options?: string | ToastOptions, defaultDuration?: number): void {
@@ -55,11 +77,28 @@ function showToast(type: Toast["type"], title: string, options?: string | ToastO
     message: opts?.message,
     action: opts?.action,
     secondaryAction: opts?.secondaryAction,
+    tertiaryAction: opts?.tertiaryAction,
     duration: opts?.duration ?? defaultDuration,
+    pauseOnHover: opts?.pauseOnHover,
   });
 }
 
+interface ProgressToastOptions {
+  message?: string;
+  /** 0..1, or null while unknown. */
+  progress: number | null;
+  action?: ToastAction;
+}
+
 export const toast = {
+  /**
+   * A toast for work in progress. It stays until updated or dismissed; move
+   * it along with `toast.update(id, { progress, message })`.
+   */
+  progress: (title: string, options: ProgressToastOptions): string =>
+    useToastStore.getState().addToast({ type: "info", title, duration: 0, ...options }),
+  update: (id: string, patch: Partial<Omit<Toast, "id">>) => useToastStore.getState().updateToast(id, patch),
+  dismiss: (id: string) => useToastStore.getState().removeToast(id),
   success: (title: string, options?: string | ToastOptions) => showToast("success", title, options),
   error: (title: string, options?: string | ToastOptions) => showToast("error", title, options, 10000),
   info: (title: string, options?: string | ToastOptions) => showToast("info", title, options),

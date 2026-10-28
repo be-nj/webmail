@@ -2,9 +2,10 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Pencil, Trash2, ExternalLink, PanelRight, GripVertical, Lock } from "lucide-react";
-import { icons as lucideIcons, type LucideIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, PanelRight, GripVertical, Lock } from "@/components/icons";
+import { iconForName } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { SettingsSection, SettingItem, ToggleSwitch } from "./settings-section";
 import { IconPicker } from "@/components/layout/icon-picker";
@@ -74,7 +75,7 @@ function AppForm({
   };
 
   const SelectedIcon = formData.icon
-    ? (lucideIcons[formData.icon as keyof typeof lucideIcons] as LucideIcon | undefined)
+    ? iconForName(formData.icon)
     : null;
 
   return (
@@ -194,10 +195,10 @@ function ManagedAppsSection() {
   if (managedApps.length === 0) return null;
 
   return (
-    <SettingsSection title={t("managed_title")} description={t("managed_description")}>
+    <SettingsSection id="managed-apps" title={t("managed_title")} description={t("managed_description")}>
       <div className="space-y-3">
         {managedApps.map((app) => {
-          const AppIcon = lucideIcons[app.icon as keyof typeof lucideIcons] as LucideIcon | undefined;
+          const AppIcon = iconForName(app.icon);
           return (
             <div key={app.id} className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30">
               <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
@@ -205,7 +206,7 @@ function ManagedAppsSection() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{app.name}</div>
-                <div className="text-xs text-muted-foreground truncate">{app.url}</div>
+                <div dir="ltr" className="text-xs text-muted-foreground truncate rtl:text-right">{app.url}</div>
               </div>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 bg-muted text-muted-foreground inline-flex items-center gap-1">
                 <Lock className="w-2.5 h-2.5" />
@@ -289,18 +290,7 @@ export function SidebarAppsSettings() {
 
   return (
     <>
-      <SettingsSection title={t("title")} description={t("description")}>
-        <SettingItem label={t("keep_loaded")} description={t("keep_loaded_description")}>
-          <ToggleSwitch
-            checked={keepAppsLoaded}
-            onChange={(v) => updateSetting("keepAppsLoaded", v)}
-          />
-        </SettingItem>
-      </SettingsSection>
-
-      <ManagedAppsSection />
-
-      <SettingsSection title={t("manage_title")} description={t("manage_description")}>
+      <SettingsSection id="sidebar-apps" title={t("title")} description={t("description")}>
         <div className="space-y-3">
           {sidebarApps.length === 0 && !showAddForm && (
             <p className="text-sm text-muted-foreground py-4 text-center">{tApps("no_apps_hint")}</p>
@@ -318,7 +308,7 @@ export function SidebarAppsSettings() {
               );
             }
 
-            const AppIcon = lucideIcons[app.icon as keyof typeof lucideIcons] as LucideIcon | undefined;
+            const AppIcon = iconForName(app.icon);
             return (
               <div
                 key={app.id}
@@ -342,7 +332,7 @@ export function SidebarAppsSettings() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{app.name}</div>
-                  <div className="text-xs text-muted-foreground truncate">{app.url}</div>
+                  <div dir="ltr" className="text-xs text-muted-foreground truncate rtl:text-right">{app.url}</div>
                 </div>
                 <span className={cn(
                   "text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0",
@@ -352,18 +342,16 @@ export function SidebarAppsSettings() {
                 )}>
                   {app.openMode === "inline" ? tApps("inline_badge") : tApps("tab_badge")}
                 </span>
-                <button
-                  onClick={() => setEditingApp(app.id)}
-                  className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
+                <IconButton label={tApps("edit_app")} onClick={() => setEditingApp(app.id)} className="text-muted-foreground">
+                  <Pencil />
+                </IconButton>
+                <IconButton
+                  label={tApps("delete")}
                   onClick={() => handleDelete(app)}
-                  className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                  <Trash2 />
+                </IconButton>
               </div>
             );
           })}
@@ -387,7 +375,16 @@ export function SidebarAppsSettings() {
             </Button>
           )}
         </div>
+
+        <SettingItem advanced label={t("keep_loaded")} description={t("keep_loaded_description")}>
+          <ToggleSwitch
+            checked={keepAppsLoaded}
+            onChange={(v) => updateSetting("keepAppsLoaded", v)}
+          />
+        </SettingItem>
       </SettingsSection>
+
+      <ManagedAppsSection />
 
       <ConfirmDialog {...confirmDialogProps} />
     </>

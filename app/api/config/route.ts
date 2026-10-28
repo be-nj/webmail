@@ -4,12 +4,14 @@ import { configManager } from '@/lib/admin/config-manager';
 import { parseJmapServers, redactJmapServers } from '@/lib/admin/jmap-servers';
 import { hasSessionSecret } from '@/lib/auth/session-secret';
 import { getOauthScopes } from '@/lib/oauth/tokens';
+import { httpUrlOrEmpty } from '@/lib/config-validation';
 import {
   matchDomainBranding,
   parseDomainBranding,
   pickRequestHost,
   type BrandingOverrideKey,
 } from '@/lib/admin/domain-branding';
+import { isNoThirdPartyTrafficOn } from '@/lib/admin/third-party-mode';
 
 /**
  * Runtime configuration endpoint
@@ -50,7 +52,10 @@ export async function GET(request: NextRequest) {
   const oauthEnabled = configManager.get<boolean>('oauthEnabled', false);
   const oauthOnly = oauthEnabled && configManager.get<boolean>('oauthOnly', false);
   const stalwartFeaturesEnabled = configManager.get<boolean>('stalwartFeaturesEnabled', true);
+  const stalwartJmapPassthroughEnabled =
+    stalwartFeaturesEnabled && configManager.get<boolean>('stalwartJmapPassthroughEnabled', true);
   const allowedFrameAncestors = configManager.get<string>('allowedFrameAncestors', '');
+  const autoPickByDomain = configManager.get<boolean>('jmapServerAutoPickByDomain', false);
 
   return NextResponse.json(
     {
@@ -64,6 +69,7 @@ export async function GET(request: NextRequest) {
       rememberMeEnabled: hasSessionSecret(),
       settingsSyncEnabled: configManager.get<boolean>('settingsSyncEnabled', false) && hasSessionSecret(),
       stalwartFeaturesEnabled,
+      stalwartJmapPassthroughEnabled,
       devMode: configManager.get<boolean>('devMode', false),
       faviconUrl: branded<string>('faviconUrl', '/branding/Bulwark_Favicon.svg'),
       appLogoLightUrl: branded<string>('appLogoLightUrl', ''),
@@ -79,19 +85,31 @@ export async function GET(request: NextRequest) {
       loginShowHeading: configManager.get<boolean>('loginShowHeading', true),
       loginShowSubtitle: configManager.get<boolean>('loginShowSubtitle', true),
       loginShowTotp: configManager.get<boolean>('loginShowTotp', true),
+      loginShowTokenLogin: configManager.get<boolean>('loginShowTokenLogin', false),
+      loginShowRememberMe: configManager.get<boolean>('loginShowRememberMe', false),
       loginShowVersion: configManager.get<boolean>('loginShowVersion', true),
       demoMode: configManager.get<boolean>('demoMode', false),
       allowCustomJmapEndpoint: configManager.get<boolean>('allowCustomJmapEndpoint', false),
-      jmapServers: redactJmapServers(parseJmapServers(configManager.get<unknown>('jmapServers', []))),
-      jmapServerAutoPickByDomain: configManager.get<boolean>('jmapServerAutoPickByDomain', false),
+      // The domain lists name every organisation served here; the login page
+      // only needs them to pick the server by the typed address.
+      jmapServers: redactJmapServers(parseJmapServers(configManager.get<unknown>('jmapServers', [])))
+        .map((server) => (autoPickByDomain ? server : { ...server, domains: [] })),
+      jmapServerAutoPickByDomain: autoPickByDomain,
       autoSsoEnabled: configManager.get<boolean>('autoSsoEnabled', false),
       embeddedMode: !!allowedFrameAncestors && allowedFrameAncestors !== "'none'",
       parentOrigin: configManager.get<string>('parentOrigin', ''),
+      sourceCodeUrl: httpUrlOrEmpty(configManager.get<string>('sourceCodeUrl', '')),
+      // Browser-side switches of lib/outgoing-hosts.ts read this (#903).
+      noThirdPartyTraffic: await isNoThirdPartyTrafficOn(),
     },
     {
-      // Branding varies by host, so any cache between us and the browser
-      // must key its entry by the host headers we consulted.
-      headers: { Vary: 'Host, X-Forwarded-Host' },
+      // Runtime settings can change without new asset URLs. Prevent stale
+      // browser/proxy responses, retaining Vary for host-specific branding.
+      headers: {
+        Vary: 'Host, X-Forwarded-Host',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'CDN-Cache-Control': 'no-store',
+      },
     },
   );
 }

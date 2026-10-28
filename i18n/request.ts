@@ -3,13 +3,20 @@ import { headers } from 'next/headers';
 import { mergeMessages } from './merge-messages';
 import { localeFromAcceptLanguage } from './locale-matcher';
 import { routing, type Locale } from './routing';
+import { IS_LITE } from '@/lib/lite';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
 
   if (!locale || !routing.locales.includes(locale as Locale)) {
-    const accept = (await headers()).get('accept-language');
-    locale = localeFromAcceptLanguage(accept, routing.locales) ?? routing.defaultLocale;
+    if (IS_LITE) {
+      // Static export: there is no request to sniff; every localized page pins
+      // its locale via setRequestLocale, so this only covers the root layout.
+      locale = routing.defaultLocale;
+    } else {
+      const accept = (await headers()).get('accept-language');
+      locale = localeFromAcceptLanguage(accept, routing.locales) ?? routing.defaultLocale;
+    }
   }
 
   // Use static imports for better compatibility
@@ -35,6 +42,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
       break;
     case 'he':
       messages = (await import('../locales/he/common.json')).default;
+      break;
+    case 'et':
+      messages = (await import('../locales/et/common.json')).default;
       break;
     case 'fa':
       messages = (await import('../locales/fa/common.json')).default;
@@ -80,6 +90,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
       break;
     case 'sk':
       messages = (await import('../locales/sk/common.json')).default;
+      break;
+    case 'th':
+      messages = (await import('../locales/th/common.json')).default;
       break;
     case 'tr':
       messages = (await import('../locales/tr/common.json')).default;

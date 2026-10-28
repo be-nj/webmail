@@ -6,11 +6,17 @@ import {
   buildFallbackExcludePatch,
   buildFallbackOverridePatch,
   buildOccurrencePatch,
+  buildOccurrenceRsvpPatch,
   hydrateRecurrenceInstances,
+  isBrowserExpandedOccurrence,
+  isOverrideSeriesKeyRejection,
   isServerRecurrenceInstance,
   isSyntheticIdMutationUnsupported,
   resolveOverrideKey,
+  withNewOverrideDetails,
+  withoutOverrideSeriesKeys,
 } from '../recurrence-instances';
+import { jmapError } from '../jmap/jmap-error';
 
 // Shapes below mirror what Stalwart 0.16.19 returned for
 // CalendarEvent/query?expandRecurrences=true + CalendarEvent/get: the
@@ -154,6 +160,86 @@ describe('buildOccurrencePatch', () => {
       'participants/p1/participationStatus': 'accepted',
     });
   });
+
+  it('drops the series keys Stalwart 1.0 checks against the base event, and pointers at an address', () => {
+    // jmap/src/calendar_event/validate.rs: a synthetic id may only repeat
+    // the series' own value for these; 0.16.20-0.16.23 drop them.
+    const patch = buildOccurrencePatch({
+      privacy: 'public',
+      organizerCalendarAddress: 'mailto:me@example.com',
+      method: 'request',
+      prodId: '-//Bulwark//EN',
+      sentBy: 'mailto:assistant@example.com',
+      recurrenceRule: { frequency: 'daily' },
+      excludedRecurrenceRule: null,
+      'participants/p1/calendarAddress': 'mailto:other@example.com',
+      'participants/p1/participationStatus': 'declined',
+      participants: { p1: { '@type': 'Participant', calendarAddress: 'mailto:p1@example.com' } },
+      relatedTo: { r1: { '@type': 'Relation' } },
+      sequence: 3,
+      excluded: false,
+      status: 'tentative',
+      freeBusyStatus: 'free',
+    } as unknown as Partial<CalendarEvent>);
+    expect(patch).toEqual({
+      'participants/p1/participationStatus': 'declined',
+      participants: { p1: { '@type': 'Participant', calendarAddress: 'mailto:p1@example.com' } },
+      relatedTo: { r1: { '@type': 'Relation' } },
+      sequence: 3,
+      excluded: false,
+      status: 'tentative',
+      freeBusyStatus: 'free',
+    });
+  });
+});
+
+describe('withoutOverrideSeriesKeys', () => {
+  it('takes the series and per-event keys out of every override it writes', () => {
+    expect(withoutOverrideSeriesKeys({
+      title: 'Series title',
+      privacy: 'private',
+      recurrenceOverrides: {
+        '2026-09-08T10:00:00': { title: 'Moved', privacy: 'public', organizerCalendarAddress: 'mailto:o@example.com' },
+        '2026-09-09T10:00:00': { excluded: true },
+      },
+    } as unknown as Partial<CalendarEvent>)).toEqual({
+      title: 'Series title',
+      privacy: 'private',
+      recurrenceOverrides: {
+        '2026-09-08T10:00:00': { title: 'Moved' },
+        '2026-09-09T10:00:00': { excluded: true },
+      },
+    });
+  });
+
+  it('handles an override entry and pointers into one', () => {
+    expect(withoutOverrideSeriesKeys({
+      'recurrenceOverrides/2026-09-08T10:00:00': { start: '2026-09-08T12:00:00', privacy: 'public', uid: 'x' },
+      'recurrenceOverrides/2026-09-09T10:00:00/privacy': 'public',
+      'recurrenceOverrides/2026-09-09T10:00:00/participants/p1/calendarAddress': 'mailto:x@example.com',
+      'recurrenceOverrides/2026-09-09T10:00:00/participants/p1/participationStatus': 'accepted',
+      'recurrenceOverrides/2026-09-10T10:00:00': null,
+    } as unknown as Partial<CalendarEvent>)).toEqual({
+      'recurrenceOverrides/2026-09-08T10:00:00': { start: '2026-09-08T12:00:00' },
+      'recurrenceOverrides/2026-09-09T10:00:00/participants/p1/participationStatus': 'accepted',
+      'recurrenceOverrides/2026-09-10T10:00:00': null,
+    });
+  });
+});
+
+describe('isOverrideSeriesKeyRejection', () => {
+  it('recognises Stalwart 1.0 refusing a series key inside an override', () => {
+    expect(isOverrideSeriesKeyRejection(jmapError('privacy cannot be set inside recurrenceOverrides.', {
+      type: 'invalidProperties', properties: ['recurrenceOverrides'],
+    }))).toBe(true);
+  });
+
+  it('does not match other failures', () => {
+    expect(isOverrideSeriesKeyRejection(jmapError('This property cannot be modified on a single occurrence.', {
+      type: 'invalidProperties',
+    }))).toBe(false);
+    expect(isOverrideSeriesKeyRejection(new Error('privacy cannot be set inside recurrenceOverrides.'))).toBe(false);
+  });
 });
 
 describe('resolveOverrideKey', () => {
@@ -240,6 +326,51 @@ describe('hydrateRecurrenceInstances', () => {
   });
 });
 
+// A reply to one occurrence, as 0.16 stored it: an override with little more
+// than the attendee - no title, place or description. 1.0 builds that
+// occurrence from the override alone, and returns the override as a
+// PatchObject that removes what the series has and the stub lacks.
+describe('hydrateRecurrenceInstances with a reply stub', () => {
+  const series: Partial<CalendarEvent> = {
+    id: 'b', duration: 'PT1H', recurrenceRules: dailyRule,
+    title: 'Team sync', description: 'Agenda in the doc',
+    locations: { l1: { '@type': 'Location', name: 'Room 4' } } as unknown as CalendarEvent['locations'],
+  };
+  const stub = () => {
+    const occurrence = instance({ recurrenceId: '2026-09-08T10:00:00' }) as Partial<CalendarEvent>;
+    delete occurrence.title;
+    return occurrence as CalendarEvent;
+  };
+  const withOverride = (override: Record<string, unknown>) => new Map<string, Partial<CalendarEvent>>([['b', {
+    ...series, recurrenceOverrides: { '2026-09-08T10:00:00': override as Partial<CalendarEvent> },
+  }]]);
+
+  it('takes the title, place and description from the series on Stalwart 1.0', () => {
+    const [out] = hydrateRecurrenceInstances([stub()], withOverride({
+      title: null, description: null, locations: null, 'participants/att/participationStatus': 'declined',
+    }));
+    expect(out.title).toBe('Team sync');
+    expect(out.locations).toEqual(series.locations);
+    expect(out.description).toBe('Agenda in the doc');
+  });
+
+  it('takes only the title from the series on 0.16, whose override is the stub itself', () => {
+    const [out] = hydrateRecurrenceInstances([stub()], withOverride({
+      participants: { att: { '@type': 'Participant', participationStatus: 'declined' } },
+    }));
+    expect(out.title).toBe('Team sync');
+    expect(out.locations).toBeUndefined();
+    expect(out.description).toBeUndefined();
+  });
+
+  it('keeps a title the override sets, even an empty one', () => {
+    const renamed = { ...stub(), title: 'Team sync (moved)' };
+    expect(hydrateRecurrenceInstances([renamed], withOverride({ title: 'Team sync (moved)' }))[0].title)
+      .toBe('Team sync (moved)');
+    expect(hydrateRecurrenceInstances([{ ...stub(), title: '' }], withOverride({ title: '' }))[0].title).toBe('');
+  });
+});
+
 describe('buildFallbackOverridePatch', () => {
   it('writes the whole override object, pinning start/duration and keeping existing override fields', () => {
     const occ = instance({
@@ -256,21 +387,286 @@ describe('buildFallbackOverridePatch', () => {
   });
 
   it('lets the patch override the pinned start (a drag) and creates a fresh override otherwise', () => {
-    expect(buildFallbackOverridePatch(instance(), { start: '2026-09-08T12:00:00' })).toEqual({
+    const occ = instance({ recurrenceOverrides: { '2026-09-10T10:00:00': { title: 'Other' } } });
+    expect(buildFallbackOverridePatch(occ, { start: '2026-09-08T12:00:00' })).toEqual({
       'recurrenceOverrides/2026-09-08T10:00:00': { start: '2026-09-08T12:00:00', duration: 'PT1H' },
+    });
+  });
+
+  it('sends the whole map for the first override, since a pointer into a missing map fails', () => {
+    const expected = {
+      recurrenceOverrides: { '2026-09-08T10:00:00': { start: '2026-09-08T10:00:00', duration: 'PT1H', title: 'x' } },
+    };
+    // A hydrated server occurrence whose base event has no overrides.
+    expect(buildFallbackOverridePatch(instance({ recurrenceOverrides: null }), { title: 'x' })).toEqual(expected);
+    // A browser-expanded occurrence carries its master's map; absent means none.
+    const browser = instance({ id: 'b:2026-09-08T10:00:00', originalId: 'b', baseEventId: undefined, recurrenceOverrides: undefined });
+    expect(buildFallbackOverridePatch(browser, { title: 'x' })).toEqual(expected);
+  });
+
+  it('keeps the pointer when the base event overrides are unknown (a server occurrence not hydrated)', () => {
+    expect(buildFallbackOverridePatch(instance({ recurrenceOverrides: undefined }), { title: 'x' })).toEqual({
+      'recurrenceOverrides/2026-09-08T10:00:00': { start: '2026-09-08T10:00:00', duration: 'PT1H', title: 'x' },
     });
   });
 
   it('is null for something that is not an occurrence of a series', () => {
     expect(buildFallbackOverridePatch(instance({ recurrenceId: null }), { title: 'x' })).toBeNull();
   });
+
+  it('merges into an override Stalwart 1.0 returned as a PatchObject, without keys that are prefixes of one another', () => {
+    const occ = instance({
+      recurrenceOverrides: {
+        '2026-09-08T10:00:00': {
+          start: '2026-09-08T10:00:00',
+          'participants/tom/participationStatus': 'declined',
+          locations: { l1: { '@type': 'Location', name: 'Room A' } },
+        } as unknown as Partial<CalendarEvent>,
+        '2026-09-09T10:00:00': { excluded: true } as unknown as Partial<CalendarEvent>,
+      },
+    });
+    const participants = {
+      tom: { '@type': 'Participant', participationStatus: 'accepted' },
+    } as unknown as CalendarEvent['participants'];
+
+    // A whole participants map replaces the patches beneath it; a pointer
+    // goes into the whole locations value the entry already sets.
+    expect(buildFallbackOverridePatch(occ, {
+      participants,
+      'locations/l1/name': 'Room B',
+    } as unknown as Partial<CalendarEvent>)).toEqual({
+      'recurrenceOverrides/2026-09-08T10:00:00': {
+        start: '2026-09-08T10:00:00',
+        duration: 'PT1H',
+        participants,
+        locations: { l1: { '@type': 'Location', name: 'Room B' } },
+      },
+    });
+  });
+
+  it('keeps privacy and the organizer in the override, as 0.16 has always been sent them', () => {
+    const patch = buildFallbackOverridePatch(instance({ recurrenceOverrides: null }), {
+      title: 'x', privacy: 'public', organizerCalendarAddress: 'mailto:org@example.com',
+    });
+    expect(patch).toEqual({
+      recurrenceOverrides: {
+        '2026-09-08T10:00:00': {
+          start: '2026-09-08T10:00:00', duration: 'PT1H', title: 'x', privacy: 'public', organizerCalendarAddress: 'mailto:org@example.com',
+        },
+      },
+    });
+  });
+});
+
+describe('buildOccurrenceRsvpPatch', () => {
+  const participants = {
+    org: { '@type': 'Participant', email: 'org@example.com', roles: { owner: true }, participationStatus: 'accepted' },
+    me: { '@type': 'Participant', email: 'me@example.com', roles: { attendee: true }, participationStatus: 'needs-action', expectReply: true },
+  } as unknown as CalendarEvent['participants'];
+
+  it('sends every participant, changing only the answering one', () => {
+    expect(buildOccurrenceRsvpPatch({ participants }, 'me', 'declined')).toEqual({
+      participants: {
+        org: participants!.org,
+        me: { ...participants!.me, participationStatus: 'declined' },
+      },
+    });
+  });
+
+  it('names the organizer in an override on the base event, which 0.16.19 needs to accept it', () => {
+    const occ = { participants, organizerCalendarAddress: 'mailto:org@example.com' };
+    expect(buildOccurrenceRsvpPatch(occ, 'me', 'tentative', { seriesKeys: true })).toMatchObject({
+      organizerCalendarAddress: 'mailto:org@example.com',
+    });
+  });
+
+  it('leaves the organizer out of an answer through a synthetic id, which Stalwart 1.0 checks against the series', () => {
+    const occ = { participants, organizerCalendarAddress: 'mailto:org@example.com' };
+    expect(buildOccurrenceRsvpPatch(occ, 'me', 'tentative')).not.toHaveProperty('organizerCalendarAddress');
+  });
+
+  it('keeps the series sequence, so the override replaces its occurrence', () => {
+    expect(buildOccurrenceRsvpPatch({ participants, sequence: 3 }, 'me', 'declined')).toMatchObject({ sequence: 3 });
+  });
+
+  it('copies the occurrence details only when the answer creates the override', () => {
+    const details = {
+      title: 'Weekly sync',
+      description: 'Agenda',
+      locations: { l1: { '@type': 'Location', name: 'Room B' } },
+      status: 'confirmed',
+      alerts: { a1: { '@type': 'Alert', trigger: { '@type': 'OffsetTrigger', offset: '-PT15M' } } },
+    } as unknown as Partial<CalendarEvent>;
+    const occ = instance({ ...details, participants, recurrenceOverrides: { '2026-09-10T10:00:00': { title: 'Other' } } });
+    expect(buildOccurrenceRsvpPatch(occ, 'me', 'declined')).toMatchObject(details);
+
+    // An override that already exists is the organizer's: only the answer changes.
+    const overridden = instance({ ...details, participants, recurrenceOverrides: { '2026-09-08T10:00:00': { title: 'Moved' } } });
+    const patch = buildOccurrenceRsvpPatch(overridden, 'me', 'declined')!;
+    expect(Object.keys(patch).sort()).toEqual(['participants']);
+
+    // Unknown (a server occurrence whose base event was not fetched): copy nothing.
+    const unknown = { ...instance({ ...details, participants }), recurrenceOverrides: undefined };
+    expect(Object.keys(buildOccurrenceRsvpPatch(unknown, 'me', 'declined')!)).toEqual(['participants']);
+  });
+
+  it('is null when the participant is not on the occurrence', () => {
+    expect(buildOccurrenceRsvpPatch({ participants }, 'someone-else', 'declined')).toBeNull();
+    expect(buildOccurrenceRsvpPatch({ participants: null }, 'me', 'declined')).toBeNull();
+  });
 });
 
 describe('buildFallbackExcludePatch', () => {
   it('excludes the occurrence under its override key', () => {
-    expect(buildFallbackExcludePatch(instance())).toEqual({
+    const occ = instance({ recurrenceOverrides: { '2026-09-10T10:00:00': { title: 'Other' } } });
+    expect(buildFallbackExcludePatch(occ)).toEqual({
       'recurrenceOverrides/2026-09-08T10:00:00': { excluded: true },
     });
     expect(buildFallbackExcludePatch(instance({ recurrenceId: null }))).toBeNull();
+  });
+
+  it('sends the whole map when the base event has no overrides yet', () => {
+    expect(buildFallbackExcludePatch(instance({ recurrenceOverrides: null }))).toEqual({
+      recurrenceOverrides: { '2026-09-08T10:00:00': { excluded: true } },
+    });
+  });
+});
+
+describe('withNewOverrideDetails', () => {
+  const occurrence = instance({
+    title: 'Standup',
+    locations: { l1: { '@type': 'Location', name: 'Room 7' } } as unknown as CalendarEvent['locations'],
+    participants: { p1: { '@type': 'Participant', participationStatus: 'accepted' } } as unknown as CalendarEvent['participants'],
+    organizerCalendarAddress: 'mailto:org@example.com',
+    privacy: 'private',
+    sequence: 2,
+    recurrenceOverrides: null,
+  });
+
+  it('copies the occurrence details into a new override, leaving what the change sets', () => {
+    expect(withNewOverrideDetails(occurrence, { start: '2026-09-08T12:00:00', title: 'Moved' })).toEqual({
+      start: '2026-09-08T12:00:00',
+      title: 'Moved',
+      locations: occurrence.locations,
+      participants: occurrence.participants,
+      sequence: 2,
+    });
+  });
+
+  it('copies privacy and the organizer only into an override on the base event, as 0.16 has always had them', () => {
+    expect(withNewOverrideDetails(occurrence, { title: 'Moved' }, { seriesKeys: true })).toMatchObject({
+      privacy: 'private',
+      organizerCalendarAddress: 'mailto:org@example.com',
+    });
+  });
+
+  it('adds nothing to an existing override or when that is unknown', () => {
+    const overridden = { ...occurrence, recurrenceOverrides: { '2026-09-08T10:00:00': { title: 'Moved' } } };
+    expect(withNewOverrideDetails(overridden, { start: 'x' })).toEqual({ start: 'x' });
+    const unknown = { ...occurrence, recurrenceOverrides: undefined };
+    expect(withNewOverrideDetails(unknown, { start: 'x' })).toEqual({ start: 'x' });
+  });
+});
+
+describe('isBrowserExpandedOccurrence', () => {
+  it('is true only for an occurrence of a series expanded in the browser', () => {
+    const browser = instance({ id: 'b:2026-09-08T10:00:00', originalId: 'b', baseEventId: undefined, recurrenceRules: dailyRule });
+    expect(isBrowserExpandedOccurrence(browser)).toBe(true);
+    expect(isBrowserExpandedOccurrence(instance({ recurrenceRules: dailyRule }))).toBe(false);
+    expect(isBrowserExpandedOccurrence({ ...browser, recurrenceRules: null })).toBe(false);
+    expect(isBrowserExpandedOccurrence({ ...browser, recurrenceId: null })).toBe(false);
+  });
+});
+
+describe('hydrateRecurrenceInstances with an occurrence listed twice', () => {
+  // What Stalwart 0.16.23 returned for the organizer after an attendee
+  // declined one occurrence: the series' occurrence plus a stub override
+  // (no title, the organizer under a new key, a bogus duration).
+  const series = instance({
+    title: 'Team sync',
+    participants: {
+      org: { '@type': 'Participant', calendarAddress: 'mailto:a@example.org', participationStatus: 'accepted', roles: { owner: true } },
+      att: { '@type': 'Participant', calendarAddress: 'mailto:b@example.org', participationStatus: 'needs-action' },
+    } as unknown as CalendarEvent['participants'],
+  });
+  const stubParticipants = {
+    att: { '@type': 'Participant', calendarAddress: 'mailto:b@example.org', participationStatus: 'declined' },
+    x1: { '@type': 'Participant', calendarAddress: 'mailto:a@example.org', roles: { owner: true } },
+  } as unknown as CalendarEvent['participants'];
+  const stub = { ...instance({ participants: stubParticipants, duration: 'P1D', sequence: 0 }), title: undefined } as unknown as CalendarEvent;
+  const bases = new Map<string, Partial<CalendarEvent>>([['b', {
+    id: 'b', duration: 'PT1H',
+    recurrenceOverrides: { '2026-09-08T10:00:00': { participants: stubParticipants, sequence: 0 } as Partial<CalendarEvent> },
+  }]]);
+
+  it('collapses the pair: series fields, the override fields on top, participants matched by address', () => {
+    for (const order of [[series, stub], [stub, series]]) {
+      const [merged, ...rest] = hydrateRecurrenceInstances(order, bases);
+      expect(rest).toEqual([]);
+      expect(merged.title).toBe('Team sync');
+      expect(merged.duration).toBe('PT1H');
+      expect(merged.sequence).toBe(0);
+      expect(merged.participants).toEqual({
+        org: { '@type': 'Participant', calendarAddress: 'mailto:a@example.org', participationStatus: 'accepted', roles: { owner: true } },
+        att: { '@type': 'Participant', calendarAddress: 'mailto:b@example.org', participationStatus: 'declined' },
+      });
+    }
+  });
+
+  it('leaves distinct occurrences alone', () => {
+    const other = instance({ id: 'maaaaac', recurrenceId: '2026-09-09T10:00:00', start: '2026-09-09T10:00:00' });
+    expect(hydrateRecurrenceInstances([series, other], bases).map((e) => e.id)).toEqual(['maaaaab', 'maaaaac']);
+  });
+
+  it('tells the override from the series by the members its PatchObject sets on Stalwart 1.0', () => {
+    const declined = instance({
+      title: 'Team sync',
+      participants: {
+        ...series.participants,
+        att: { '@type': 'Participant', calendarAddress: 'mailto:b@example.org', participationStatus: 'declined' },
+      } as unknown as CalendarEvent['participants'],
+    });
+    const patchBases = new Map<string, Partial<CalendarEvent>>([['b', {
+      id: 'b', duration: 'PT1H',
+      recurrenceOverrides: {
+        '2026-09-08T10:00:00': { 'participants/att/participationStatus': 'declined' } as unknown as Partial<CalendarEvent>,
+      },
+    }]]);
+    for (const order of [[series, declined], [declined, series]]) {
+      const [merged, ...rest] = hydrateRecurrenceInstances(order, patchBases);
+      expect(rest).toEqual([]);
+      expect(merged.participants?.att.participationStatus).toBe('declined');
+      expect(merged.participants?.org.participationStatus).toBe('accepted');
+    }
+  });
+});
+
+
+// Until 4c20b09c every editor save wrote the organizer into the override it
+// rewrote; 0.16.19 refuses an answer to an occurrence whose override names
+// none. An override on the base event gets the series' organizer back when
+// it has none; through a synthetic id it is never sent.
+describe('the organizer of an existing override written on the base event', () => {
+  const occurrence = (entry: Record<string, unknown>) => ({
+    id: 'b:2026-09-08T10:00:00', originalId: 'b', start: '2026-09-08T10:00:00', recurrenceId: '2026-09-08T10:00:00',
+    recurrenceRules: [{ '@type': 'RecurrenceRule', frequency: 'daily' }],
+    organizerCalendarAddress: 'mailto:org@example.com',
+    recurrenceOverrides: { '2026-09-08T10:00:00': entry },
+  }) as unknown as CalendarEvent;
+
+  it('adds it to an override that has none, as 0.16 before 0.16.20 stores it', () => {
+    expect(withNewOverrideDetails(occurrence({ title: 'Moved' }), { title: 'Renamed' }, { seriesKeys: true }))
+      .toEqual({ title: 'Renamed', organizerCalendarAddress: 'mailto:org@example.com' });
+  });
+
+  it('leaves an override that has one, and a patch that sets one, alone', () => {
+    const named = occurrence({ title: 'Moved', organizerCalendarAddress: 'mailto:org@example.com' });
+    expect(withNewOverrideDetails(named, { title: 'Renamed' }, { seriesKeys: true })).toEqual({ title: 'Renamed' });
+    expect(withNewOverrideDetails(occurrence({}), { organizerCalendarAddress: null } as never, { seriesKeys: true }))
+      .toEqual({ organizerCalendarAddress: null });
+  });
+
+  it('sends nothing of the series through a synthetic id', () => {
+    expect(withNewOverrideDetails(occurrence({ title: 'Moved' }), { title: 'Renamed' })).toEqual({ title: 'Renamed' });
   });
 });

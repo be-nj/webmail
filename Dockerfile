@@ -21,7 +21,17 @@ ENV NEXT_PUBLIC_DEFAULT_LOCALE=$NEXT_PUBLIC_DEFAULT_LOCALE
 # `git rev-parse` inside the build can't find it - CI must pass it in.
 ARG GIT_COMMIT=unknown
 ENV GIT_COMMIT=$GIT_COMMIT
-RUN npx next build --webpack
+# The mock JMAP server (DEV_MOCK_JMAP) accepts any password and is for
+# `npm run dev` only; images ship without it.
+# `next build` type-checks every .ts file, and some unit tests import the
+# deleted route, so the tests go too. .dockerignore already drops them from a
+# local context, but a remote Git context never applies .dockerignore (#1118).
+RUN rm -rf "app/api/dev-jmap" && \
+    find . -path ./node_modules -prune -o \
+      \( -name __tests__ -o -name "*.test.ts" -o -name "*.test.tsx" \) \
+      -prune -exec rm -rf {} \; && \
+    node scripts/build-plugin-sandbox.mjs && \
+    npx next build --webpack
 
 FROM node:24-alpine AS runner
 
@@ -40,10 +50,14 @@ RUN apk upgrade --no-cache && \
     rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npx && \
     addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
+# The app stays root's and read-only for the runtime user, so a bug that
+# lets it write a file can't replace server.js or a bundle and run code on
+# the next start. It writes only to Next's cache and the data dirs.
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-RUN mkdir -p /app/data/settings /app/data/admin /app/data/admin-state /app/data/telemetry && chown -R nextjs:nodejs /app/data
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+RUN mkdir -p /app/.next/cache /app/data/settings /app/data/admin /app/data/admin-state /app/data/telemetry && \
+    chown -R nextjs:nodejs /app/.next/cache /app/data
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000

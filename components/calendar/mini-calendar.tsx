@@ -2,7 +2,7 @@
 
 import { useState, useMemo, Fragment } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown } from "@/components/icons";
 import {
   addMonths, subMonths, addYears, subYears, setMonth, setYear,
   getISOWeek, getWeek, format,
@@ -12,6 +12,8 @@ import { getEventDayBounds } from "@/lib/calendar-utils";
 import { displayNow } from "@/lib/timezone";
 import type { CalendarEvent } from "@/lib/jmap/types";
 import { useCalendarLocale } from "@/hooks/use-calendar-locale";
+import { PluginDayLabel } from "./plugin-day-label";
+import { IconButton } from "@/components/ui/icon-button";
 
 type PickerView = "days" | "months" | "years";
 
@@ -123,13 +125,13 @@ export function MiniCalendar({
   return (
     <div className="select-none">
       <div className="flex items-center justify-between mb-2">
-        <button
+        <IconButton
           onClick={handlePrev}
-          className="p-1 rounded hover:bg-muted transition-colors"
-          aria-label={t("nav_prev")}
+          className="text-muted-foreground"
+          label={t(pickerView === "days" ? "mini_prev_month" : pickerView === "months" ? "mini_prev_year" : "mini_prev_years")}
         >
-          <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-        </button>
+          <ChevronLeft />
+        </IconButton>
         <button
           onClick={handleHeaderClick}
           disabled={pickerView === "years"}
@@ -145,13 +147,13 @@ export function MiniCalendar({
             <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
           )}
         </button>
-        <button
+        <IconButton
           onClick={handleNext}
-          className="p-1 rounded hover:bg-muted transition-colors"
-          aria-label={t("nav_next")}
+          className="text-muted-foreground"
+          label={t(pickerView === "days" ? "mini_next_month" : pickerView === "months" ? "mini_next_year" : "mini_next_years")}
         >
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        </button>
+          <ChevronRight />
+        </IconButton>
       </div>
 
       {pickerView === "days" && (
@@ -184,18 +186,26 @@ export function MiniCalendar({
                 <button
                   key={`day-${day.toISOString()}`}
                   onClick={() => onSelectDate(day)}
-                  className={cn(
-                    "relative flex items-center justify-center w-7 h-7 text-xs rounded-full transition-colors",
-                    !inMonth && "text-muted-foreground/40",
-                    inMonth && !selected && "hover:bg-muted",
-                    today && !selected && "font-bold text-primary",
-                    selected && "bg-primary text-primary-foreground"
-                  )}
+                  className="group/day flex items-center justify-center w-7 h-7 pointer-coarse:w-full pointer-coarse:h-11 text-xs"
+                  aria-current={today ? "date" : undefined}
+                  aria-pressed={selected}
                 >
-                  {formatDayNumber(day)}
-                  {hasEvent && !selected && (
-                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
-                  )}
+                  <span
+                    className={cn(
+                      "relative flex items-center justify-center w-7 h-7 rounded-full transition-colors",
+                      !inMonth && "text-muted-foreground/40",
+                      // Today is the filled circle; the selected day is tinted.
+                      today && "bg-primary text-primary-foreground font-semibold",
+                      selected && !today && "bg-primary/15 text-primary font-semibold",
+                      !today && !selected && "group-hover/day:bg-muted"
+                    )}
+                  >
+                    {formatDayNumber(day)}
+                    {hasEvent && !selected && !today && (
+                      <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                    )}
+                    <PluginDayLabel surface="mini-calendar-marks" date={format(day, "yyyy-MM-dd")} />
+                  </span>
                 </button>
               </Fragment>
             );

@@ -5,6 +5,9 @@ import { CONFIG_ENV_MAP, DEFAULT_FEATURE_GATES, DEFAULT_POLICY, DEFAULT_THEME_PO
 import { ensureConfigDir, getConfigPath, assertWritable } from './paths';
 import { isValidRelayUrl, normalizeRelayUrl } from '@/lib/push-relays';
 import { sanitizeDefaultSidebarApps } from '@/lib/sidebar-apps';
+import { sanitizePolicyDefaults } from './policy-defaults';
+import { sanitizeOrganisationPolicy } from './organisation-policy';
+import { sanitizeRestrictions, sanitizeScopes } from './policy-scopes';
 
 function parseEnvValue(value: string, type: string): unknown {
   switch (type) {
@@ -35,12 +38,7 @@ class ConfigManager {
     this.adminConfig = await this.readJsonFile('config.json') || {};
     const policy = await this.readJsonFile('policy.json');
     if (policy) {
-      this.policyCache = ConfigManager.normalizePolicy({
-        ...DEFAULT_POLICY,
-        ...policy,
-        features: { ...DEFAULT_FEATURE_GATES, ...(policy.features || {}) },
-        themePolicy: { ...DEFAULT_THEME_POLICY, ...(policy.themePolicy || {}) },
-      });
+      this.policyCache = ConfigManager.completePolicy(policy as Partial<SettingsPolicy>);
     } else {
       this.policyCache = { ...DEFAULT_POLICY };
     }
@@ -58,12 +56,17 @@ class ConfigManager {
    */
   get<T>(key: string, defaultValue?: T): T {
     // Admin override (highest priority)
+    const mapping = CONFIG_ENV_MAP[key];
     if (key in this.adminConfig) {
       return this.adminConfig[key] as T;
+    } else if (mapping && mapping.fileKey && mapping.fileKey in this.adminConfig) {
+      const fileVal = readFileEnv(<string | undefined>this.adminConfig[mapping.fileKey]);
+      if (fileVal !== null) {
+        return parseEnvValue(fileVal, mapping.type) as T;
+      }
     }
 
     // Environment variable
-    const mapping = CONFIG_ENV_MAP[key];
     if (mapping) {
       const envVal = process.env[mapping.envVar];
       if (envVal !== undefined) {
@@ -101,6 +104,14 @@ class ConfigManager {
     for (const [key, mapping] of Object.entries(CONFIG_ENV_MAP)) {
       if (key in this.adminConfig) {
         result[key] = { value: this.adminConfig[key], source: 'admin' };
+      } else if (mapping.fileKey && mapping.fileKey in this.adminConfig) {
+        const fileVal = readFileEnv(<string | undefined>this.adminConfig[mapping.fileKey]);
+        if (fileVal !== null) {
+          result[key] = { value: parseEnvValue(fileVal, mapping.type), source: 'admin' };
+          continue;
+        }
+
+        result[key] = { value: mapping.defaultValue, source: 'default' };
       } else {
         const envVal = process.env[mapping.envVar];
         if (envVal !== undefined) {
@@ -168,13 +179,23 @@ class ConfigManager {
    */
   async setPolicy(policy: SettingsPolicy): Promise<void> {
     assertWritable('update settings policy');
-    this.policyCache = ConfigManager.normalizePolicy({
+    this.policyCache = ConfigManager.completePolicy(policy);
+    await this.writeJsonFile('policy.json', this.policyCache as unknown as Record<string, unknown>);
+  }
+
+  /**
+   * A policy as it would be stored: defaults filled in, migrated and
+   * sanitised, exactly as policy.json is on load. For previewing an import.
+   */
+  static completePolicy(policy: Partial<SettingsPolicy>): SettingsPolicy {
+    return ConfigManager.normalizePolicy({
       ...DEFAULT_POLICY,
       ...policy,
+      restrictions: { ...(policy.restrictions || {}) },
+      defaults: { ...(policy.defaults || {}) },
       features: { ...DEFAULT_FEATURE_GATES, ...(policy.features || {}) },
       themePolicy: { ...DEFAULT_THEME_POLICY, ...(policy.themePolicy || {}) },
     });
-    await this.writeJsonFile('policy.json', this.policyCache as unknown as Record<string, unknown>);
   }
 
   /**
@@ -200,7 +221,30 @@ class ConfigManager {
     // Operator-pinned sidebar apps reach every user's rail, and policy.json can
     // be hand-edited, so the list is validated here rather than at render time.
     policy.defaultSidebarApps = sanitizeDefaultSidebarApps(policy.defaultSidebarApps);
+    // Same for the values users start with (#1248).
+    policy.defaults = sanitizePolicyDefaults(policy.defaults);
+    ConfigManager.migrateSessionTimeout(policy);
+    policy.restrictions = sanitizeRestrictions(policy.restrictions);
+    policy.organisation = sanitizeOrganisationPolicy(policy.organisation);
+    policy.scopes = sanitizeScopes(policy.scopes);
     return policy;
+  }
+
+  /**
+   * The user setting `sessionTimeout` was never read by anything; an admin
+   * who locked it to a number of minutes meant an idle timeout, which is
+   * organisation.session.idleMinutes now. Moved over once, unless the
+   * organisation setting is already there.
+   */
+  private static migrateSessionTimeout(policy: SettingsPolicy): void {
+    const restriction = policy.restrictions?.sessionTimeout;
+    const minutes = typeof restriction?.value === 'number' ? restriction.value : policy.defaults?.sessionTimeout;
+    const raw = (policy.organisation ?? {}) as unknown as Record<string, Record<string, unknown> | undefined>;
+    if (typeof minutes === 'number' && minutes > 0 && typeof raw.session?.idleMinutes !== 'number') {
+      policy.organisation = { ...raw, session: { ...(raw.session ?? {}), idleMinutes: minutes } } as unknown as SettingsPolicy['organisation'];
+    }
+    if (policy.restrictions) delete policy.restrictions.sessionTimeout;
+    if (policy.defaults) delete policy.defaults.sessionTimeout;
   }
 
   /**
@@ -226,7 +270,8 @@ class ConfigManager {
     await ensureConfigDir();
     const targetPath = getConfigPath(filename);
     const tmpPath = targetPath + '.tmp';
-    await writeFile(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
+    // Owner-only: config.json carries the session secret and OAuth client secrets.
+    await writeFile(tmpPath, JSON.stringify(data, null, 2), { encoding: 'utf-8', mode: 0o600 });
     await rename(tmpPath, targetPath);
   }
 }
@@ -241,3 +286,6 @@ type GlobalWithConfig = typeof globalThis & { [SINGLETON_KEY]?: ConfigManager };
 const g = globalThis as GlobalWithConfig;
 export const configManager: ConfigManager =
   g[SINGLETON_KEY] ?? (g[SINGLETON_KEY] = new ConfigManager());
+
+/** See ConfigManager.completePolicy. */
+export const completePolicy = (policy: Partial<SettingsPolicy>): SettingsPolicy => ConfigManager.completePolicy(policy);

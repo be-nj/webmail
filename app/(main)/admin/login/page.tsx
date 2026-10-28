@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield } from 'lucide-react';
+import { Shield } from '@/components/icons';
 import { useConfig } from '@/hooks/use-config';
 import { useThemeStore } from '@/stores/theme-store';
 import { apiFetch, withBasePath } from '@/lib/browser-navigation';
+import { safeAdminNext } from '@/lib/connector/admin-next';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -35,7 +36,12 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push('/admin');
+      // A connector link to an admin page parks its destination in ?next=
+      // so logging in lands on the page that was clicked, not the overview.
+      // safeAdminNext() is the gate: it is the only path here that comes out
+      // of a URL rather than out of a fixed template. A version pick (an
+      // install link to one version of an extension) rides in its query.
+      router.push(safeAdminNext(new URLSearchParams(window.location.search).get('next')) ?? '/admin');
     } catch {
       setError('Network error. Please try again.');
     } finally {

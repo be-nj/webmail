@@ -44,6 +44,10 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(handleNotificationClick(event));
 });
 
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil(handlePushSubscriptionChange(event));
+});
+
 self.addEventListener("message", (event) => {
   const data = event.data || {};
   if (data.type === "mailto-client-ready") {
@@ -122,7 +126,9 @@ async function handlePush(event) {
   // re-buzz for that old message.
   const notified = await readNotifiedIds(accountId);
   const freshIds = emailIds.filter((id) => !notified.includes(id));
+  const groupTag = "bulwark-mail:" + (accountId || "default");
   if (emailIds.length > 0 && freshIds.length === 0) {
+    await showWithoutAlert(groupTag);
     return;
   }
 
@@ -139,22 +145,35 @@ async function handlePush(event) {
     if (freshIds.length > 0) query.set("emailId", freshIds[freshIds.length - 1]);
     const qs = query.toString();
     const previewUrl = `${BASE_PATH}/api/push/preview${qs ? `?${qs}` : ""}`;
-    const res = await fetch(previewUrl, {
-      credentials: "include",
-      cache: "no-store",
-    });
-    if (res.ok) {
-      preview = await res.json();
-      previewOk = true;
+    // A notification shown more than 30 s after the push counts as a silent
+    // push in Safari (#1322), so a slow preview gives way to the generic one.
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), PREVIEW_DEADLINE_MS) : null;
+    try {
+      const res = await fetch(previewUrl, {
+        credentials: "include",
+        cache: "no-store",
+        ...(controller ? { signal: controller.signal } : {}),
+      });
+      if (res.ok) {
+        preview = await res.json();
+        previewOk = true;
+      }
+    } finally {
+      if (timer) clearTimeout(timer);
     }
   } catch (_) {
     preview = null;
+    previewOk = false;
   }
 
   const email = preview && preview.email ? preview.email : null;
   const unreadTotal = preview && typeof preview.unreadTotal === "number"
     ? preview.unreadTotal
     : 0;
+  // The login (cookie slot) that owns this account, so the click opens the
+  // message there and not in whichever account happens to be active.
+  const slot = preview && Number.isInteger(preview.slot) ? preview.slot : undefined;
 
   // Push subscription is scoped to EmailDelivery, but stragglers from the
   // older broader-types subscription, marking-as-read races and verification
@@ -163,6 +182,7 @@ async function handlePush(event) {
   // failed (network/auth/server down) we cannot tell, so fall through to the
   // generic "New mail" toast rather than miss a real delivery.
   if (previewOk && !email && unreadTotal === 0) {
+    await showWithoutAlert(groupTag);
     return;
   }
 
@@ -170,6 +190,7 @@ async function handlePush(event) {
   // message is one we already announced, so whatever woke us was not new
   // Inbox mail - typically a delivery into Junk or a Sieve-filed folder.
   if (emailIds.length === 0 && previewOk && email && notified.includes(email.id)) {
+    await showWithoutAlert(groupTag);
     return;
   }
 
@@ -179,10 +200,9 @@ async function handlePush(event) {
   // used to stack 50 toasts). The newest message is the headline and a
   // Gmail-style "+N more" line carries the rest, counted from the account's
   // unread total.
-  const groupTag = "bulwark-mail:" + (accountId || "default");
   let title;
   let body;
-  let data = { kind: "mail-list", accountId };
+  let data = { kind: "mail-list", accountId, slot };
 
   if (email) {
     const sender = email.from && email.from[0];
@@ -196,13 +216,15 @@ async function handlePush(event) {
       body += "\n" + (more === 1 ? "+1 more message" : `+${more} more messages`);
     } else {
       // Exactly one unread: deep-link straight to that message on click.
-      data = { kind: "email", emailId: email.id, threadId: email.threadId };
+      data = { kind: "email", emailId: email.id, threadId: email.threadId, slot };
     }
   } else {
     title = accountLabel ? `New mail (${accountLabel})` : "New mail";
     body = unreadTotal > 1 ? `${unreadTotal} unread messages` : "You have new mail";
   }
 
+  // With the sound setting off, nothing rings and no quiet window starts.
+  const audible = (await soundPreference()) && !(await withinQuietWindow(accountId));
   await self.registration.showNotification(title, {
     body,
     // Shared per-account tag: each new push replaces the account's single
@@ -213,13 +235,108 @@ async function handlePush(event) {
     icon: `${BASE_PATH}/api/pwa-icon/192`,
     badge: `${BASE_PATH}/api/pwa-icon/192`,
     data,
-    renotify: true,
+    // Inside the quiet window, or with the sound setting off, the
+    // notification still appears or updates, without a sound.
+    renotify: audible,
+    silent: !audible,
   });
 
   const announced = freshIds.length > 0 ? freshIds : (email ? [email.id] : []);
   if (announced.length > 0) {
     await writeNotifiedIds(accountId, notified.concat(announced));
   }
+}
+
+// How long the preview may take before the generic notification is shown.
+const PREVIEW_DEADLINE_MS = 10_000;
+
+/**
+ * Every push has to end in showNotification. Safari counts a push without one
+ * as silent and drops the subscription after three (WebKit maxSilentPushCount);
+ * Firefox and Chrome spend a quota or show a notice of their own. A push with
+ * nothing new to say (a redelivery, mail already read or already announced)
+ * re-shows the account's notification as it is, without a sound. With none on
+ * screen, it shows one and takes it away again at once (#1322).
+ */
+async function showWithoutAlert(groupTag) {
+  const options = {
+    tag: groupTag,
+    icon: `${BASE_PATH}/api/pwa-icon/192`,
+    badge: `${BASE_PATH}/api/pwa-icon/192`,
+    renotify: false,
+    silent: true,
+  };
+  try {
+    const existing = (await self.registration.getNotifications({ tag: groupTag }))[0];
+    if (existing) {
+      await self.registration.showNotification(existing.title, {
+        ...options,
+        body: existing.body,
+        data: existing.data,
+      });
+      return;
+    }
+    await self.registration.showNotification("New mail", { ...options, data: { kind: "mail-list" } });
+    const shown = await self.registration.getNotifications({ tag: groupTag });
+    for (const notification of shown) notification.close();
+  } catch (_) {
+    // Nothing more a worker can do.
+  }
+}
+
+// One message often lands in several of the user's accounts at once - a list,
+// a forward, the same newsletter on two logins - and each account has its own
+// notification. Only the first alert of a burst makes a sound; other accounts'
+// alerts within the window show up silently. A second alert for the same
+// account still rings, as before. The window runs from the last audible alert
+// and is not extended by the silent ones, so a steady trickle still rings
+// every so often.
+const QUIET_WINDOW_MS = 30_000;
+
+function lastAlertKey() {
+  return `${self.location.origin}${BASE_PATH}/__push-state/last-alert`;
+}
+
+function pushPreferencesKey() {
+  return `${self.location.origin}${BASE_PATH}/__push-state/prefs`;
+}
+
+/**
+ * The webmail's "Notification sound" setting, mirrored into this store by
+ * the page (lib/push-preferences.ts, #1289). Nothing stored: a sound, as
+ * before.
+ */
+async function soundPreference() {
+  try {
+    const cache = await caches.open(PUSH_STATE_CACHE);
+    const res = await cache.match(pushPreferencesKey());
+    const prefs = res ? await res.json() : null;
+    return !prefs || prefs.sound !== false;
+  } catch (_) {
+    return true;
+  }
+}
+
+/** True when another account alerted audibly less than QUIET_WINDOW_MS ago; otherwise records this one. */
+async function withinQuietWindow(accountId) {
+  const now = Date.now();
+  const account = accountId || "default";
+  try {
+    const cache = await caches.open(PUSH_STATE_CACHE);
+    const res = await cache.match(lastAlertKey());
+    const lastAlert = res ? await res.json() : null;
+    const last = lastAlert ? Number(lastAlert.at) : 0;
+    if (last && lastAlert.accountId !== account && now - last >= 0 && now - last < QUIET_WINDOW_MS) return true;
+    await cache.put(
+      lastAlertKey(),
+      new Response(JSON.stringify({ at: now, accountId: account }), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  } catch (_) {
+    // Without the store every notification alerts, as before.
+  }
+  return false;
 }
 
 // Per-account list of message ids we have already shown a notification for.
@@ -260,6 +377,35 @@ async function writeNotifiedIds(accountId, ids) {
   }
 }
 
+// The push service dropped or replaced the browser's subscription (expiry,
+// a key rotation, revoked permission). Re-subscribe with the same relay key
+// unless the browser already did, then tell the open tabs: only a page has
+// the login needed to register the new endpoint with the relay and the mail
+// server (resyncWebPush in lib/web-push.ts). With no tab open, the next page
+// load's re-sync picks the new subscription up.
+async function handlePushSubscriptionChange(event) {
+  const old = event.oldSubscription;
+  if (!event.newSubscription && old && old.options) {
+    try {
+      await self.registration.pushManager.subscribe(old.options);
+    } catch (_) {
+      // Permission revoked or push service unreachable: the page's re-sync
+      // subscribes again itself when it can.
+    }
+  }
+  const allClients = await self.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  for (const client of allClients) {
+    try {
+      client.postMessage({ kind: "pushsubscriptionchange" });
+    } catch (_) {
+      // Closed or detached client - ignore.
+    }
+  }
+}
+
 async function handleNotificationClick(event) {
   const data = event.notification.data || {};
   const tag = event.notification.tag || "";
@@ -289,10 +435,30 @@ async function handleNotificationClick(event) {
     // get annoyed when each notification opens a fresh window.
     if ("focus" in client) {
       try {
-        if ("navigate" in client && targetUrl) {
-          await client.navigate(targetUrl);
+        // FOCUS FIRST, NAVIGATE SECOND, and the order is the entire fix.
+        //
+        // A notification click grants the service worker a TRANSIENT USER ACTIVATION, and
+        // both focus() and openWindow() refuse to run without one. navigate() SPENDS that
+        // activation, and it also replaces the client's document, which invalidates the
+        // WindowClient handle we are about to use. Navigating first therefore breaks the
+        // click two ways over. Instrumented on Android in a real deployment:
+        //
+        //   client 1: navigate ok -> focus() threw NotFoundError      (handle stale after nav)
+        //   client 2: navigate ok -> focus() threw InvalidAccessError (activation spent)
+        //   openWindow()          -> threw InvalidAccessError         (same)
+        //
+        // Every rejection was swallowed by the catch below, so the toast closed and nothing
+        // came to the front. Focusing first uses the activation while it is still live;
+        // navigate() does not need one of its own once the client is focused.
+        const focused = await client.focus();
+        if (focused && "navigate" in focused && targetUrl) {
+          try {
+            await focused.navigate(targetUrl);
+          } catch (_) {
+            // Focused but not navigated still beats nothing opening at all.
+          }
         }
-        return client.focus();
+        return focused;
       } catch (_) {
         // navigate() can reject for cross-origin or detached clients - fall
         // through and open a new window below.
@@ -438,10 +604,16 @@ function getReusableClientScore(state) {
 
 function buildClickUrl(data) {
   if (!data) return `${BASE_PATH}/`;
+  // `?slot=` names the login the message belongs to (see the preview API).
+  const slotQuery = Number.isInteger(data.slot) ? `?slot=${data.slot}` : "";
   if (data.kind === "email" && data.emailId) {
     // Permalink (#733). Under NEXT_PUBLIC_LOCALE_PREFIX=always the proxy
     // redirects this to the localised path; the worker has no locale to add.
-    return `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}`;
+    return `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}${slotQuery}`;
+  }
+  // A group of new mail in a known login: that login's Inbox.
+  if (data.kind === "mail-list" && slotQuery) {
+    return `${BASE_PATH}/mail/folder/inbox${slotQuery}`;
   }
   // Generic "New mail" toast (preview API failed or returned no email): land
   // the user on the latest unread message in their Inbox rather than just the

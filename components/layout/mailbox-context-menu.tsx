@@ -21,7 +21,13 @@ import {
   FolderX,
   RefreshCw,
   Upload,
-} from "lucide-react";
+  Users,
+  EyeOff,
+  Bell,
+  BellOff,
+  RotateCcw,
+} from "@/components/icons";
+import { FolderRulesSubMenu } from "@/components/email/rules-menu";
 
 interface Position {
   x: number;
@@ -70,6 +76,20 @@ function renderShortenedPath(fullPath: string): React.ReactNode {
   ]);
 }
 
+/**
+ * Per-account and per-folder notification mutes (#1169). An `accountId` of
+ * undefined is the login's own account, as on the folders-section target.
+ */
+export interface MailboxNotificationActions {
+  isMailboxMuted: (mailbox: Mailbox) => boolean;
+  isAccountMuted: (accountId?: string) => boolean;
+  /** True when some folder of the account has its own setting. */
+  hasFolderSettings: (accountId?: string) => boolean;
+  setMailboxMuted: (mailbox: Mailbox, muted: boolean) => void;
+  setAccountMuted: (accountId: string | undefined, muted: boolean) => void;
+  resetFolderSettings: (accountId?: string) => void;
+}
+
 interface MailboxContextMenuProps {
   target: MailboxContextTarget | null;
   position: Position;
@@ -85,8 +105,14 @@ interface MailboxContextMenuProps {
   onCreateFolder?: (accountId?: string) => void;
   onRenameFolder?: (mailboxId: string) => void;
   onDeleteFolder?: (mailboxId: string) => void;
+  /** Share the folder with other principals (mail:share); omitted when the server lacks it. */
+  onShareFolder?: (mailboxId: string) => void;
   onImportEmail?: (mailboxId: string) => void;
   onRefresh?: () => void;
+  /** Hide a shared account's mail folders from the sidebar (#1228). */
+  onHideSharedAccount?: (accountId: string) => void;
+  /** Omitted when muting has no effect (no emailPush filter on the server). */
+  notifications?: MailboxNotificationActions;
 }
 
 export function MailboxContextMenu({
@@ -104,8 +130,11 @@ export function MailboxContextMenu({
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
+  onShareFolder,
   onImportEmail,
   onRefresh,
+  onHideSharedAccount,
+  notifications,
 }: MailboxContextMenuProps) {
   const t = useTranslations("mailbox_context_menu");
 
@@ -143,6 +172,39 @@ export function MailboxContextMenu({
           onClick={() => handleAction(onRefresh!)}
           disabled={!onRefresh}
         />
+        {notifications && (() => {
+          const accountMuted = notifications.isAccountMuted(target.accountId);
+          return (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                icon={accountMuted ? Bell : BellOff}
+                label={accountMuted ? t("unmute_account_notifications") : t("mute_account_notifications")}
+                onClick={() => handleAction(() => notifications.setAccountMuted(target.accountId, !accountMuted))}
+                testId="mailbox-mute-account"
+              />
+              {notifications.hasFolderSettings(target.accountId) && (
+                <ContextMenuItem
+                  icon={RotateCcw}
+                  label={t("reset_folder_notifications")}
+                  onClick={() => handleAction(() => notifications.resetFolderSettings(target.accountId))}
+                  testId="mailbox-reset-folder-mutes"
+                />
+              )}
+            </>
+          );
+        })()}
+        {target.accountId && onHideSharedAccount && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              icon={EyeOff}
+              label={t("hide_shared_account")}
+              onClick={() => handleAction(() => onHideSharedAccount(target.accountId!))}
+              testId="mailbox-hide-shared-account"
+            />
+          </>
+        )}
       </ContextMenu>
     );
   }
@@ -158,6 +220,9 @@ export function MailboxContextMenu({
   const canSetSeen = mailbox.myRights?.maySetSeen !== false;
   const canRemoveItems = mailbox.myRights?.mayRemoveItems !== false;
   const canAddItems = mailbox.myRights?.mayAddItems !== false;
+  // Sharing needs the mail:share extension (handler present) and, on a folder
+  // someone else shared with us, their permission to re-share it.
+  const canShare = !!onShareFolder && (!mailbox.isShared || mailbox.myRights?.mayShare === true);
 
   const fullPath = getMailboxPath(mailbox, mailboxes);
 
@@ -198,6 +263,27 @@ export function MailboxContextMenu({
         disabled={!onRenameFolder || !canRename}
         testId="mailbox-rename"
       />
+      {onShareFolder && (
+        <ContextMenuItem
+          icon={Users}
+          label={t("share")}
+          onClick={() => handleAction(() => onShareFolder(mailbox.id))}
+          disabled={!canShare}
+          testId="mailbox-share"
+        />
+      )}
+      <FolderRulesSubMenu mailbox={mailbox} onClose={onClose} />
+      {notifications && (() => {
+        const muted = notifications.isMailboxMuted(mailbox);
+        return (
+          <ContextMenuItem
+            icon={muted ? Bell : BellOff}
+            label={muted ? t("unmute_notifications") : t("mute_notifications")}
+            onClick={() => handleAction(() => notifications.setMailboxMuted(mailbox, !muted))}
+            testId="mailbox-mute"
+          />
+        );
+      })()}
 
       <ContextMenuSeparator />
 
@@ -207,7 +293,14 @@ export function MailboxContextMenu({
         onClick={() => handleAction(() => onImportEmail?.(mailbox.id))}
         disabled={!onImportEmail || !canAddItems}
       />
+      <ContextMenuItem
+        icon={RefreshCw}
+        label={t("refresh")}
+        onClick={() => handleAction(onRefresh!)}
+        disabled={!onRefresh}
+      />
 
+      {/* Destructive entries last (R6). */}
       <ContextMenuSeparator />
 
       <ContextMenuItem
@@ -224,15 +317,6 @@ export function MailboxContextMenu({
         disabled={!onDeleteFolder || !canDelete}
         destructive
         testId="mailbox-delete"
-      />
-
-      <ContextMenuSeparator />
-
-      <ContextMenuItem
-        icon={RefreshCw}
-        label={t("refresh")}
-        onClick={() => handleAction(onRefresh!)}
-        disabled={!onRefresh}
       />
     </ContextMenu>
   );

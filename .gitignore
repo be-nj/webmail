@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+/lite-image/
+# scripts/build-plugin-sandbox.mjs
+/public/plugin-sandbox-assets/
 
 # production
 /build

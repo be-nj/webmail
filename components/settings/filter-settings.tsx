@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { SettingsSection, ToggleSwitch } from "./settings-section";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { FilterRuleModal } from "@/components/filters/filter-rule-modal";
 import { SieveEditorModal } from "@/components/filters/sieve-editor-modal";
 import { useFilterStore } from "@/stores/filter-store";
@@ -13,12 +16,15 @@ import { useSettingsStore } from "@/stores/settings-store";
 import { toast } from "@/stores/toast-store";
 import type { FilterRule } from "@/lib/jmap/sieve-types";
 import type { Mailbox } from "@/lib/jmap/types";
+import { forwardsAround, inRunOrder, worstCaseForwards } from "@/lib/filters/forward-limit";
+import { isPeriodBoundary, periodStatus, supportsPeriods } from "@/lib/sieve/period";
+import { formatDateTime } from "@/lib/utils";
 import { useVacationStore } from "@/stores/vacation-store";
 import { useManagedAccountStore } from "@/stores/managed-account-store";
 import {
   Plus,
   GripVertical,
-  X,
+  Trash2,
   Code,
   AlertTriangle,
   Loader2,
@@ -26,17 +32,40 @@ import {
   RotateCcw,
   PalmtreeIcon,
   Lock,
-} from "lucide-react";
+} from "@/components/icons";
 
 function isReadonlyRule(r: FilterRule): boolean {
   return r.origin === "external" || r.origin === "opaque";
 }
 
-function RuleSummary({ rule }: { rule: FilterRule }) {
+/**
+ * The rule's period ("5 Oct 2026, 08:00 – …") and, for a rule that is on,
+ * where now falls in it; null without a period.
+ */
+function usePeriodLabel(rule: FilterRule): { range: string; status: string | null } | null {
   const t = useTranslations("settings.filters");
+  const timeFormat = useSettingsStore((s) => s.timeFormat);
+  const status = periodStatus(rule);
+  if (!status) return null;
+  const format = (boundary: string | undefined) => isPeriodBoundary(boundary)
+    ? formatDateTime(boundary, timeFormat, { day: "numeric", month: "short", year: "numeric" })
+    : "…";
+  return {
+    range: `${format(rule.activeFrom)} – ${format(rule.activeUntil)}`,
+    // A rule that is off does nothing in any period; "active" next to it
+    // would say otherwise.
+    status: rule.enabled ? t(`period_status_${status}`) : null,
+  };
+}
+
+export function RuleSummary({ rule }: { rule: FilterRule }) {
+  const t = useTranslations("settings.filters");
+  const period = usePeriodLabel(rule);
 
   const conditions = rule.conditions.slice(0, 2).map((c) => {
     const field = t(`condition_fields.${c.field}`);
+    // "All messages" says it all: no comparator, no value.
+    if (c.field === "all") return field;
     const comparator = t(`comparators.${c.comparator}`);
     // has_any is a no-value test ("attachment is present"); appending
     // `""` would look broken in the summary line.
@@ -82,12 +111,14 @@ function RuleSummary({ rule }: { rule: FilterRule }) {
           </span>
         ))}
       </span>
+      {period && <span className="ms-1">· {period.range}{period.status && ` (${period.status})`}</span>}
     </div>
   );
 }
 
-function VisualRuleSummary({ rule }: { rule: FilterRule }) {
+export function VisualRuleSummary({ rule }: { rule: FilterRule }) {
   const t = useTranslations("settings.filters");
+  const period = usePeriodLabel(rule);
 
   const joiner = rule.matchType === "all" ? t("and") : t("or");
   const matchLabel = rule.matchType === "all" ? t("match_all_conditions") : t("match_any_condition");
@@ -100,29 +131,32 @@ function VisualRuleSummary({ rule }: { rule: FilterRule }) {
         </span>
         {rule.conditions.map((c, i) => {
           const field = t(`condition_fields.${c.field}`);
-          const comparator = t(`comparators.${c.comparator}`);
+          // "All messages" says it all: no comparator, no value.
+          const everyMessage = c.field === "all";
+          const comparator = everyMessage ? null : t(`comparators.${c.comparator}`);
           return (
             <span key={i} className="contents">
               {i > 0 && (
                 <span className="text-[10px] text-muted-foreground/70 italic">{joiner}</span>
               )}
-              <span className="inline-flex items-baseline gap-1 px-1.5 py-px rounded-sm bg-muted/60 text-foreground">
-                <span className="font-medium text-blue-600 dark:text-blue-400">{field}</span>
-                <span className="text-muted-foreground">{comparator}</span>
-                {!(c.field === "attachment" && c.comparator === "has_any") && (
-                  <span className="text-foreground">
-                    {Array.isArray(c.value)
-                      ? c.value.map((v, k) => (
-                          <span key={k}>
-                            {k > 0 && (
-                              <span className="text-muted-foreground/70 italic mx-0.5">
-                                {t("or")}
-                              </span>
-                            )}
-                            “{v}”
-                          </span>
-                        ))
-                      : <>“{c.value}”</>}
+              <span className="inline-flex min-w-0 max-w-full items-baseline gap-1 px-1.5 py-px rounded-sm bg-muted/60 text-foreground">
+                <span className="shrink-0 font-medium text-blue-600 dark:text-blue-400">{field}</span>
+                {!everyMessage && <span className="shrink-0 text-muted-foreground">{comparator}</span>}
+                {!everyMessage && !(c.field === "attachment" && c.comparator === "has_any") && (
+                  // The values of one condition stay in its chip, where "or"
+                  // cannot be mistaken for the joiner between conditions. They
+                  // wrap between each other under the first value, the "or"
+                  // leading the next line; a single value too long for any
+                  // line breaks inside itself instead of leaving the card.
+                  <span className="flex min-w-0 flex-wrap items-baseline gap-x-1 text-foreground">
+                    {(Array.isArray(c.value) ? c.value : [c.value]).map((v, k) => (
+                      <span key={k} className="min-w-0 wrap-anywhere">
+                        {k > 0 && (
+                          <span className="text-muted-foreground/70 italic">{t("or")} </span>
+                        )}
+                        “{v}”
+                      </span>
+                    ))}
                   </span>
                 )}
               </span>
@@ -143,14 +177,28 @@ function VisualRuleSummary({ rule }: { rule: FilterRule }) {
               {i > 0 && (
                 <span className="text-muted-foreground/50">›</span>
               )}
-              <span className="inline-flex items-baseline gap-1 px-1.5 py-px rounded-sm bg-muted/60 text-foreground">
-                <span className="font-medium text-emerald-600 dark:text-emerald-400">{action}</span>
-                {a.value && <span className="text-muted-foreground">“{a.value}”</span>}
+              <span className="inline-flex min-w-0 max-w-full items-baseline gap-1 px-1.5 py-px rounded-sm bg-muted/60 text-foreground">
+                <span className="shrink-0 font-medium text-emerald-600 dark:text-emerald-400">{action}</span>
+                {a.value && <span className="min-w-0 wrap-anywhere text-muted-foreground">“{a.value}”</span>}
               </span>
             </span>
           );
         })}
       </div>
+
+      {period && (
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-500 dark:text-violet-400">
+            {t("period_title")}
+          </span>
+          <span className="min-w-0 max-w-full px-1.5 py-px rounded-sm bg-muted/60 text-foreground wrap-anywhere">
+            {period.range}
+          </span>
+          {period.status && (
+            <span className="text-[10px] text-muted-foreground/60 italic">({period.status})</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -173,6 +221,9 @@ export function FilterSettings() {
     isOpaque,
     rawScript,
     vacationSettings,
+    includeVacation,
+    vacationForward,
+    sieveCapabilities,
     selectAccount,
     saveFilters,
     addRule,
@@ -235,15 +286,32 @@ export function FilterSettings() {
   // Vacation uses a separate per-(primary)-account mechanism (RFC 9661), so the
   // "vacation active" banner only applies when editing the personal account.
   const vacationEnabled =
-    isPrimaryAccount && (vacationStoreEnabled || vacationSettings?.isEnabled);
+    isPrimaryAccount && (vacationStoreEnabled || vacationSettings?.isEnabled || includeVacation);
 
   const [editingRule, setEditingRule] = useState<FilterRule | undefined>();
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [showSieveEditor, setShowSieveEditor] = useState(false);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
+
+  // A message can collect only so many forwards on this server. The rules run
+  // in the order listed, behind the out of office forwarding, and one that
+  // stops ends the script for its messages, so the order counts (see
+  // lib/filters/forward-limit.ts).
+  const redirectLimit = sieveCapabilities?.maxNumberRedirects;
+  const runOrder = inRunOrder(rules, vacationForward);
+  const tooManyForwards =
+    typeof redirectLimit === "number" && redirectLimit > 0 && worstCaseForwards(runOrder) > redirectLimit;
+  // A limit of 0: the server runs no redirect, so the rules' forwards do nothing.
+  const forwardsIgnored = redirectLimit === 0 && worstCaseForwards(rules) > 0;
+  // The edited rule where it is; a new one goes below Bulwark's own rules.
+  const editedIndex = editingRule ? rules.findIndex((r) => r.id === editingRule.id) : -1;
+  const forwardsOfEdited = forwardsAround(
+    runOrder,
+    runOrder.length - rules.length +
+      (editedIndex >= 0 ? editedIndex : rules.filter((r) => !isReadonlyRule(r)).length),
+    editedIndex >= 0,
+  );
 
   useEffect(() => {
     if (client && isSupported) {
@@ -269,22 +337,38 @@ export function FilterSettings() {
     [client, toggleRule, saveFilters, tNotifications]
   );
 
+  // A rule can be put back as it was, so it goes at once with an Undo (R3).
   const handleDelete = useCallback(
     async (ruleId: string) => {
-      const deletedRule = rules.find((r) => r.id === ruleId);
+      const before = useFilterStore.getState().rules;
+      const deletedRule = before.find((r) => r.id === ruleId);
+      if (!deletedRule) return;
       deleteRule(ruleId);
-      setDeleteConfirmId(null);
-      if (client) {
-        try {
-          await saveFilters(client);
-          toast.success(tNotifications("filters_deleted"));
-        } catch {
-          if (deletedRule) addRule(deletedRule);
-          toast.error(tNotifications("filters_save_failed"));
-        }
+      if (!client) return;
+      const putBack = () => useFilterStore.setState({ rules: before });
+      try {
+        await saveFilters(client);
+      } catch {
+        putBack();
+        toast.error(tNotifications("filters_save_failed"));
+        return;
       }
+      toast.success(tNotifications("filters_deleted"), {
+        action: {
+          label: tNotifications("rule_undo"),
+          onClick: () => {
+            if (useFilterStore.getState().rules.some((r) => r.id === ruleId)) return;
+            const current = useFilterStore.getState().rules;
+            putBack();
+            saveFilters(client).catch(() => {
+              useFilterStore.setState({ rules: current });
+              toast.error(tNotifications("filters_save_failed"));
+            });
+          },
+        },
+      });
     },
-    [client, rules, deleteRule, addRule, saveFilters, tNotifications]
+    [client, deleteRule, saveFilters, tNotifications]
   );
 
   const handleSaveRule = useCallback(
@@ -327,13 +411,17 @@ export function FilterSettings() {
     [client, setRawScript, saveFilters, tNotifications]
   );
 
+  const { dialogProps: confirmProps, confirm } = useConfirmDialog();
+  // The script typed in the raw editor is thrown away, so it asks first (R3).
   const handleResetToVisual = useCallback(async () => {
-    if (!showResetConfirm) {
-      setShowResetConfirm(true);
-      return;
-    }
+    const ok = await confirm({
+      title: t("reset_title"),
+      message: t("reset_warning"),
+      confirmText: t("confirm_reset"),
+      variant: "destructive",
+    });
+    if (!ok) return;
     resetToVisualBuilder();
-    setShowResetConfirm(false);
     if (client) {
       try {
         await saveFilters(client);
@@ -342,7 +430,7 @@ export function FilterSettings() {
         toast.error(tNotifications("filters_save_failed"));
       }
     }
-  }, [showResetConfirm, resetToVisualBuilder, client, saveFilters, tNotifications]);
+  }, [confirm, t, resetToVisualBuilder, client, saveFilters, tNotifications]);
 
   const handleValidate = useCallback(
     async (content: string) => {
@@ -410,7 +498,12 @@ export function FilterSettings() {
     );
   }
 
-  if (isLoading) {
+  // A reload in the background (another device or tab changed the script)
+  // must not take away a dialog the user is typing in: while one is open,
+  // the page keeps what it has.
+  const editing = showRuleModal || showSieveEditor;
+
+  if (isLoading && !editing) {
     return (
       <SettingsSection title={t("title")} description={t("description")}>
         <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
@@ -421,7 +514,7 @@ export function FilterSettings() {
     );
   }
 
-  if (error) {
+  if (error && !editing) {
     return (
       <SettingsSection title={t("title")} description={t("description")}>
         <div className="text-sm text-red-600 dark:text-red-400 py-4">
@@ -433,7 +526,7 @@ export function FilterSettings() {
 
   return (
     <div className="space-y-6">
-      <SettingsSection title={t("title")} description={t("description")}>
+      <SettingsSection id="rules" title={t("title")} description={t("description")}>
         {isOpaque && (
           <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-400">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -447,34 +540,14 @@ export function FilterSettings() {
                 >
                   {t("open_sieve_editor")}
                 </button>
-                {showResetConfirm ? (
-                  <span className="flex items-center gap-2">
-                    <span className="text-red-600 dark:text-red-400">{t("reset_warning")}</span>
-                    <button
-                      type="button"
-                      onClick={handleResetToVisual}
-                      className="text-red-600 dark:text-red-400 hover:underline font-medium"
-                    >
-                      {t("confirm_reset")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowResetConfirm(false)}
-                      className="text-muted-foreground hover:underline"
-                    >
-                      {t("cancel")}
-                    </button>
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResetToVisual}
-                    className="text-red-600 dark:text-red-400 hover:underline font-medium flex items-center gap-1"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    {t("reset_to_visual")}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => void handleResetToVisual()}
+                  className="text-red-600 dark:text-red-400 hover:underline font-medium flex items-center gap-1"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  {t("reset_to_visual")}
+                </button>
               </div>
             </div>
           </div>
@@ -511,6 +584,18 @@ export function FilterSettings() {
             <Filter className="w-10 h-10 mb-3 opacity-40" />
             <p className="text-sm">{t("no_rules")}</p>
           </div>
+        )}
+
+        {!isOpaque && forwardsIgnored && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            {t("forward_unavailable")}
+          </p>
+        )}
+
+        {!isOpaque && tooManyForwards && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            {t("forward_limit", { count: redirectLimit })}
+          </p>
         )}
 
         {!isOpaque && rules.length > 0 && (
@@ -587,6 +672,7 @@ export function FilterSettings() {
                     <ToggleSwitch
                       checked={rule.enabled}
                       onChange={() => handleToggle(rule.id)}
+                      ariaLabel={rule.name}
                     />
                   </div>
 
@@ -616,33 +702,13 @@ export function FilterSettings() {
                     )}
                   </div>
 
-                  {deleteConfirmId === rule.id ? (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(rule.id)}
-                      >
-                        {t("confirm_delete")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteConfirmId(null)}
-                      >
-                        {t("cancel")}
-                      </Button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setDeleteConfirmId(rule.id)}
-                      className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                      aria-label={t("delete_rule")}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
+                  <IconButton
+                    label={t("delete_rule")}
+                    onClick={() => void handleDelete(rule.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 />
+                  </IconButton>
                 </div>
               );
             })}
@@ -656,6 +722,7 @@ export function FilterSettings() {
             <Button
               variant="outline"
               size="sm"
+              data-search-label={t("add_rule")}
               onClick={() => {
                 setEditingRule(undefined);
                 setShowRuleModal(true);
@@ -668,6 +735,7 @@ export function FilterSettings() {
           <Button
             variant="outline"
             size="sm"
+            data-search-label={t("raw_editor")}
             onClick={() => setShowSieveEditor(true)}
           >
             <Code className="w-4 h-4 me-1" />
@@ -688,6 +756,7 @@ export function FilterSettings() {
               <ToggleSwitch
                 checked={expandedFilterView}
                 onChange={(v) => updateSetting("expandedFilterView", v)}
+                ariaLabel={t("expanded_view")}
               />
             </div>
           )}
@@ -698,6 +767,10 @@ export function FilterSettings() {
         <FilterRuleModal
           rule={editingRule}
           mailboxes={mailboxes}
+          maxRedirects={sieveCapabilities?.maxNumberRedirects}
+          periodsSupported={supportsPeriods(sieveCapabilities?.sieveExtensions)}
+          forwardsBefore={forwardsOfEdited.before}
+          forwardsAfter={forwardsOfEdited.after}
           onSave={handleSaveRule}
           onClose={() => {
             setShowRuleModal(false);
@@ -714,6 +787,7 @@ export function FilterSettings() {
           onValidate={handleValidate}
         />
       )}
+      <ConfirmDialog {...confirmProps} />
     </div>
   );
 }

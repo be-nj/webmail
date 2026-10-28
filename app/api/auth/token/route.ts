@@ -8,16 +8,102 @@ import {
   encodeCachedAccessToken,
   decodeCachedAccessToken,
 } from '@/lib/oauth/tokens';
-import { exchangeCodeForTokens, buildOAuthParams, getMetadata, getTokenEndpoint, DEFAULT_CLIENT_ID } from '@/lib/oauth/token-exchange';
+import {
+  exchangeCodeForTokens,
+  buildOAuthParams,
+  getMetadata,
+  getRequiredConfig,
+  getTokenEndpoint,
+  defaultClientOptions,
+  DEFAULT_CLIENT_ID,
+} from '@/lib/oauth/token-exchange';
+import type { OAuthMetadata } from '@/lib/oauth/discovery';
 import { getCookieOptions } from '@/lib/oauth/cookie-config';
+import { fitsSetCookieBudget } from '@/lib/oauth/set-cookie-budget';
+import {
+  buildEndSessionUrl,
+  clearIdToken,
+  getPostLogoutRedirectUri,
+  idTokenCookieName,
+  isEndSessionEnabled,
+  storeIdToken,
+} from '@/lib/oauth/end-session';
 import { MAX_ACCOUNT_SLOTS } from '@/lib/account-utils';
+import { rejectCrossOriginRequest } from '@/lib/security/same-origin';
+import {
+  clearSignInStamp,
+  isPastMaxAge,
+  maxSessionHoursFor,
+  SESSION_TOO_OLD,
+  tokenSignedInAt,
+  writeSignInStamp,
+} from '@/lib/auth/session-age';
+import { clearStalwartAuthContextInStore, readStalwartAuthContextFromStore } from '@/lib/stalwart/auth-context';
+
+function parseSlot(raw: string | null): number | null {
+  if (raw === null) return null;
+  const slot = parseInt(raw, 10);
+  if (isNaN(slot) || slot < 0 || slot >= MAX_ACCOUNT_SLOTS) return null;
+  return slot;
+}
 
 function getSlot(request: NextRequest): number {
-  const raw = request.nextUrl.searchParams.get('slot');
-  if (raw === null) return 0;
-  const slot = parseInt(raw, 10);
-  if (isNaN(slot) || slot < 0 || slot >= MAX_ACCOUNT_SLOTS) return 0;
-  return slot;
+  return parseSlot(request.nextUrl.searchParams.get('slot')) ?? 0;
+}
+
+// Sign-out waits for this route, so an unresponsive revocation endpoint must
+// not hold it up for long.
+const REVOCATION_TIMEOUT_MS = 3000;
+
+async function revokeRefreshToken(token: string, serverId: string | null, metadata: OAuthMetadata | null): Promise<void> {
+  if (!metadata?.revocation_endpoint) return;
+  const params = buildOAuthParams({
+    token,
+    token_type_hint: 'refresh_token',
+  }, serverId, await defaultClientOptions(serverId).catch(() => ({ fallbackClientId: DEFAULT_CLIENT_ID })));
+
+  try {
+    // Never follow a redirect with the refresh token and client secret in
+    // the body: the endpoint was validated, its redirect target was not.
+    const revocationResponse = await fetch(metadata.revocation_endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+      signal: AbortSignal.timeout(REVOCATION_TIMEOUT_MS),
+      redirect: 'error',
+    });
+    if (!revocationResponse.ok) {
+      logger.warn('Token revocation returned error', { status: revocationResponse.status });
+    }
+  } catch (err) {
+    logger.error('Token revocation network error', { error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+}
+
+/**
+ * The provider logout URL for a slot being signed out, or null when there is
+ * none to visit. A logout URL the admin configured (#1279) goes before the
+ * discovered one: it is there for providers that advertise none, such as
+ * Stalwart, and for a logout page shared with other apps, which must keep
+ * working once the provider starts advertising its own.
+ */
+function endSessionUrlFor(metadata: OAuthMetadata | null, serverId: string | null, idToken: string | undefined): string | null {
+  if (!isEndSessionEnabled()) return null;
+  let clientId: string;
+  let configuredEndpoint: string | undefined;
+  try {
+    ({ clientId, endSessionUrl: configuredEndpoint } = getRequiredConfig(serverId));
+  } catch {
+    return null;
+  }
+  const endpoint = configuredEndpoint || metadata?.end_session_endpoint;
+  if (!endpoint) return null;
+  return buildEndSessionUrl({
+    endpoint,
+    clientId,
+    idToken,
+    postLogoutRedirectUri: getPostLogoutRedirectUri(),
+  });
 }
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -26,25 +112,34 @@ type CookieStore = Awaited<ReturnType<typeof cookies>>;
  * Cache the access token for the slot so a page reload can resume with it.
  *
  * Scoped to the token's own lifetime - once it expires the cookie is worthless
- * and should not linger. A token too large to store is simply not cached.
+ * and should not linger. A token too large to store, or one that would push
+ * the response past a proxy's header buffer beside `otherCookieValues`, is
+ * simply not cached: a reload then refreshes instead (#1237).
+ * Returns the cookie value written, or null.
  */
 function cacheAccessToken(
   cookieStore: CookieStore,
   slot: number,
   accessToken: string,
   expiresIn: number,
-): void {
+  otherCookieValues: ReadonlyArray<string | null | undefined>,
+): string | null {
   const name = accessTokenCookieName(slot);
   const value = encodeCachedAccessToken(accessToken, expiresIn);
-  if (!value) {
-    // Oversized token: drop any stale entry rather than leaving a mismatch.
-    cookieStore.delete(name);
-    return;
+  if (!value || !fitsSetCookieBudget([...otherCookieValues, value])) {
+    // Drop any stale entry rather than leaving a mismatch.
+    if (cookieStore.get(name)) cookieStore.delete(name);
+    return null;
   }
   cookieStore.set(name, value, { ...getCookieOptions(), maxAge: expiresIn });
+  return value;
 }
 
 export async function POST(request: NextRequest) {
+  // CSRF gate (GHSA-qvr9-m8cq-7wvg): cookies written here are SameSite=Lax,
+  // so a cross-site top-level POST would otherwise reach this handler.
+  const crossOrigin = rejectCrossOriginRequest(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const { code, code_verifier, redirect_uri, slot: bodySlot, server_id: bodyServerId } = await request.json();
 
@@ -56,25 +151,31 @@ export async function POST(request: NextRequest) {
     const serverId = typeof bodyServerId === 'string' && bodyServerId ? bodyServerId : null;
 
     const tokens = await exchangeCodeForTokens(code, code_verifier, redirect_uri, serverId);
+    // A sign-in: the maximum session length counts from here, on the server
+    // and, from this answer, in the browser.
+    const signedInAt = Date.now();
 
     const response = NextResponse.json({
       access_token: tokens.access_token,
       expires_in: tokens.expires_in,
+      signed_in_at: signedInAt,
     });
 
     const cookieStore = await cookies();
     if (tokens.refresh_token) {
       const cookieName = refreshTokenCookieName(slot);
       cookieStore.set(cookieName, tokens.refresh_token, getCookieOptions());
+      writeSignInStamp(cookieStore, slot, { signedInAt, refreshToken: tokens.refresh_token });
     }
-    cacheAccessToken(cookieStore, slot, tokens.access_token, tokens.expires_in || 3600);
+    const cachedAccessToken = cacheAccessToken(cookieStore, slot, tokens.access_token, tokens.expires_in || 3600, [tokens.refresh_token, serverId]);
+    storeIdToken(cookieStore, slot, tokens.id_token, request.nextUrl.basePath, [tokens.refresh_token, cachedAccessToken, serverId]);
     // Persist which server entry minted this refresh token so the PUT/DELETE
     // handlers can route the refresh/revocation calls to the right token
     // endpoint without the client having to track it across page loads.
     const serverCookieName = refreshTokenServerCookieName(slot);
     if (serverId) {
       cookieStore.set(serverCookieName, serverId, getCookieOptions());
-    } else {
+    } else if (cookieStore.get(serverCookieName)) {
       cookieStore.delete(serverCookieName);
     }
 
@@ -86,6 +187,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  // CSRF gate (GHSA-qvr9-m8cq-7wvg): cookies written here are SameSite=Lax,
+  // so a cross-site top-level POST would otherwise reach this handler.
+  const crossOrigin = rejectCrossOriginRequest(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const slot = getSlot(request);
     const cookieName = refreshTokenCookieName(slot);
@@ -97,6 +202,25 @@ export async function PUT(request: NextRequest) {
       cookieStore.delete(accessTokenCookieName(slot));
       return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
     }
+
+    // The organisation's maximum session length (lib/auth/session-age.ts).
+    // A refresh token without a matching stamp (from before stamps, or one
+    // whose stamp was deleted) counts from the fixed time the server first
+    // enforced the limits, never from now.
+    const age = await tokenSignedInAt(cookieStore, slot, refreshToken);
+    if (age) {
+      const context = readStalwartAuthContextFromStore(cookieStore, slot);
+      const account = age.stamp?.account ?? context?.accountName ?? context?.username ?? null;
+      const maxHours = await maxSessionHoursFor(account);
+      if (isPastMaxAge(age.signedInAt, maxHours)) {
+        await signOutSlot(cookieStore, slot, request.nextUrl.basePath, false);
+        clearStalwartAuthContextInStore(cookieStore, slot);
+        return NextResponse.json({ error: SESSION_TOO_OLD, maxHours }, { status: 401 });
+      }
+      // Bind the time to this token from now on.
+      if (!age.stamp) writeSignInStamp(cookieStore, slot, { signedInAt: age.signedInAt, refreshToken, ...(account ? { account } : {}) });
+    }
+    const signedIn = age ? { signed_in_at: age.signedInAt } : {};
 
     // A session restore calls this to get its token back, not because the
     // current one expired. Serving the cached token avoids spending a refresh
@@ -113,6 +237,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({
           access_token: cached.accessToken,
           expires_in: cached.expiresIn,
+          ...signedIn,
         });
       }
     }
@@ -125,12 +250,14 @@ export async function PUT(request: NextRequest) {
     const params = buildOAuthParams({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
-    }, serverId, { fallbackClientId: DEFAULT_CLIENT_ID });
+    }, serverId, await defaultClientOptions(serverId));
 
     const tokenResponse = await fetch(tokenEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
+      // See revokeRefreshToken: the body holds the refresh token.
+      redirect: 'error',
     });
 
     if (!tokenResponse.ok) {
@@ -144,6 +271,7 @@ export async function PUT(request: NextRequest) {
         cookieStore.delete(cookieName);
         cookieStore.delete(refreshTokenServerCookieName(slot));
         cookieStore.delete(accessTokenCookieName(slot));
+        clearIdToken(cookieStore, slot, request.nextUrl.basePath);
         return NextResponse.json({ error: 'Refresh failed' }, { status: 401 });
       }
       return NextResponse.json({ error: 'Token endpoint unavailable' }, { status: 503 });
@@ -158,14 +286,28 @@ export async function PUT(request: NextRequest) {
 
     if (tokens.refresh_token) {
       cookieStore.set(cookieName, tokens.refresh_token, getCookieOptions());
+      // The stamp follows the rotated token, with the same sign-in time and lifetime.
+      if (age) {
+        writeSignInStamp(cookieStore, slot, {
+          signedInAt: age.signedInAt,
+          refreshToken: tokens.refresh_token,
+          ...(age.stamp?.account ? { account: age.stamp.account } : {}),
+        });
+      }
     }
 
     const expiresIn = tokens.expires_in || 3600;
-    cacheAccessToken(cookieStore, slot, tokens.access_token, expiresIn);
+    const cachedAccessToken = cacheAccessToken(cookieStore, slot, tokens.access_token, expiresIn, [tokens.refresh_token]);
+    // Providers may reissue the id token on refresh. Only a slot signed in
+    // through the provider keeps one; a password login's slot gains none here.
+    if (typeof tokens.id_token === 'string' && cookieStore.get(idTokenCookieName(slot))) {
+      storeIdToken(cookieStore, slot, tokens.id_token, request.nextUrl.basePath, [tokens.refresh_token, cachedAccessToken]);
+    }
 
     return NextResponse.json({
       access_token: tokens.access_token,
       expires_in: expiresIn,
+      ...signedIn,
     });
   } catch (error) {
     logger.error('Token refresh error', { error: error instanceof Error ? error.message : 'Unknown error' });
@@ -173,92 +315,70 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const all = request.nextUrl.searchParams.get('all') === 'true';
+/**
+ * Revoke a slot's refresh token and clear its token cookies. With
+ * `endSession`, also returns the URL that ends the provider's session, or null
+ * when there is no usable logout URL.
+ */
+async function signOutSlot(
+  cookieStore: CookieStore,
+  slot: number,
+  basePath: string | undefined,
+  endSession: boolean,
+): Promise<string | null> {
+  const cookieName = refreshTokenCookieName(slot);
+  const refreshToken = cookieStore.get(cookieName)?.value;
+  const serverId = cookieStore.get(refreshTokenServerCookieName(slot))?.value || null;
+  const idToken = cookieStore.get(idTokenCookieName(slot))?.value;
 
-    if (all) {
-      // Revoke and delete all refresh token cookies across every slot.
-      const cookieStore = await cookies();
-      for (let i = 0; i < MAX_ACCOUNT_SLOTS; i++) {
-        const name = refreshTokenCookieName(i);
-        const serverCookieName = refreshTokenServerCookieName(i);
-        const token = cookieStore.get(name)?.value;
-        const slotServerId = cookieStore.get(serverCookieName)?.value || null;
-        if (token) {
-          // Best-effort revocation
-          try {
-            const metadata = await getMetadata(slotServerId, { fallbackClientId: DEFAULT_CLIENT_ID }).catch(() => null);
-            if (metadata?.revocation_endpoint) {
-              const params = buildOAuthParams({ token, token_type_hint: 'refresh_token' }, slotServerId, { fallbackClientId: DEFAULT_CLIENT_ID });
-              await fetch(metadata.revocation_endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params.toString(),
-              }).catch(() => {});
-            }
-          } catch { /* best effort */ }
-          cookieStore.delete(name);
-        }
-        cookieStore.delete(serverCookieName);
-        cookieStore.delete(accessTokenCookieName(i));
-      }
-      return NextResponse.json({ ok: true });
-    }
-
-    const slot = getSlot(request);
-    const cookieName = refreshTokenCookieName(slot);
-    const cookieStore = await cookies();
-    const refreshToken = cookieStore.get(cookieName)?.value;
-    const slotServerId = cookieStore.get(refreshTokenServerCookieName(slot))?.value || null;
-    const metadata = await getMetadata(slotServerId, { fallbackClientId: DEFAULT_CLIENT_ID }).catch((err) => {
+  let endSessionUrl: string | null = null;
+  if (refreshToken || endSession) {
+    const metadata = await getMetadata(serverId, { fallbackClientId: DEFAULT_CLIENT_ID }).catch((err) => {
       logger.warn('Failed to discover OAuth metadata during logout', {
         error: err instanceof Error ? err.message : 'Unknown error',
       });
       return null;
     });
+    if (refreshToken) await revokeRefreshToken(refreshToken, serverId, metadata);
+    if (endSession) endSessionUrl = endSessionUrlFor(metadata, serverId, idToken);
+  }
 
-    if (refreshToken) {
-      if (metadata?.revocation_endpoint) {
-        const params = buildOAuthParams({
-          token: refreshToken,
-          token_type_hint: 'refresh_token',
-        }, slotServerId, { fallbackClientId: DEFAULT_CLIENT_ID });
+  // Cleared whether or not revocation worked: the browser must not be able
+  // to resume a session the user ended. Only cookies the browser sent are
+  // cleared - signing out of every slot would otherwise answer with a
+  // Set-Cookie header per slot and cookie, too large for some proxies.
+  for (const name of [cookieName, refreshTokenServerCookieName(slot), accessTokenCookieName(slot)]) {
+    if (cookieStore.get(name)) cookieStore.delete(name);
+  }
+  clearSignInStamp(cookieStore, slot);
+  if (idToken !== undefined) clearIdToken(cookieStore, slot, basePath);
+  return endSessionUrl;
+}
 
-        try {
-          const revocationResponse = await fetch(metadata.revocation_endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params.toString(),
-          });
-          if (!revocationResponse.ok) {
-            logger.warn('Token revocation returned error', { status: revocationResponse.status });
-          }
-        } catch (err) {
-          logger.error('Token revocation network error', { error: err instanceof Error ? err.message : 'Unknown error' });
-        }
-      }
+export async function DELETE(request: NextRequest) {
+  // CSRF gate (GHSA-qvr9-m8cq-7wvg): cookies written here are SameSite=Lax,
+  // so a cross-site top-level POST would otherwise reach this handler.
+  const crossOrigin = rejectCrossOriginRequest(request);
+  if (crossOrigin) return crossOrigin;
+  try {
+    const params = request.nextUrl.searchParams;
+    const basePath = request.nextUrl.basePath;
+    const cookieStore = await cookies();
 
-      cookieStore.delete(cookieName);
-    }
-    cookieStore.delete(refreshTokenServerCookieName(slot));
-    cookieStore.delete(accessTokenCookieName(slot));
-
-    let end_session_url: string | undefined;
-    if (metadata?.end_session_endpoint) {
-      try {
-        const parsed = new URL(metadata.end_session_endpoint);
-        if (parsed.protocol === 'https:') {
-          end_session_url = metadata.end_session_endpoint;
-        } else {
-          logger.warn('Ignoring non-HTTPS end_session_endpoint', { url: metadata.end_session_endpoint });
-        }
-      } catch {
-        logger.warn('Invalid end_session_endpoint URL', { url: metadata.end_session_endpoint });
-      }
+    if (params.get('all') === 'true') {
+      // One top-level navigation can end only one provider session, so the
+      // caller names the slot whose provider should be signed out, if any.
+      const endSessionSlot = parseSlot(params.get('end_session_slot'));
+      const slots = Array.from({ length: MAX_ACCOUNT_SLOTS }, (_, i) => i);
+      const urls = await Promise.all(
+        slots.map((i) => signOutSlot(cookieStore, i, basePath, i === endSessionSlot)),
+      );
+      const endSessionUrl = endSessionSlot === null ? null : urls[endSessionSlot];
+      return NextResponse.json({ ok: true, ...(endSessionUrl && { end_session_url: endSessionUrl }) });
     }
 
-    return NextResponse.json({ ok: true, ...(end_session_url && { end_session_url }) });
+    const endSessionUrl = await signOutSlot(cookieStore, getSlot(request), basePath, params.get('end_session') === 'true');
+    return NextResponse.json({ ok: true, ...(endSessionUrl && { end_session_url: endSessionUrl }) });
   } catch (error) {
     logger.error('Token revocation error', { error: error instanceof Error ? error.message : 'Unknown error' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

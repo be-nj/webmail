@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { X } from "lucide-react";
+import { X } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useKeywordFormat } from "@/hooks/use-keyword-format";
+import type { TagScope } from "@/hooks/use-account-tags";
 import { useShortenedText } from "@/hooks/use-shortened-text";
 
 /**
@@ -42,6 +43,7 @@ export function TagBadge({
   variant,
   onRemove,
   className,
+  scope,
 }: {
   tagId: string;
   variant: TagBadgeVariant;
@@ -51,9 +53,11 @@ export function TagBadge({
    */
   onRemove?: () => void;
   className?: string;
+  /** The message's account (useEmailTagScope); undefined: TagScopeContext. */
+  scope?: TagScope | null;
 }) {
   const t = useTranslations("email_viewer");
-  const { tagName, tagNameCandidates, tagColor } = useKeywordFormat();
+  const { tagName, tagNameCandidates, tagColor } = useKeywordFormat(scope);
   const [labelRef, shortenedName] = useShortenedText(tagNameCandidates(tagId));
   const color = tagColor(tagId);
   const name = tagName(tagId);
@@ -63,8 +67,9 @@ export function TagBadge({
       <span
         className={cn("h-2.5 w-2.5 shrink-0 rounded-full", color.dot, className)}
         title={name}
-        aria-label={name}
-      />
+      >
+        <span className="sr-only">{name}</span>
+      </span>
     );
   }
 

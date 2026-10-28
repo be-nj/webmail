@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { sanitizeEmailHtml } from './email-sanitization';
 import type { EmailTemplate } from './template-types';
 import { BUILT_IN_PLACEHOLDERS } from './template-types';
 import { generateUUID } from './utils';
@@ -51,6 +52,12 @@ export function getAutoFilledPlaceholders(
 
   const values: Record<string, string> = {
     date: now.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }),
+    // The locale's all-numeric form (19.10.2026, 10/19/2026), and the parts
+    // for any other order or separator (#1284).
+    short_date: now.toLocaleDateString(locale, { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    day: String(now.getDate()).padStart(2, '0'),
+    month: String(now.getMonth() + 1).padStart(2, '0'),
+    year: String(now.getFullYear()),
     day_of_week: now.toLocaleDateString(locale, { weekday: 'long' }),
   };
 
@@ -138,6 +145,16 @@ function sanitizeText(value: unknown): string {
   return DOMPurify.sanitize(String(value || ''), STRIP_HTML_CONFIG);
 }
 
+/**
+ * An HTML template body from outside the app (a templates file, a synced
+ * settings blob written by another client) as the store may hold it. Bodies
+ * the plugin API creates are sanitised at creation; these were kept raw and
+ * reached the composer's placeholder preview as markup in the app document.
+ */
+function sanitizeTemplateHtml(value: unknown): string {
+  return sanitizeEmailHtml(String(value || ''));
+}
+
 interface ExportData {
   version: 1;
   type: 'webmail-templates';
@@ -166,18 +183,16 @@ export interface ImportResult {
 // below, synced templates keep their ids so the same template converges to a
 // single entry across devices instead of duplicating on every server load.
 
-/**
- * Tombstones older than this are pruned from the synced blob. A device that
- * stays offline longer than this may resurrect a deletion - the accepted
- * trade-off for keeping the blob bounded.
- */
-export const TEMPLATE_TOMBSTONE_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+// The merge itself lives in template-merge so the settings API route can use
+// it without pulling DOMPurify into the server bundle.
+export {
+  mergeSyncedTemplates,
+  TEMPLATE_TOMBSTONE_TTL_MS,
+  type SyncedTemplateState,
+} from './template-merge';
 
-export interface SyncedTemplateState {
-  templates: EmailTemplate[];
-  /** Template id -> ISO time it was deleted. */
-  deletedTemplateIds: Record<string, string>;
-}
+/** `createdAt` / `updatedAt` of a synced template that has none. */
+const UNKNOWN_TIME = new Date(0).toISOString();
 
 /**
  * Structurally validates a `templates` value from a synced settings blob or
@@ -198,13 +213,15 @@ export function parseSyncedTemplates(value: unknown): EmailTemplate[] | null {
     seen.add(t.id);
 
     const recipients = t.defaultRecipients as Record<string, unknown> | undefined;
-    const now = new Date().toISOString();
+    // A fixed time, not now: a copy without a date must never win a merge
+    // by `updatedAt` against one that has a date.
+    const now = UNKNOWN_TIME;
 
     templates.push({
       id: t.id,
       name: sanitizeText(t.name),
       subject: sanitizeText(t.subject),
-      body: t.isHTML ? String(t.body || '') : sanitizeText(t.body),
+      body: t.isHTML ? sanitizeTemplateHtml(t.body) : sanitizeText(t.body),
       isHTML: Boolean(t.isHTML),
       category: sanitizeText(t.category),
       defaultRecipients: recipients && typeof recipients === 'object'
@@ -233,54 +250,6 @@ export function parseTemplateTombstones(value: unknown): Record<string, string> 
     }
   }
   return out;
-}
-
-/**
- * Merges a synced template state into the local one. Per template id the
- * newer `updatedAt` wins (ties keep the local copy); a deletion tombstone
- * beats a template unless the template was edited after the deletion, which
- * resurrects it and clears the tombstone. Merging (rather than replacing)
- * keeps a stale per-account blob from wiping templates created under another
- * account or on another device.
- */
-export function mergeSyncedTemplates(
-  local: SyncedTemplateState,
-  incoming: SyncedTemplateState,
-  now: Date = new Date()
-): SyncedTemplateState {
-  const cutoff = now.getTime() - TEMPLATE_TOMBSTONE_TTL_MS;
-
-  // Union of tombstones, newest deletion time per id, pruned by TTL.
-  const tombstones: Record<string, string> = {};
-  for (const source of [local.deletedTemplateIds, incoming.deletedTemplateIds]) {
-    for (const [id, deletedAt] of Object.entries(source)) {
-      if (Date.parse(deletedAt) < cutoff) continue;
-      if (!tombstones[id] || Date.parse(deletedAt) > Date.parse(tombstones[id])) {
-        tombstones[id] = deletedAt;
-      }
-    }
-  }
-
-  const byId = new Map<string, EmailTemplate>();
-  for (const t of local.templates) byId.set(t.id, t);
-  for (const t of incoming.templates) {
-    const existing = byId.get(t.id);
-    if (!existing || Date.parse(t.updatedAt) > Date.parse(existing.updatedAt)) {
-      byId.set(t.id, t);
-    }
-  }
-
-  const templates: EmailTemplate[] = [];
-  for (const t of byId.values()) {
-    const deletedAt = tombstones[t.id];
-    if (deletedAt !== undefined) {
-      if (Date.parse(t.updatedAt) <= Date.parse(deletedAt)) continue;
-      delete tombstones[t.id];
-    }
-    templates.push(t);
-  }
-
-  return { templates, deletedTemplateIds: tombstones };
 }
 
 export function importTemplates(json: string): ImportResult {
@@ -330,7 +299,7 @@ export function importTemplates(json: string): ImportResult {
       id: generateUUID(),
       name: sanitizeText(t.name),
       subject: sanitizeText(t.subject),
-      body: t.isHTML ? String(t.body || '') : sanitizeText(t.body),
+      body: t.isHTML ? sanitizeTemplateHtml(t.body) : sanitizeText(t.body),
       isHTML: Boolean(t.isHTML),
       category: sanitizeText(t.category),
       defaultRecipients: recipients && typeof recipients === 'object'

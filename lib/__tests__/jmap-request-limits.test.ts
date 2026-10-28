@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { JMAPClient } from '../jmap/client';
-import { batched, itemsPerRequest } from '../jmap/request-limits';
+import { batched, batchedBySize, itemsPerRequest } from '../jmap/request-limits';
 
 // Stalwart allows 16 method calls and 500 objects per request by default. A
 // batch built from a list the user controls - tags, a multi-select, an import -
@@ -50,6 +50,30 @@ describe('batched', () => {
   it('never produces an empty batch for a nonsensical size', () => {
     expect(batched([1, 2], 0)).toEqual([[1], [2]]);
     expect(batched([1, 2], -5)).toEqual([[1], [2]]);
+  });
+});
+
+describe('batchedBySize', () => {
+  const size = (n: number) => n;
+
+  it('fills each batch up to the budget', () => {
+    expect(batchedBySize([3, 2, 2, 1, 4], size, 4, 10)).toEqual([[3], [2, 2], [1], [4]]);
+  });
+
+  it('gives an item over the budget a batch of its own', () => {
+    expect(batchedBySize([1, 9, 1], size, 4, 10)).toEqual([[1], [9], [1]]);
+  });
+
+  it('counts an item without a size as the whole budget', () => {
+    expect(batchedBySize(['a', 'b', 'c'], (item) => (item === 'b' ? undefined : 1), 4, 10)).toEqual([['a'], ['b'], ['c']]);
+  });
+
+  it('never puts more than maxCount items in a batch', () => {
+    expect(batchedBySize([1, 1, 1, 1, 1], size, 100, 2)).toEqual([[1, 1], [1, 1], [1]]);
+  });
+
+  it('returns nothing for an empty list', () => {
+    expect(batchedBySize([], size, 4, 10)).toEqual([]);
   });
 });
 
@@ -147,6 +171,27 @@ describe('JMAPClient request limits', () => {
 
       expect(sent.map(calls => calls.length)).toEqual([4, 4, 4, 4, 2]);
     });
+
+    it('leaves the excluded folders out of both counts (#1156)', async () => {
+      const client = await connectedClient({ maxCallsInRequest: 16 });
+      const sent = recordRequests((methodCalls) => ({
+        methodResponses: methodCalls.map(([, , callId]) => ['Email/query', { total: 0 }, callId]),
+      }));
+
+      await client.getTagCounts(['work'], undefined, ['trash', 'junk']);
+
+      const [total, unread] = sent[0].map(([, args]) => (args as { filter: unknown }).filter);
+      expect(total).toEqual({
+        operator: 'AND',
+        conditions: [{ hasKeyword: '$label:work' }, { inMailboxOtherThan: ['trash', 'junk'] }],
+      });
+      expect(unread).toEqual({
+        operator: 'AND',
+        conditions: [
+          { hasKeyword: '$label:work' }, { notKeyword: '$seen' }, { inMailboxOtherThan: ['trash', 'junk'] },
+        ],
+      });
+    });
   });
 
   describe('getCategoryUnreadCounts', () => {
@@ -170,7 +215,7 @@ describe('JMAPClient request limits', () => {
 
     it('splits batchDeleteEmails at maxObjectsInSet', async () => {
       const client = await connectedClient({ maxObjectsInSet: 500 });
-      const sent = recordRequests(() => ({ methodResponses: [['Email/set', { destroyed: [] }, '0']] }));
+      const sent = recordRequests(calls => ({ methodResponses: [['Email/set', { destroyed: calls[0][1].destroy }, '0']] }));
 
       await client.batchDeleteEmails(ids);
 

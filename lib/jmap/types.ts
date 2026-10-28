@@ -1,7 +1,4 @@
-export interface EmailHeader {
-  name: string;
-  value: string;
-}
+
 
 /**
  * A session-visible account (the user's own primary account plus any
@@ -22,6 +19,19 @@ export interface SharedAccount {
   };
 }
 
+/**
+ * One account as the JMAP session describes it (RFC 8620 §2), unflattened:
+ * the raw per-account capability objects rather than SharedAccount's
+ * booleans, for callers that need a capability's fields.
+ */
+export interface AccountInfo {
+  /** Stalwart names an account after its principal's address, a group's too. */
+  name: string;
+  isPersonal: boolean;
+  isReadOnly: boolean;
+  accountCapabilities: Record<string, unknown>;
+}
+
 export interface Email {
   id: string;
   threadId: string;
@@ -37,6 +47,10 @@ export interface Email {
   subject?: string;
   sentAt?: string;
   preview?: string;
+  // Server-side search highlighting (SearchSnippet/get, RFC 8621 §5): the
+  // subject / body excerpt with the matched terms in <mark>, set on search
+  // hits only. See lib/search-snippet.ts.
+  searchSnippet?: { subject: string | null; preview: string | null };
   textBody?: EmailBodyPart[];
   htmlBody?: EmailBodyPart[];
   bodyValues?: Record<string, EmailBodyValue>;
@@ -114,6 +128,21 @@ export interface SendEmailResult {
    * old draft). The mail left the server - callers should warn, not fail.
    */
   filingError?: string;
+  /**
+   * Recipients the server refused while accepting the submission (its
+   * deliveryStatus says delivered "no"). The message went out to the others
+   * only - callers should name these instead of reporting a plain success.
+   * When it refused every one, the send throws RecipientsRejectedError
+   * instead.
+   */
+  rejectedRecipients?: RejectedRecipient[];
+}
+
+/** A recipient refused at submission, with the SMTP reply the server gave. */
+export interface RejectedRecipient {
+  email: string;
+  /** The server's SMTP reply, e.g. "550 5.1.2 Relay not allowed."; empty when it gave none. */
+  smtpReply: string;
 }
 
 export interface ScheduledEmail extends Email {
@@ -147,6 +176,15 @@ export interface AuthenticationResults {
     result: 'pass' | 'fail' | 'policy' | 'neutral' | 'temperror' | 'permerror';
     domain?: string;
     selector?: string;
+    /**
+     * Every DKIM result when the message carried more than one signature;
+     * `result` above is the first.
+     */
+    all?: Array<{
+      result: 'pass' | 'fail' | 'policy' | 'neutral' | 'temperror' | 'permerror';
+      domain?: string;
+      selector?: string;
+    }>;
   };
   dmarc?: {
     result: 'pass' | 'fail' | 'none';
@@ -206,22 +244,32 @@ export interface Mailbox {
   unreadEmails: number;
   totalThreads: number;
   unreadThreads: number;
-  myRights: {
-    mayReadItems: boolean;
-    mayAddItems: boolean;
-    mayRemoveItems: boolean;
-    maySetSeen: boolean;
-    maySetKeywords: boolean;
-    mayCreateChild: boolean;
-    mayRename: boolean;
-    mayDelete: boolean;
-    maySubmit: boolean;
-  };
+  myRights: MailboxRights;
   isSubscribed: boolean;
+  // Sharing (urn:ietf:params:jmap:mail:share): principalId -> rights. Only
+  // present when explicitly requested (see getMailboxShareWith).
+  shareWith?: Record<string, MailboxRights> | null;
   // Shared folder support
   accountId?: string;
   accountName?: string;
   isShared?: boolean;
+}
+
+// Mailbox rights (RFC 8621 §2 myRights; `mayShare` from the mail:share
+// extension). Also the value type of Mailbox.shareWith.
+export interface MailboxRights {
+  mayReadItems: boolean;
+  mayAddItems: boolean;
+  mayRemoveItems: boolean;
+  maySetSeen: boolean;
+  maySetKeywords: boolean;
+  mayCreateChild: boolean;
+  mayRename: boolean;
+  mayDelete: boolean;
+  maySubmit: boolean;
+  mayShare?: boolean;
+  /** Stalwart 1.0: may change the mailbox's shared metadata (urn:ietf:params:jmap:metadata). */
+  maySetMetadata?: boolean;
 }
 
 export interface Thread {
@@ -231,7 +279,8 @@ export interface Thread {
 
 // Thread grouping for UI display
 export interface ThreadGroup {
-  threadId: string;
+  threadId: string;          // JMAP thread id - unique only within its account; use for Thread/get
+  threadKey: string;         // Client-side identity, unique across accounts (see threadKeyFor)
   emails: Email[];           // Emails in this thread (sorted by receivedAt desc)
   latestEmail: Email;        // Most recent email
   participantNames: string[];// Unique participant names
@@ -299,6 +348,11 @@ export interface ContactCard {
     grammaticalGender?: string;
     pronouns?: Record<string, { pronouns: string; pref?: number; contexts?: Record<string, boolean> }>;
   };
+  calendars?: Record<string, { uri: string; kind?: 'calendar' | 'freeBusy'; mediaType?: string; contexts?: Record<string, boolean> }>;
+  schedulingAddresses?: Record<string, { uri: string; contexts?: Record<string, boolean>; pref?: number }>;
+  // Client-side flat views of `calendars`, `schedulingAddresses` and the
+  // `directories` entry (vCard CALURI / FBURL / CALADRURI / SOURCE). They are
+  // not RFC 9553 properties; lib/jmap/contact-wire.ts maps them.
   calendarUri?: string;
   schedulingUri?: string;
   freeBusyUri?: string;
@@ -401,10 +455,17 @@ export interface ContactNote {
   author?: { name?: string; uri?: string };
 }
 
+// RFC 9553 Media. The bytes are either at `uri` (an https or data: URI) or in
+// a blob: Stalwart 1.0 returns every embedded PHOTO, LOGO and SOUND as a
+// `blobId` without `uri`, while 0.16 returns them as data: URIs.
 export interface ContactMedia {
   kind: 'photo' | 'sound' | 'logo';
-  uri: string;
+  uri?: string;
+  blobId?: string;
   mediaType?: string;
+  label?: string;
+  pref?: number;
+  contexts?: Record<string, boolean>;
 }
 
 // RFC 9553 PartialDate
@@ -497,6 +558,46 @@ export interface Principal {
   capabilities?: Record<string, unknown>;
   accountId?: string;
 }
+
+/**
+ * How complete a principal listing is:
+ * - `ok`: the whole directory;
+ * - `restricted`: the server refused to list its directory (Stalwart 1.0 with
+ *   directory queries off, or a role without the permission). The principals
+ *   are what Principal/get without ids still returns, on 1.0 the user's own
+ *   account, their groups and the accounts that shared something with them;
+ * - `error`: the listing failed part-way; the principals are what arrived.
+ */
+export type PrincipalDirectoryStatus = 'ok' | 'restricted' | 'error';
+
+export interface PrincipalListing {
+  principals: Principal[];
+  status: PrincipalDirectoryStatus;
+  /**
+   * With `restricted`: the administrator turned directory queries off, as
+   * Stalwart 1.0 says in its refusal, rather than the user's role lacking
+   * the permission. 0.16 has no such refusal over JMAP.
+   */
+  directoryQueriesOff?: boolean;
+}
+
+/**
+ * One busy interval from Principal/getAvailability (RFC 9670 §2.5 /
+ * draft-ietf-jmap-calendars). `busyStatus` null means the server did not
+ * classify the period (treated as busy).
+ */
+export interface BusyPeriod {
+  utcStart: string;
+  utcEnd: string;
+  busyStatus: 'confirmed' | 'tentative' | 'unavailable' | null;
+}
+
+/**
+ * One principal's answer to Principal/getAvailability: its busy periods, or
+ * the JMAP error type the call was refused with (`forbidden`, `rateLimit`,
+ * `notFound`, ...).
+ */
+export type PrincipalAvailability = { periods: BusyPeriod[] } | { error: string };
 
 export interface VacationResponse {
   id: string;
@@ -769,7 +870,7 @@ export interface CalendarTask {
   timeZone: string | null;
   showWithoutTime: boolean;
   progress: 'needs-action' | 'in-process' | 'completed' | 'cancelled';
-  progressUpdated: string | null;
+  progressUpdated?: string | null;
   priority: number;
   privacy: 'public' | 'private' | 'secret';
   keywords: Record<string, boolean> | null;
@@ -778,15 +879,28 @@ export interface CalendarTask {
   created: string | null;
   updated: string;
   recurrenceRules: CalendarRecurrenceRule[] | null;
+  // While on, Stalwart 1.0 fills the calendar's default alerts into `alerts`.
+  useDefaultAlerts?: boolean;
   alerts: Record<string, CalendarEventAlert> | null;
   relatedTo: Record<string, CalendarRelation> | null;
+  // Client-only, set on tasks from a shared calendar account. Their `id` and
+  // `calendarIds` are namespaced `accountId:id` like shared events.
+  originalId?: string;
+  accountId?: string;
+  isShared?: boolean;
 }
 
+/**
+ * A ParticipantIdentity (draft-ietf-jmap-calendars §6): one of the calendar
+ * addresses the user may act as when organising or replying to events. The
+ * server derives them from the account's addresses; the default one is what
+ * new invitations are sent from.
+ */
 export interface CalendarParticipantIdentity {
   id: string;
   name: string;
-  scheduleId: string;
-  sendTo: Record<string, string>;
+  /** `mailto:` URI of the scheduling address. */
+  calendarAddress: string;
   isDefault: boolean;
 }
 
@@ -808,7 +922,15 @@ export interface CalendarEventNotification {
 }
 
 export interface CalendarEventFilter {
+  /**
+   * A FilterOperator (RFC 8620 §5.5) sets these and no property keys:
+   * Stalwart rejects a filter that mixes the two.
+   */
+  operator?: 'AND' | 'OR' | 'NOT';
+  conditions?: CalendarEventFilter[];
   inCalendars?: string[];
+  /** One calendar: what Stalwart (0.16 and 1.0) takes; 0.16 refuses `inCalendars`. */
+  inCalendar?: string;
   after?: string;
   before?: string;
   text?: string;
@@ -839,8 +961,27 @@ export interface StateChange {
       Calendar?: string;
       CalendarEvent?: string;
       SieveScript?: string;
+      ShareNotification?: string;
+      CalendarEventNotification?: string;
     };
   };
+}
+
+/**
+ * A ShareNotification (RFC 9670 §3): someone changed this user's rights on
+ * one of their collections. `oldRights` null = newly shared, `newRights`
+ * null = access revoked.
+ */
+export interface ShareNotification {
+  id: string;
+  created: string;
+  changedBy: { name: string; email: string | null; principalId: string | null };
+  objectType: 'Mailbox' | 'Calendar' | 'AddressBook' | 'FileNode' | string;
+  objectAccountId: string;
+  objectId: string;
+  name: string;
+  oldRights: Record<string, boolean> | null;
+  newRights: Record<string, boolean> | null;
 }
 
 // draft-ietf-jmap-emailpush EmailPushConfig: the server evaluates `filter`
@@ -870,6 +1011,22 @@ export interface PushSubscription {
 }
 
 // For tracking last known states
+/**
+ * A `Foo/changes` response (RFC 8620 §5.2) as consumed by the stores' delta
+ * sync. `updatedProperties` is set when the server can tell that only those
+ * properties changed on the updated records (Stalwart reports the four
+ * Mailbox counters this way).
+ */
+export interface CollectionChanges {
+  oldState: string;
+  newState: string;
+  hasMoreChanges: boolean;
+  created: string[];
+  updated: string[];
+  destroyed: string[];
+  updatedProperties: string[] | null;
+}
+
 export interface AccountStates {
   [accountId: string]: {
     Email?: string;
@@ -880,11 +1037,16 @@ export interface AccountStates {
 
 // JMAP FileNode types (draft-ietf-jmap-filenode / Stalwart implementation)
 
+export type FileNodeType = 'file' | 'directory' | 'symlink';
+
 export interface FileNode {
   id: string;
   parentId: string | null;
   name: string;
   type: string; // "d" for directory, MIME type for files
+  // Returned by Stalwart 0.16.6+; 1.0 adds symlinks. Read it through
+  // fileNodeKind(), and never send it in FileNode/set.
+  nodeType?: FileNodeType;
   blobId: string | null;
   size: number;
   created: string;
@@ -902,6 +1064,10 @@ export interface FileNode {
   // True when this node was fetched from another principal's account that was
   // shared with the logged-in user (mirrors Calendar.isShared / AddressBook.isShared).
   isShared?: boolean;
+  // A folder of another account that is listed only because something below
+  // it was shared with the user (Stalwart 1.0): name and place in the tree,
+  // no dates, no rights. It leads to the shared node but is not shown itself.
+  discoverableOnly?: boolean;
   // Owning account's JMAP id and display name, set when aggregating nodes
   // across connected/shared accounts so mutations route to the right account.
   accountId?: string;
@@ -984,8 +1150,10 @@ export function isCrossViewId(id: string): boolean {
 
 /**
  * Mailbox roles excluded from the cross-account views. Everything else (inbox
- * and custom/no-role folders) is included.
+ * and custom/no-role folders) is included. `all` (RFC 6154 \All) holds every
+ * message, so including it would bring back sent/archive mail and count inbox
+ * unread twice.
  */
 export const CROSS_EXCLUDED_ROLES: ReadonlySet<string> = new Set([
-  'junk', 'sent', 'archive', 'trash', 'drafts',
+  'junk', 'sent', 'archive', 'trash', 'drafts', 'all',
 ]);

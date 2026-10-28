@@ -1,15 +1,27 @@
 import { cookies } from 'next/headers';
+import { secureCookieFlag } from '@/lib/security/request-protocol';
 import { NextResponse } from 'next/server';
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from 'node:crypto';
 import { getSessionSecret } from '@/lib/auth/session-secret';
+import { isSameOriginRequest } from '@/lib/security/same-origin';
+import { logger } from '@/lib/logger';
 import { ADMIN_SESSION_COOKIE, DEFAULT_ADMIN_SESSION_TTL } from './types';
 import type { AdminSessionPayload } from './types';
+import { getAdminSessionGeneration, isAdminSessionRevoked, revokeAdminSession } from './password';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const TAG_LENGTH = 16;
 
 const MIN_SECRET_LENGTH = 32;
+
+/**
+ * Bound into every admin token as GCM associated data. The mailbox session
+ * cookies and the synced-settings files are sealed with the same key and
+ * layout, and a user picks the content of their settings, so without it a
+ * settings file holding {"role":"admin",...} would open the dashboard.
+ */
+const ADMIN_SESSION_AAD = Buffer.from('bulwark-admin-session', 'utf8');
 
 function getKey(): Buffer {
   const secret = getSessionSecret();
@@ -29,18 +41,22 @@ function getSessionTTL(): number {
 }
 
 /**
- * Create an encrypted admin session token.
+ * Create an encrypted admin session token, in session generation
+ * `generation` (see getAdminSessionGeneration).
  */
-export function createAdminSession(): string {
+export function createAdminSession(generation = 0): string {
   const key = getKey();
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv);
+  cipher.setAAD(ADMIN_SESSION_AAD);
 
   const now = Math.floor(Date.now() / 1000);
   const payload: AdminSessionPayload = {
     role: 'admin',
     iat: now,
     exp: now + getSessionTTL(),
+    sid: randomBytes(16).toString('base64url'),
+    gen: generation,
   };
 
   const json = JSON.stringify(payload);
@@ -64,12 +80,16 @@ export function verifyAdminSession(token: string): AdminSessionPayload | null {
     const encrypted = data.subarray(IV_LENGTH + TAG_LENGTH);
 
     const decipher = createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAAD(ADMIN_SESSION_AAD);
     decipher.setAuthTag(tag);
 
     const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
     const payload = JSON.parse(decrypted.toString('utf8')) as AdminSessionPayload;
 
     if (payload.role !== 'admin') return null;
+    // Every token this version issues has both; ADMIN_SESSION_AAD already
+    // signed the ones from before out.
+    if (typeof payload.sid !== 'string' || typeof payload.gen !== 'number') return null;
 
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp < now) return null;
@@ -81,40 +101,21 @@ export function verifyAdminSession(token: string): AdminSessionPayload | null {
 }
 
 /**
- * CSRF gate for cookie-authed admin requests.
- *
- * The admin session cookie is `SameSite=Lax`, which still allows top-level
- * cross-site POST navigations (e.g. a form auto-submitted by an attacker
- * page the admin is tricked into visiting). Without a CSRF check, any such
- * page can trigger arbitrary state changes carrying the admin cookie.
- *
- * Strategy: state-changing requests must come from the same origin. Modern
- * browsers (since 2020) always send `Sec-Fetch-Site` and that header
- * cannot be set by JS, so it is the authoritative signal. Older browsers
- * fall back to `Origin`. Non-browser clients (curl, scripts) send neither
- * header and cannot ride a victim's cookie cross-origin, so the absence
- * of both headers is allowed.
+ * verifyAdminSession, and not signed out since it was issued: by a logout
+ * of this token, or by a new admin password (which moves the generation on).
  */
-export function isSameOriginRequest(request: Request): boolean {
-  const method = request.method.toUpperCase();
-  if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return true;
-
-  const fetchSite = request.headers.get('sec-fetch-site');
-  if (fetchSite !== null) {
-    return fetchSite === 'same-origin';
-  }
-
-  const origin = request.headers.get('origin');
-  if (!origin) return true;
-
-  try {
-    const originHost = new URL(origin).host;
-    const requestHost = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
-    return !!requestHost && originHost === requestHost;
-  } catch {
-    return false;
-  }
+export async function verifyCurrentAdminSession(token: string): Promise<AdminSessionPayload | null> {
+  const payload = verifyAdminSession(token);
+  if (!payload) return null;
+  if (payload.gen !== await getAdminSessionGeneration()) return null;
+  if (await isAdminSessionRevoked(payload.sid)) return null;
+  return payload;
 }
+
+// The CSRF gate lives in lib/security/same-origin so the unauthenticated
+// /api/auth/* routes share it (GHSA-qvr9-m8cq-7wvg). Re-exported here for
+// the admin routes and their tests.
+export { isSameOriginRequest };
 
 /**
  * Validate the admin session from cookies. Returns the payload or a 401 response.
@@ -134,7 +135,7 @@ export async function requireAdminAuth(request: Request): Promise<{ payload: Adm
     return { error: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }) };
   }
 
-  const payload = verifyAdminSession(token);
+  const payload = await verifyCurrentAdminSession(token);
   if (!payload) {
     cookieStore.delete(ADMIN_SESSION_COOKIE);
     return { error: NextResponse.json({ error: 'Session expired' }, { status: 401 }) };
@@ -145,13 +146,21 @@ export async function requireAdminAuth(request: Request): Promise<{ payload: Adm
 
 /**
  * Set the admin session cookie.
+ *
+ * `Secure` follows the request the way the setup wizard's cookie does: the
+ * browser drops Secure cookies on plain HTTP, so setting it unconditionally in
+ * production made admin sign-in fail silently on an HTTP deployment while the
+ * wizard right next to it worked. Without a request (older callers) the
+ * previous production default stands. An explicit COOKIE_SECURE wins over
+ * both, as it does for the mailbox cookies: a TLS proxy that does not send
+ * X-Forwarded-Proto would otherwise make the request look like plain HTTP.
  */
-export async function setAdminSessionCookie(): Promise<void> {
-  const token = createAdminSession();
+export async function setAdminSessionCookie(request?: Request): Promise<void> {
+  const token = createAdminSession(await getAdminSessionGeneration());
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: secureCookieFlag(request),
     sameSite: 'lax',
     path: '/',
     maxAge: getSessionTTL(),
@@ -159,11 +168,22 @@ export async function setAdminSessionCookie(): Promise<void> {
 }
 
 /**
- * Clear the admin session cookie.
+ * Clear the admin session cookie and sign its token out, so a copy of the
+ * cookie stops working too.
  */
 export async function clearAdminSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
+  const payload = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value ?? '');
   cookieStore.delete(ADMIN_SESSION_COOKIE);
+  if (!payload) return;
+  try {
+    await revokeAdminSession(payload.sid, payload.exp);
+  } catch (error) {
+    // Kept in memory regardless; only a restart forgets it.
+    logger.warn('Failed to save the admin session sign-out', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
 }
 
 /**

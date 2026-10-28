@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react';
 import { usePolicyStore } from '@/stores/policy-store';
 import { apiFetch } from '@/lib/browser-navigation';
 import type { PublicJmapServerEntry } from '@/lib/admin/jmap-servers';
+import { IS_LITE, IS_LITE_STALWART, LITE_CONFIG_PATH, withLiteBuildId } from '@/lib/lite';
+import { applyLiteConfig, liteStalwartDefaults } from '@/lib/lite-config';
+import { isConfigData } from '@/lib/config-validation';
+import { setNoThirdPartyTraffic } from '@/lib/third-party-mode';
 
-interface ConfigData {
+export interface ConfigData {
   appName: string;
   jmapServerUrl: string;
   oauthEnabled: boolean;
@@ -16,6 +20,7 @@ interface ConfigData {
   rememberMeEnabled: boolean;
   settingsSyncEnabled: boolean;
   stalwartFeaturesEnabled: boolean;
+  stalwartJmapPassthroughEnabled: boolean;
   devMode: boolean;
   faviconUrl: string;
   appLogoLightUrl: string;
@@ -31,6 +36,8 @@ interface ConfigData {
   loginShowHeading: boolean;
   loginShowSubtitle: boolean;
   loginShowTotp: boolean;
+  loginShowTokenLogin: boolean;
+  loginShowRememberMe: boolean;
   loginShowVersion: boolean;
   demoMode: boolean;
   autoSsoEnabled: boolean;
@@ -39,6 +46,9 @@ interface ConfigData {
   jmapServerAutoPickByDomain: boolean;
   embeddedMode: boolean;
   parentOrigin: string;
+  sourceCodeUrl: string;
+  /** Stay off every built-in outside host (#903; lib/outgoing-hosts.ts). */
+  noThirdPartyTraffic: boolean;
 }
 
 interface AppConfig extends ConfigData {
@@ -48,6 +58,65 @@ interface AppConfig extends ConfigData {
 
 let configCache: ConfigData | null = null;
 let configPromise: Promise<ConfigData> | null = null;
+
+/**
+ * Static Lite build: the deployer-edited config.json next to index.html
+ * replaces /api/config. A missing or broken file falls back to the defaults
+ * (custom endpoint allowed) so an unedited download still lets people sign in.
+ */
+async function fetchLiteConfig(): Promise<ConfigData> {
+  // On Stalwart the bundle is read-only and served from the JMAP origin:
+  // config.json ships inside the zip (build-id URL, immutable cache) and an
+  // empty server URL means "this origin".
+  const defaults = IS_LITE_STALWART ? liteStalwartDefaults() : undefined;
+  try {
+    const res = await apiFetch(withLiteBuildId(LITE_CONFIG_PATH), IS_LITE_STALWART ? undefined : { cache: 'no-store' });
+    if (!res.ok) throw new Error(`config.json answered ${res.status}`);
+    return applyLiteConfig(await res.json(), defaults);
+  } catch (err) {
+    // Fail closed (#903): without a readable config.json nobody said outside
+    // hosts may be used, so the no-third-party switches stay on.
+    console.warn('[lite] config.json missing or invalid, using defaults with no third-party traffic:', err);
+    return applyLiteConfig({ noThirdPartyTraffic: true }, defaults);
+  }
+}
+
+const CONFIG_ATTEMPT_DELAYS_MS = [0, 500, 1500] as const;
+const CONFIG_TIMEOUT_MS = 10000;
+
+async function fetchServerConfig(): Promise<ConfigData> {
+  let lastError: unknown;
+  for (const delay of CONFIG_ATTEMPT_DELAYS_MS) {
+    if (delay > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    const controller = new AbortController();
+    // Keep the timeout active while reading the body, not only the headers.
+    const timeout = setTimeout(() => controller.abort(), CONFIG_TIMEOUT_MS);
+    try {
+      const response = await apiFetch('/api/config', {
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`Failed to fetch config (${response.status})`);
+      const data: unknown = await response.json();
+      if (!isConfigData(data)) {
+        throw new Error('Invalid application configuration');
+      }
+      return data;
+    } catch (error) {
+      lastError = error;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  throw lastError;
+}
+
+/** The config once fetched (it is fetched at app start), for code outside React. */
+export function getCachedConfig(): ConfigData | null {
+  return configCache;
+}
 
 export async function fetchConfig(): Promise<ConfigData> {
   // Return cached config if available
@@ -61,15 +130,10 @@ export async function fetchConfig(): Promise<ConfigData> {
   }
 
   // Start a new fetch
-  configPromise = apiFetch('/api/config')
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error('Failed to fetch config');
-      }
-      return res.json();
-    })
+  configPromise = (IS_LITE ? fetchLiteConfig() : fetchServerConfig())
     .then((data) => {
       configCache = data;
+      setNoThirdPartyTraffic(data.noThirdPartyTraffic === true);
       // Fetch admin policy alongside config (non-blocking)
       usePolicyStore.getState().fetchPolicy();
       return data;
@@ -101,6 +165,7 @@ export function useConfig(): AppConfig {
     rememberMeEnabled: configCache?.rememberMeEnabled || false,
     settingsSyncEnabled: configCache?.settingsSyncEnabled || false,
     stalwartFeaturesEnabled: configCache?.stalwartFeaturesEnabled ?? true,
+    stalwartJmapPassthroughEnabled: configCache?.stalwartJmapPassthroughEnabled ?? true,
     devMode: configCache?.devMode || false,
     faviconUrl: configCache?.faviconUrl || '/branding/Bulwark_Favicon.svg',
     appLogoLightUrl: configCache?.appLogoLightUrl || '',
@@ -116,6 +181,8 @@ export function useConfig(): AppConfig {
     loginShowHeading: configCache?.loginShowHeading ?? true,
     loginShowSubtitle: configCache?.loginShowSubtitle ?? true,
     loginShowTotp: configCache?.loginShowTotp ?? true,
+    loginShowTokenLogin: configCache?.loginShowTokenLogin ?? false,
+    loginShowRememberMe: configCache?.loginShowRememberMe ?? false,
     loginShowVersion: configCache?.loginShowVersion ?? true,
     demoMode: configCache?.demoMode || false,
     autoSsoEnabled: configCache?.autoSsoEnabled || false,
@@ -124,6 +191,8 @@ export function useConfig(): AppConfig {
     jmapServerAutoPickByDomain: configCache?.jmapServerAutoPickByDomain || false,
     embeddedMode: configCache?.embeddedMode || false,
     parentOrigin: configCache?.parentOrigin || '',
+    sourceCodeUrl: configCache?.sourceCodeUrl || '',
+    noThirdPartyTraffic: configCache?.noThirdPartyTraffic ?? false,
     isLoading: !configCache,
     error: null,
   });
@@ -142,6 +211,7 @@ export function useConfig(): AppConfig {
         rememberMeEnabled: configCache.rememberMeEnabled,
         settingsSyncEnabled: configCache.settingsSyncEnabled,
         stalwartFeaturesEnabled: configCache.stalwartFeaturesEnabled,
+        stalwartJmapPassthroughEnabled: configCache.stalwartJmapPassthroughEnabled,
         devMode: configCache.devMode,
         faviconUrl: configCache.faviconUrl,
         appLogoLightUrl: configCache.appLogoLightUrl,
@@ -157,6 +227,8 @@ export function useConfig(): AppConfig {
         loginShowHeading: configCache.loginShowHeading,
         loginShowSubtitle: configCache.loginShowSubtitle,
         loginShowTotp: configCache.loginShowTotp,
+        loginShowTokenLogin: configCache.loginShowTokenLogin,
+        loginShowRememberMe: configCache.loginShowRememberMe,
         loginShowVersion: configCache.loginShowVersion,
         demoMode: configCache.demoMode,
         autoSsoEnabled: configCache.autoSsoEnabled,
@@ -165,6 +237,8 @@ export function useConfig(): AppConfig {
         jmapServerAutoPickByDomain: configCache.jmapServerAutoPickByDomain || false,
         embeddedMode: configCache.embeddedMode,
         parentOrigin: configCache.parentOrigin,
+        sourceCodeUrl: configCache.sourceCodeUrl,
+        noThirdPartyTraffic: configCache.noThirdPartyTraffic,
         isLoading: false,
         error: null,
       });
@@ -184,6 +258,7 @@ export function useConfig(): AppConfig {
           rememberMeEnabled: data.rememberMeEnabled,
           settingsSyncEnabled: data.settingsSyncEnabled,
           stalwartFeaturesEnabled: data.stalwartFeaturesEnabled,
+          stalwartJmapPassthroughEnabled: data.stalwartJmapPassthroughEnabled,
           devMode: data.devMode,
           faviconUrl: data.faviconUrl,
           appLogoLightUrl: data.appLogoLightUrl,
@@ -199,6 +274,8 @@ export function useConfig(): AppConfig {
           loginShowHeading: data.loginShowHeading,
           loginShowSubtitle: data.loginShowSubtitle,
           loginShowTotp: data.loginShowTotp,
+          loginShowTokenLogin: data.loginShowTokenLogin,
+          loginShowRememberMe: data.loginShowRememberMe,
           loginShowVersion: data.loginShowVersion,
           demoMode: data.demoMode,
           autoSsoEnabled: data.autoSsoEnabled,
@@ -207,6 +284,8 @@ export function useConfig(): AppConfig {
           jmapServerAutoPickByDomain: data.jmapServerAutoPickByDomain || false,
           embeddedMode: data.embeddedMode,
           parentOrigin: data.parentOrigin,
+          sourceCodeUrl: data.sourceCodeUrl,
+          noThirdPartyTraffic: data.noThirdPartyTraffic,
           isLoading: false,
           error: null,
         });
