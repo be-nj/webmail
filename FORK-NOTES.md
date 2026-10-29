@@ -1,6 +1,6 @@
 # Fork-Notizen
 
-Stand: 26.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
+Stand: 29.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
 upstream (`bulwarkmail/webmail`). Sie beantwortet: *Was ist in diesem Fork
 eigen?* und *Was ist noch offen?*
 
@@ -30,8 +30,21 @@ mit derselben Meldung ab. Übersetzt ist das in allen Sprachen.
 
 Die Stalwart-1.0-Anpassungen (First-Party-OAuth-Client, Scopes, Loopback-Adresse,
 Ordner und Dateien) kommen jetzt von upstream. Die Tests, die Upstreams
-klassisches Listenverhalten prüfen, setzen `interfaceLayout: 'default'`, weil
-der Fork-Standard Mountain View ist.
+klassisches Listenverhalten prüfen, setzen `interfaceLayout: 'default'`. Das
+stammt aus der Zeit, als Mountain View Fork-Standard war, und schadet nicht.
+
+Am 29.10.2026 wurde der Zweig ohne diese Commits neu aufgebaut (alter Stand:
+`benj/on-1.18.0-catchall`, `ffc52c52`):
+
+- **Catch-all-Absender** (`f9579d1f`, `d0fe12e1`, `0205b53c`, `ffc52c52`).
+  Upstream kann das selbst: Absender beim Antworten aus derselben Domain
+  (`replyIdentityMatch: 'domain'`, #1000) und „Überschreiben“ im Composer, mit
+  Retry auf die Adresse der Identität, wenn Stalwart den Envelope ablehnt
+  (#1009). Es entsteht keine Identität pro Adresse mehr. Begründung und Test
+  in `homelab/stalwart/CATCHALL-MASKED-EMAIL.md`.
+- **Standardwerte** Mountain View (`8083fc31`) und `clearSearchOnFolderChange`
+  (`5252a459`). Beides ist eine synchronisierte Einstellung; bestehende
+  Nutzer behalten ihre Wahl, neue stellen sie einmal selbst ein.
 
 ## 2. Was der Fork gegenüber upstream enthält
 
@@ -42,7 +55,6 @@ Hashes mit derselben Betreffzeile.
 |---|---|
 | `4b49503a` | Mountain View: Zeilen mit Anhang-Chips oder zweizeiliger Vorschau sauber nach Dichte-Rhythmus ausrichten (Checkbox, Stern, Avatar und Hover-Aktionen auf Zeile 1 mit var(--list-item-height), kein Überschneiden) |
 | `66851b5a` | Entwürfe speichern keine kaputten Empfängerfragmente und behalten Anzeigenamen |
-| `3d9cc8ea` | `clearSearchOnFolderChange` standardmäßig an |
 | `cc12c782` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |
 | (1.14.2) | dieselbe Regel für Bilder im zitierten Original beim Antworten (neu in upstream 1.13) |
 | (1.14.2) | Trusted Sender ohne SPF- und DKIM-Pass gilt als nicht vertraut und bekommt die Warnung |
@@ -55,7 +67,6 @@ Hashes mit derselben Betreffzeile.
 | (1.14.2) | BIMI-Logo und Trust-Badge auch auf den eingeklappten Nachrichten in Mountain View |
 | (1.14.2) | Mountain View: Zeilen mit Anhang-Chips (Checkbox/Stern/Hover-Aktionen auf Zeile 1, Chips unter dem Betreff), Suchfeld bündig mit der Inhaltskarte, Handy-Avatar oben, keine Büroklammer neben den Chips (bei Threads nur, wenn allein ältere Nachrichten Anhänge haben) |
 | (1.14.2) | Roboto als App-Schrift (selbst gehostet über `next/font`), statt System-Stack |
-| (1.14.2) | Mountain View ist Standard-Layout für neue Nutzer und Geräte (gespeicherte oder synchronisierte Wahl bleibt). Die Admin-Policy kann das Layout nur sperren oder ausblenden, `policy.defaults` wird upstream nirgends angewendet |
 | (1.14.2) | Mountain View: Anhänge der geöffneten Mail als Karten unter dem Text wie bei Gmail (Bildvorschau, Name, beim Hover Größe und Aktionen); die Einstellung „Anhang-Position“ gilt dort nicht mehr |
 | (1.14.2) | Mountain View: Einstellung „Listenzeilen“ (Darstellung), Standard zweizeilig: Vorschau in eigener Zeile unter dem Betreff statt mit „-“ dahinter; einzeilig bleibt wie Gmail |
 | (1.14.2) | Mountain View: „Mit Stern“ ist als aktiver Eintrag markiert, auch wenn er ohne „Alle mit Stern“-Ansicht nur eine Stern-Suche ist; ein Ordnerklick verlässt diese Suche immer |
