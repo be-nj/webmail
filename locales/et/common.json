@@ -1172,11 +1172,6 @@
       "skip": "Jäta vahele",
       "edit": "Muuda pildi kirjeldust",
       "plain_text": "[Pilt: {alt}]"
-    },
-    "catch_all": {
-      "pending": "{address} will be saved as a new identity when you send.",
-      "create_failed": "The server did not accept {address} as a sender: {reason}",
-      "via_shared": "Sent through {account} and filed in its Sent folder."
     }
   },
   "confirm_dialog": {
@@ -3745,18 +3740,8 @@
       "validation": {
         "empty": "Silt ei tohi olla tühi",
         "too_long": "Silt tohib olla kuni {max} tähemärki",
-        "invalid_chars": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse",
-        "local_part_empty": "Address must not be empty",
-        "local_part_too_long": "The part before the @ may be at most {max} characters",
-        "local_part_invalid": "The address contains characters that are not allowed"
-      },
-      "tab_tag": "Tag",
-      "tab_catch_all": "Other address",
-      "catch_all_title": "Send from another address",
-      "local_part_placeholder": "Address, e.g. company",
-      "domain_label": "Domain",
-      "recent_addresses": "Recently used",
-      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity."
+        "invalid_chars": "Silt tohib sisaldada ainult tähti, numbreid ja sidekriipse"
+      }
     },
     "badge": {
       "sent_via": "kaudu",
