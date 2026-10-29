@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} se guardará como nueva identidad al enviar.",
       "create_failed": "El servidor no aceptó {address} como remitente: {reason}",
-      "via_shared": "Se envía a través de {account} y se guarda en sus enviados."
+      "via_shared": "Se envía a través de {account} y se guarda en sus enviados.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Anular",
@@ -2681,7 +2682,8 @@
       "manage": "Administrar reglas",
       "senders_count": "{count, plural, one {# remitente} other {# remitentes}}",
       "cross_account": "Selecciona mensajes de una sola cuenta",
-      "opaque_hint": "Tus filtros se editaron a mano. Abre la configuración de filtros",
+      "opaque_hint": "Tus filtros se editaron a mano. Abre la configuración de filtros"
+,
       "loading": "Cargando reglas…",
       "load_failed": "No se pudieron cargar las reglas",
       "none": "Aún no hay reglas",

@@ -29,6 +29,7 @@ const catchAll = vi.hoisted(() => ({
   refreshIdentities: vi.fn(async () => {}),
   updateSetting: vi.fn(),
   toastError: vi.fn(),
+  toastInfo: vi.fn(),
 }));
 
 vi.mock('@/stores/auth-store', () => {
@@ -150,7 +151,7 @@ vi.mock('@/stores/template-store', () => {
 // ─── Misc dependency mocks ────────────────────────────────────────────────────
 
 vi.mock('@/stores/toast-store', () => ({
-  toast: { info: () => {}, error: catchAll.toastError, success: () => {} },
+  toast: { info: catchAll.toastInfo, error: catchAll.toastError, success: () => {} },
 }));
 
 vi.mock('@/lib/plugin-hooks', () => ({
@@ -245,12 +246,28 @@ describe('composer sending from a catch-all address', () => {
     expect(screen.queryByText('from_override.envelope_notice')).not.toBeInTheDocument();
 
     const sent = await send(onSend);
-    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('firma@benj.email', 'Shop');
+    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('firma@benj.email', 'Shop', undefined);
     expect(catchAll.ensureCatchAllIdentity.mock.invocationCallOrder[0]).toBeLessThan(onSend.mock.invocationCallOrder[0]);
     expect(sent.envelopeMailFrom?.toLowerCase()).toBe('firma@benj.email');
     expect(catchAll.refreshIdentities).toHaveBeenCalled();
     expect(catchAll.updateSetting).toHaveBeenCalledWith('catchAllSenders', {
       'acc-1': { 'firma@benj.email': expect.any(Number) },
+    });
+  });
+
+  it('forgets the address the client removed to make room', async () => {
+    useSettingsStore.setState({ catchAllSenders: { 'acc-1': { 'old@benj.email': 1_000, 'gone@benj.email': 500 } } });
+    catchAll.ensureCatchAllIdentity.mockResolvedValue({ accountId: 'acc-own', created: true, removed: 'gone@benj.email' });
+    const onSend = vi.fn();
+    render(<EmailComposer initialData={{ ...DRAFT, fromOverrideEmail: 'firma@benj.email' }} onSend={onSend} />);
+
+    await send(onSend);
+    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('firma@benj.email', 'Shop', {
+      'old@benj.email': 1_000, 'gone@benj.email': 500,
+    });
+    expect(catchAll.toastInfo).toHaveBeenCalledWith('catch_all.removed_unused');
+    expect(catchAll.updateSetting).toHaveBeenCalledWith('catchAllSenders', {
+      'acc-1': { 'old@benj.email': 1_000, 'firma@benj.email': expect.any(Number) },
     });
   });
 
@@ -282,7 +299,7 @@ describe('composer sending from a catch-all address', () => {
     expect(screen.queryByText('catch_all.pending')).not.toBeInTheDocument();
 
     await send(onSend);
-    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('xyz@bmn.email', 'Shop');
+    expect(catchAll.ensureCatchAllIdentity).toHaveBeenCalledWith('xyz@bmn.email', 'Shop', undefined);
     // The new identity lives in the group's account, not in this one's list.
     expect(catchAll.refreshIdentities).not.toHaveBeenCalled();
   });

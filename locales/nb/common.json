@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "{address} lagres som ny identitet når du sender.",
       "create_failed": "Serveren godtok ikke {address} som avsender: {reason}",
-      "via_shared": "Sendes via {account} og lagres i Sendt-mappen der."
+      "via_shared": "Sendes via {account} og lagres i Sendt-mappen der.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Endre avsender",
@@ -2681,7 +2682,8 @@
       "manage": "Administrer regler",
       "senders_count": "{count, plural, one {# avsender} other {# avsendere}}",
       "cross_account": "Velg meldinger fra én konto",
-      "opaque_hint": "Filtrene dine er redigert for hånd. Åpne filterinnstillingene",
+      "opaque_hint": "Filtrene dine er redigert for hånd. Åpne filterinnstillingene"
+,
       "loading": "Laster inn regler…",
       "load_failed": "Kunne ikke laste inn reglene",
       "none": "Ingen regler ennå",

@@ -36,8 +36,11 @@ function createClient(): JMAPClient {
   return client;
 }
 
-/** A server with an identity list per account; records every call. */
-function mockServer(identities: Record<string, Array<{ id: string; email: string }>>) {
+/**
+ * A server with an identity list per account; records every call. An account
+ * holds at most `maxIdentities` identities, like Stalwart's object quota.
+ */
+function mockServer(identities: Record<string, Array<{ id: string; email: string }>>, maxIdentities = Infinity) {
   const calls: MethodCall[] = [];
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
     const { methodCalls } = JSON.parse((init as { body: string }).body) as { methodCalls: MethodCall[] };
@@ -51,9 +54,17 @@ function mockServer(identities: Record<string, Array<{ id: string; email: string
         ] }, callId];
       }
       if (name === 'Identity/get') return [name, { list: identities[accountId] ?? [] }, callId];
+      if (name === 'Identity/set' && args.destroy) {
+        const destroy = args.destroy as string[];
+        identities[accountId] = (identities[accountId] ?? []).filter((identity) => !destroy.includes(identity.id));
+        return [name, { destroyed: destroy }, callId];
+      }
       if (name === 'Identity/set') {
         const create = (args.create as Record<string, { email: string }>)['new-identity'];
-        const id = `${accountId}-id-${(identities[accountId] ?? []).length + 1}`;
+        if ((identities[accountId] ?? []).length >= maxIdentities) {
+          return [name, { notCreated: { 'new-identity': { type: 'overQuota', description: 'There are too many identities' } } }, callId];
+        }
+        const id = `${accountId}-id-${Date.now()}-${(identities[accountId] ?? []).length + 1}`;
         identities[accountId] = [...(identities[accountId] ?? []), { id, email: create.email }];
         return [name, { created: { 'new-identity': { id } } }, callId];
       }
@@ -100,7 +111,7 @@ describe('catch-all sender routing', () => {
 
     await expect(createClient().ensureCatchAllIdentity('xyz@bmn.email', 'B'))
       .resolves.toEqual({ accountId: 'group', created: true });
-    expect(identities.group).toEqual([{ id: 'group-id-1', email: 'xyz@bmn.email' }]);
+    expect(identities.group).toEqual([{ id: expect.stringMatching(/^group-id-/), email: 'xyz@bmn.email' }]);
     expect(identities.own).toHaveLength(1);
 
     await expect(createClient().ensureCatchAllIdentity('xyz@bmn.email', 'B'))
@@ -114,6 +125,36 @@ describe('catch-all sender routing', () => {
     await expect(createClient().ensureCatchAllIdentity('firma@benj.email', 'B'))
       .resolves.toEqual({ accountId: 'own', created: true });
     expect(identities.own.map((i) => i.email)).toContain('firma@benj.email');
+  });
+
+  it('deletes the longest unused address Bulwark created when the account is full', async () => {
+    const identities = {
+      own: [
+        { id: 'own-id-1', email: 'b@benj.de' },
+        { id: 'own-id-2', email: 'shop@benj.email' },
+        { id: 'own-id-3', email: 'old@benj.email' },
+      ],
+      group: [],
+    };
+    const calls = mockServer(identities, 3);
+
+    await expect(createClient().ensureCatchAllIdentity('new@benj.email', 'B', {
+      'shop@benj.email': 2_000,
+      'old@benj.email': 1_000,
+      'gone@benj.email': 500,
+    })).resolves.toEqual({ accountId: 'own', created: true, removed: 'old@benj.email' });
+    expect(identities.own.map((i) => i.email)).toEqual(['b@benj.de', 'shop@benj.email', 'new@benj.email']);
+    expect(calls.find(([name, args]) => name === 'Identity/set' && args.destroy)![1])
+      .toMatchObject({ accountId: 'own', destroy: ['own-id-3'] });
+  });
+
+  it('leaves identities Bulwark did not create alone when the account is full', async () => {
+    const identities = { own: [{ id: 'own-id-1', email: 'b@benj.de' }, { id: 'own-id-2', email: 'hand@benj.email' }], group: [] };
+    mockServer(identities, 2);
+
+    await expect(createClient().ensureCatchAllIdentity('new@benj.email', 'B', { 'other@benj.email': 1_000 }))
+      .rejects.toThrow('There are too many identities');
+    expect(identities.own).toHaveLength(2);
   });
 
   it("sends a group catch-all address through the group and files it in the group's Sent", async () => {

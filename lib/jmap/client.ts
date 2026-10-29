@@ -4431,7 +4431,7 @@ export class JMAPClient implements IJMAPClient {
         if (error.type === "forbidden") {
           throw new Error("You are not authorized to send from this email address");
         }
-        throw new Error(error.description || "Failed to create identity");
+        throw jmapSetError(error.description || "Failed to create identity", error);
       }
 
       const createdId = result.created?.["new-identity"]?.id;
@@ -4486,10 +4486,10 @@ export class JMAPClient implements IJMAPClient {
     throw new Error("Failed to update identity: Server response was unexpected. Check server logs.");
   }
 
-  async deleteIdentity(identityId: string): Promise<void> {
+  async deleteIdentity(identityId: string, accountId: string = this.accountId): Promise<void> {
     const response = await this.request([
       ["Identity/set", {
-        accountId: this.accountId,
+        accountId,
         destroy: [identityId]
       }, "0"]
     ]);
@@ -6060,16 +6060,41 @@ export class JMAPClient implements IJMAPClient {
    * Make sure an identity exists for a catch-all address in the account it
    * sends through, creating it if needed. Throws when the server refuses the
    * address, e.g. because another account owns it on that domain.
+   *
+   * The server caps the identities an account may hold (Stalwart:
+   * `maxIdentities`, 20 by default) and answers `overQuota` past it. Bulwark
+   * keeps every identity it created for a catch-all address, so a busy
+   * catch-all fills that up. `reclaimable` maps the addresses Bulwark created
+   * to when each was last used: on `overQuota` the longest unused of those in
+   * the account is deleted and the create tried once more. The next send from
+   * the deleted address creates it again.
    */
-  async ensureCatchAllIdentity(email: string, name: string): Promise<{ accountId: string; created: boolean }> {
+  async ensureCatchAllIdentity(
+    email: string,
+    name: string,
+    reclaimable?: Record<string, number>,
+  ): Promise<{ accountId: string; created: boolean; removed?: string }> {
     const accountId = await this.catchAllSendAccountId(email);
     const response = await this.request([["Identity/get", { accountId }, "0"]]);
     const identities = (response.methodResponses?.[0]?.[1]?.list || []) as Identity[];
     if (identities.some((identity) => identity.email.toLowerCase() === email.toLowerCase())) {
       return { accountId, created: false };
     }
-    await this.createIdentity(name, email, undefined, undefined, undefined, undefined, accountId);
-    return { accountId, created: true };
+    const create = () => this.createIdentity(name, email, undefined, undefined, undefined, undefined, accountId);
+    try {
+      await create();
+      return { accountId, created: true };
+    } catch (error) {
+      if (jmapErrorType(error) !== 'overQuota') throw error;
+      const lastUsed = (identity: Identity) => reclaimable?.[identity.email.toLowerCase()];
+      const oldest = identities
+        .filter((identity) => lastUsed(identity) !== undefined)
+        .sort((a, b) => lastUsed(a)! - lastUsed(b)!)[0];
+      if (!oldest) throw error;
+      await this.deleteIdentity(oldest.id, accountId);
+      await create();
+      return { accountId, created: true, removed: oldest.email.toLowerCase() };
+    }
   }
 
   /** Check whether a capability is present on the primary account. */

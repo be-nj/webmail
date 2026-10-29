@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "发送时 {address} 将保存为新身份。",
       "create_failed": "服务器未接受 {address} 作为发件人：{reason}",
-      "via_shared": "通过 {account} 发送，并保存到其已发送文件夹。"
+      "via_shared": "通过 {account} 发送，并保存到其已发送文件夹。",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "覆盖",
@@ -2681,7 +2682,8 @@
       "manage": "管理规则",
       "senders_count": "{count, plural, other {# 个发件人}}",
       "cross_account": "请选择同一账户中的邮件",
-      "opaque_hint": "你的过滤器已被手动编辑。请打开过滤器设置",
+      "opaque_hint": "你的过滤器已被手动编辑。请打开过滤器设置"
+,
       "loading": "正在加载规则…",
       "load_failed": "无法加载规则",
       "none": "暂无规则",

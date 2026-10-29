@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} wordt bij het verzenden als nieuwe identiteit opgeslagen.",
       "create_failed": "De server heeft {address} niet als afzender geaccepteerd: {reason}",
-      "via_shared": "Wordt verzonden via {account} en daar in Verzonden opgeslagen."
+      "via_shared": "Wordt verzonden via {account} en daar in Verzonden opgeslagen.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Overschrijven",
@@ -2681,7 +2682,8 @@
       "manage": "Regels beheren",
       "senders_count": "{count, plural, one {# afzender} other {# afzenders}}",
       "cross_account": "Selecteer berichten uit één account",
-      "opaque_hint": "Je filters zijn met de hand bewerkt. Open de filterinstellingen",
+      "opaque_hint": "Je filters zijn met de hand bewerkt. Open de filterinstellingen"
+,
       "loading": "Regels laden…",
       "load_failed": "De regels konden niet worden geladen",
       "none": "Nog geen regels",

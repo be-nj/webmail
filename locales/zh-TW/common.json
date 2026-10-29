@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "寄送時 {address} 將儲存為新身分。",
       "create_failed": "伺服器未接受 {address} 作為寄件者：{reason}",
-      "via_shared": "透過 {account} 寄送，並儲存到其寄件備份資料夾。"
+      "via_shared": "透過 {account} 寄送，並儲存到其寄件備份資料夾。",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "覆寫",
@@ -2681,7 +2682,8 @@
       "manage": "管理規則",
       "senders_count": "{count, plural, other {# 位寄件者}}",
       "cross_account": "請選取同一個帳號中的郵件",
-      "opaque_hint": "你的篩選規則曾被手動編輯。請開啟篩選規則設定",
+      "opaque_hint": "你的篩選規則曾被手動編輯。請開啟篩選規則設定"
+,
       "loading": "正在載入規則…",
       "load_failed": "無法載入規則",
       "none": "尚無規則",

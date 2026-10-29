@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "{address} هنگام ارسال به‌عنوان هویت جدید ذخیره می‌شود.",
       "create_failed": "سرور {address} را به‌عنوان فرستنده نپذیرفت: {reason}",
-      "via_shared": "از طریق {account} ارسال و در پوشهٔ ارسال‌شدهٔ آن ذخیره می‌شود."
+      "via_shared": "از طریق {account} ارسال و در پوشهٔ ارسال‌شدهٔ آن ذخیره می‌شود.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "بازنویسی",
@@ -2681,7 +2682,8 @@
       "manage": "مدیریت قانون‌ها",
       "senders_count": "{count, plural, one {# فرستنده} other {# فرستنده}}",
       "cross_account": "پیام‌هایی از یک حساب انتخاب کنید",
-      "opaque_hint": "فیلترهای شما دستی ویرایش شده‌اند. تنظیمات فیلترها را باز کنید",
+      "opaque_hint": "فیلترهای شما دستی ویرایش شده‌اند. تنظیمات فیلترها را باز کنید"
+,
       "loading": "در حال بارگذاری قوانین…",
       "load_failed": "بارگذاری قوانین ممکن نشد",
       "none": "هنوز قانونی وجود ندارد",

@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} verrà salvato come nuova identità all'invio.",
       "create_failed": "Il server non ha accettato {address} come mittente: {reason}",
-      "via_shared": "Inviato tramite {account} e archiviato nella sua posta inviata."
+      "via_shared": "Inviato tramite {account} e archiviato nella sua posta inviata.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Sovrascrivi",
@@ -2681,7 +2682,8 @@
       "manage": "Gestisci regole",
       "senders_count": "{count, plural, one {# mittente} other {# mittenti}}",
       "cross_account": "Seleziona messaggi di un solo account",
-      "opaque_hint": "I tuoi filtri sono stati modificati a mano. Apri le impostazioni dei filtri",
+      "opaque_hint": "I tuoi filtri sono stati modificati a mano. Apri le impostazioni dei filtri"
+,
       "loading": "Caricamento delle regole…",
       "load_failed": "Impossibile caricare le regole",
       "none": "Nessuna regola",

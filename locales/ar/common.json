@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "سيُحفظ {address} كهوية جديدة عند الإرسال.",
       "create_failed": "لم يقبل الخادم {address} كمرسل: {reason}",
-      "via_shared": "يُرسل عبر {account} ويُحفظ في مجلد المرسل الخاص به."
+      "via_shared": "يُرسل عبر {account} ويُحفظ في مجلد المرسل الخاص به.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "تجاوز",
@@ -2681,7 +2682,8 @@
       "manage": "إدارة القواعد",
       "senders_count": "{count, plural, one {مرسل واحد} two {مرسلَين} few {# مرسلين} many {# مرسلًا} other {# مرسل}}",
       "cross_account": "حدد رسائل من حساب واحد",
-      "opaque_hint": "تم تعديل مرشحاتك يدويًا. افتح إعدادات المرشحات",
+      "opaque_hint": "تم تعديل مرشحاتك يدويًا. افتح إعدادات المرشحات"
+,
       "loading": "جارٍ تحميل القواعد…",
       "load_failed": "تعذّر تحميل القواعد",
       "none": "لا توجد قواعد بعد",

@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} будет сохранён как новый идентификатор при отправке.",
       "create_failed": "Сервер не принял {address} как отправителя: {reason}",
-      "via_shared": "Отправляется через {account} и сохраняется в его папке «Отправленные»."
+      "via_shared": "Отправляется через {account} и сохраняется в его папке «Отправленные».",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Переопределить",
@@ -2681,7 +2682,8 @@
       "manage": "Управление правилами",
       "senders_count": "{count, plural, one {# отправителя} few {# отправителей} many {# отправителей} other {# отправителя}}",
       "cross_account": "Выберите письма из одной учётной записи",
-      "opaque_hint": "Ваши фильтры отредактированы вручную. Откройте настройки фильтров",
+      "opaque_hint": "Ваши фильтры отредактированы вручную. Откройте настройки фильтров"
+,
       "loading": "Загрузка правил…",
       "load_failed": "Не удалось загрузить правила",
       "none": "Правил пока нет",

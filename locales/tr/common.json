@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "{address} gönderirken yeni bir kimlik olarak kaydedilecek.",
       "create_failed": "Sunucu {address} adresini gönderen olarak kabul etmedi: {reason}",
-      "via_shared": "{account} üzerinden gönderilir ve oradaki Gönderilenler klasörüne kaydedilir."
+      "via_shared": "{account} üzerinden gönderilir ve oradaki Gönderilenler klasörüne kaydedilir.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Geçersiz kıl",
@@ -2681,7 +2682,8 @@
       "manage": "Kuralları yönet",
       "senders_count": "{count, plural, one {# gönderen} other {# gönderen}}",
       "cross_account": "Tek bir hesaptan iletiler seçin",
-      "opaque_hint": "Filtreleriniz elle düzenlenmiş. Filtre ayarlarını açın",
+      "opaque_hint": "Filtreleriniz elle düzenlenmiş. Filtre ayarlarını açın"
+,
       "loading": "Kurallar yükleniyor…",
       "load_failed": "Kurallar yüklenemedi",
       "none": "Henüz kural yok",

@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} sūtot tiks saglabāta kā jauna identitāte.",
       "create_failed": "Serveris nepieņēma {address} kā sūtītāju: {reason}",
-      "via_shared": "Tiek nosūtīts caur {account} un saglabāts tā mapē Nosūtītie."
+      "via_shared": "Tiek nosūtīts caur {account} un saglabāts tā mapē Nosūtītie.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Pārrakstīt",
@@ -2681,7 +2682,8 @@
       "manage": "Pārvaldīt noteikumus",
       "senders_count": "{count, plural, zero {# sūtītājiem} one {# sūtītāja} other {# sūtītājiem}}",
       "cross_account": "Izvēlieties vēstules no viena konta",
-      "opaque_hint": "Jūsu filtri ir rediģēti manuāli. Atveriet filtru iestatījumus",
+      "opaque_hint": "Jūsu filtri ir rediģēti manuāli. Atveriet filtru iestatījumus"
+,
       "loading": "Ielādē kārtulas…",
       "load_failed": "Neizdevās ielādēt kārtulas",
       "none": "Vēl nav kārtulu",

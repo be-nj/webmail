@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "A(z) {address} küldéskor új identitásként mentődik.",
       "create_failed": "A szerver nem fogadta el a(z) {address} címet feladóként: {reason}",
-      "via_shared": "A(z) {account} fiókon keresztül megy el, és annak Elküldött mappájába kerül."
+      "via_shared": "A(z) {account} fiókon keresztül megy el, és annak Elküldött mappájába kerül.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Felülbírálás",
@@ -2681,7 +2682,8 @@
       "manage": "Szabályok kezelése",
       "senders_count": "{count, plural, one {# feladó} other {# feladó}}",
       "cross_account": "Egyetlen fiók üzeneteit válaszd ki",
-      "opaque_hint": "A szűrőidet kézzel szerkesztették. Nyisd meg a szűrőbeállításokat",
+      "opaque_hint": "A szűrőidet kézzel szerkesztették. Nyisd meg a szűrőbeállításokat"
+,
       "loading": "Szabályok betöltése…",
       "load_failed": "Nem sikerült betölteni a szabályokat",
       "none": "Még nincsenek szabályok",

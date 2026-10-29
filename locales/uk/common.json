@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} буде збережено як нову ідентичність під час надсилання.",
       "create_failed": "Сервер не прийняв {address} як відправника: {reason}",
-      "via_shared": "Надсилається через {account} і зберігається в його папці «Надіслані»."
+      "via_shared": "Надсилається через {account} і зберігається в його папці «Надіслані».",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Замінити",
@@ -2681,7 +2682,8 @@
       "manage": "Керувати правилами",
       "senders_count": "{count, plural, one {# відправника} few {# відправників} many {# відправників} other {# відправника}}",
       "cross_account": "Виберіть листи з одного облікового запису",
-      "opaque_hint": "Ваші фільтри відредаговано вручну. Відкрийте налаштування фільтрів",
+      "opaque_hint": "Ваші фільтри відредаговано вручну. Відкрийте налаштування фільтрів"
+,
       "loading": "Завантаження правил…",
       "load_failed": "Не вдалося завантажити правила",
       "none": "Правил поки немає",

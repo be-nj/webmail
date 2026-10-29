@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} sera enregistrée comme nouvelle identité lors de l'envoi.",
       "create_failed": "Le serveur n'a pas accepté {address} comme expéditeur : {reason}",
-      "via_shared": "Envoyé via {account} et classé dans ses éléments envoyés."
+      "via_shared": "Envoyé via {account} et classé dans ses éléments envoyés.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Remplacer",
@@ -2681,7 +2682,8 @@
       "manage": "Gérer les règles",
       "senders_count": "{count, plural, one {# expéditeur} other {# expéditeurs}}",
       "cross_account": "Sélectionnez des messages d'un seul compte",
-      "opaque_hint": "Vos filtres ont été modifiés à la main. Ouvrez les réglages des filtres",
+      "opaque_hint": "Vos filtres ont été modifiés à la main. Ouvrez les réglages des filtres"
+,
       "loading": "Chargement des règles…",
       "load_failed": "Impossible de charger les règles",
       "none": "Aucune règle pour l'instant",

@@ -742,7 +742,8 @@
     "catch_all": {
       "pending": "{address} gemmes som ny identitet, når du sender.",
       "create_failed": "Serveren accepterede ikke {address} som afsender: {reason}",
-      "via_shared": "Sendes via {account} og gemmes i dens Sendt-mappe."
+      "via_shared": "Sendes via {account} og gemmes i dens Sendt-mappe.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Tilsidesæt",
@@ -2681,7 +2682,8 @@
       "manage": "Administrer regler",
       "senders_count": "{count, plural, one {# afsender} other {# afsendere}}",
       "cross_account": "Vælg beskeder fra én konto",
-      "opaque_hint": "Dine filtre er redigeret manuelt. Åbn filterindstillingerne",
+      "opaque_hint": "Dine filtre er redigeret manuelt. Åbn filterindstillingerne"
+,
       "loading": "Indlæser regler…",
       "load_failed": "Reglerne kunne ikke indlæses",
       "none": "Ingen regler endnu",

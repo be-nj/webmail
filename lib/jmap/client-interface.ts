@@ -131,8 +131,16 @@ export interface IJMAPClient {
   getCatchAllDomains?(accountId?: string): string[];
   /** The shared (group) account whose catch-all takes this address's domain. */
   getSharedCatchAllAccount?(email: string): { id: string; name: string } | undefined;
-  /** Create the identity for a catch-all address where it sends from, if missing. */
-  ensureCatchAllIdentity?(email: string, name: string): Promise<{ accountId: string; created: boolean }>;
+  /**
+   * Create the identity for a catch-all address where it sends from, if
+   * missing. Past the account's identity limit it deletes the longest unused
+   * address of `reclaimable` (address to last use) to make room.
+   */
+  ensureCatchAllIdentity?(
+    email: string,
+    name: string,
+    reclaimable?: Record<string, number>,
+  ): Promise<{ accountId: string; created: boolean; removed?: string }>;
   getMaxCallsInRequest(): number;
   getMaxObjectsInGet(): number;
   getMaxObjectsInSet(): number;

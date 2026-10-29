@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} se při odeslání uloží jako nová identita.",
       "create_failed": "Server nepřijal {address} jako odesílatele: {reason}",
-      "via_shared": "Odešle se přes {account} a uloží do jeho odeslané pošty."
+      "via_shared": "Odešle se přes {account} a uloží do jeho odeslané pošty.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Přepsat",
@@ -2681,7 +2682,8 @@
       "manage": "Spravovat pravidla",
       "senders_count": "{count, plural, one {# odesílatele} few {# odesílatelů} many {# odesílatele} other {# odesílatelů}}",
       "cross_account": "Vyberte zprávy z jednoho účtu",
-      "opaque_hint": "Vaše filtry byly upraveny ručně. Otevřete nastavení filtrů",
+      "opaque_hint": "Vaše filtry byly upraveny ručně. Otevřete nastavení filtrů"
+,
       "loading": "Načítání pravidel…",
       "load_failed": "Pravidla se nepodařilo načíst",
       "none": "Zatím žádná pravidla",

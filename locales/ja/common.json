@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} は送信時に新しい ID として保存されます。",
       "create_failed": "サーバーは {address} を差出人として受け付けませんでした: {reason}",
-      "via_shared": "{account} 経由で送信され、その送信済みフォルダーに保存されます。"
+      "via_shared": "{account} 経由で送信され、その送信済みフォルダーに保存されます。",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "上書き",
@@ -2681,7 +2682,8 @@
       "manage": "ルールを管理",
       "senders_count": "{count, plural, other {送信者 # 人}}",
       "cross_account": "1 つのアカウントのメールを選択してください",
-      "opaque_hint": "フィルターは手動で編集されています。フィルター設定を開いてください",
+      "opaque_hint": "フィルターは手動で編集されています。フィルター設定を開いてください"
+,
       "loading": "ルールを読み込み中…",
       "load_failed": "ルールを読み込めませんでした",
       "none": "ルールはまだありません",

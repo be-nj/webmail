@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "{address} илгээх үед шинэ таних тэмдэг болж хадгалагдана.",
       "create_failed": "Сервер {address}-г илгээгч гэж хүлээн аваагүй: {reason}",
-      "via_shared": "{account}-ээр илгээгдэж, түүний Илгээсэн хавтсанд хадгалагдана."
+      "via_shared": "{account}-ээр илгээгдэж, түүний Илгээсэн хавтсанд хадгалагдана.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Дараах",
@@ -2681,7 +2682,8 @@
       "manage": "Дүрмүүдийг удирдах",
       "senders_count": "{count, plural, one {# илгээгч} other {# илгээгч}}",
       "cross_account": "Нэг бүртгэлийн захиануудыг сонгоно уу",
-      "opaque_hint": "Таны шүүлтүүрийг гараар засварласан байна. Шүүлтүүрийн тохиргоог нээнэ үү",
+      "opaque_hint": "Таны шүүлтүүрийг гараар засварласан байна. Шүүлтүүрийн тохиргоог нээнэ үү"
+,
       "loading": "Дүрмүүдийг ачаалж байна…",
       "load_failed": "Дүрмүүдийг ачаалж чадсангүй",
       "none": "Одоогоор дүрэм алга",

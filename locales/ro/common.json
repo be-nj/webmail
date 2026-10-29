@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "{address} va fi salvată ca identitate nouă la trimitere.",
       "create_failed": "Serverul nu a acceptat {address} ca expeditor: {reason}",
-      "via_shared": "Se trimite prin {account} și se salvează în dosarul său Trimise."
+      "via_shared": "Se trimite prin {account} și se salvează în dosarul său Trimise.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Suprascrieți",
@@ -2681,7 +2682,8 @@
       "manage": "Gestionați regulile",
       "senders_count": "{count, plural, one {# expeditor} few {# expeditori} other {# de expeditori}}",
       "cross_account": "Selectați mesaje dintr-un singur cont",
-      "opaque_hint": "Filtrele dvs. au fost editate manual. Deschideți setările filtrelor",
+      "opaque_hint": "Filtrele dvs. au fost editate manual. Deschideți setările filtrelor"
+,
       "loading": "Se încarcă regulile…",
       "load_failed": "Regulile nu au putut fi încărcate",
       "none": "Nicio regulă încă",

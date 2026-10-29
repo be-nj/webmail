@@ -3410,15 +3410,23 @@ export function EmailComposer({
     // on the first send from it. The client then picks that identity for the
     // requested MAIL FROM. A refusal - the address belongs to another account
     // on that domain - stops the send instead of falling back to the
-    // identity's address in Return-Path.
+    // identity's address in Return-Path. At the account's identity limit the
+    // client makes room by deleting the longest unused address Bulwark
+    // created (the ones `catchAllSenders` tracks), which drops out of the
+    // tracked senders here too.
     const sentFrom = (fromEmail || '').trim().toLowerCase();
     let createdCatchAllIdentity = false;
+    let removedCatchAllSender: string | undefined;
     if (overrideActive && composerClient?.ensureCatchAllIdentity && isCatchAllAddress(sentFrom, catchAllDomains)
       && !identities.some((identity) => identity.email.toLowerCase() === sentFrom && isOnComposerAccount(identity))) {
-      let ensured: { accountId: string; created: boolean };
+      let ensured: { accountId: string; created: boolean; removed?: string };
       try {
-        ensured = await composerClient.ensureCatchAllIdentity(sentFrom, fromName || '');
+        ensured = await composerClient.ensureCatchAllIdentity(sentFrom, fromName || '', composerCatchAllSenders);
         createdCatchAllIdentity = ensured.created;
+        removedCatchAllSender = ensured.removed;
+        if (removedCatchAllSender) {
+          toast.info(t('catch_all.removed_unused', { address: removedCatchAllSender }));
+        }
       } catch (error) {
         toast.error(t('catch_all.create_failed', {
           address: sentFrom,
@@ -3437,9 +3445,11 @@ export function EmailComposer({
     // From dropdown for a while (see isDormantCatchAllSender).
     if (composerAccountId && (createdCatchAllIdentity || composerCatchAllSenders?.[sentFrom] !== undefined)) {
       const all = useSettingsStore.getState().catchAllSenders ?? NO_CATCH_ALL_SENDERS;
+      const senders = withCatchAllSenderUse(all[composerAccountId], sentFrom);
+      if (removedCatchAllSender) delete senders[removedCatchAllSender];
       useSettingsStore.getState().updateSetting('catchAllSenders', {
         ...all,
-        [composerAccountId]: withCatchAllSenderUse(all[composerAccountId], sentFrom),
+        [composerAccountId]: senders,
       });
     }
 

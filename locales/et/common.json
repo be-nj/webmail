@@ -744,7 +744,8 @@
     "catch_all": {
       "pending": "{address} will be saved as a new identity when you send.",
       "create_failed": "The server did not accept {address} as a sender: {reason}",
-      "via_shared": "Sent through {account} and filed in its Sent folder."
+      "via_shared": "Sent through {account} and filed in its Sent folder.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Muuda saatjat",

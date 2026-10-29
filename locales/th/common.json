@@ -1044,7 +1044,8 @@
     "catch_all": {
       "create_failed": "The server did not accept {address} as a sender: {reason}",
       "pending": "{address} will be saved as a new identity when you send.",
-      "via_shared": "Sent through {account} and filed in its Sent folder."
+      "via_shared": "Sent through {account} and filed in its Sent folder.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     }
   },
   "email_viewer": {

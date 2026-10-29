@@ -762,7 +762,8 @@
     "catch_all": {
       "pending": "{address} תישמר כזהות חדשה בעת השליחה.",
       "create_failed": "השרת לא קיבל את {address} כשולח: {reason}",
-      "via_shared": "נשלח דרך {account} ונשמר בתיקיית הנשלחים שלו."
+      "via_shared": "נשלח דרך {account} ונשמר בתיקיית הנשלחים שלו.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "עקוף",
@@ -2647,7 +2648,8 @@
       "manage": "ניהול כללים",
       "senders_count": "{count, plural, one {שולח אחד} other {# שולחים}}",
       "cross_account": "בחר הודעות מחשבון אחד",
-      "opaque_hint": "המסננים שלך נערכו ידנית. פתח את הגדרות המסננים",
+      "opaque_hint": "המסננים שלך נערכו ידנית. פתח את הגדרות המסננים"
+,
       "loading": "טוען כללים…",
       "load_failed": "לא ניתן לטעון את הכללים",
       "none": "אין עדיין כללים",

@@ -740,7 +740,8 @@
     "catch_all": {
       "pending": "{address} zostanie zapisany jako nowa tożsamość przy wysyłaniu.",
       "create_failed": "Serwer nie zaakceptował {address} jako nadawcy: {reason}",
-      "via_shared": "Wysyłane przez {account} i zapisywane w jego folderze Wysłane."
+      "via_shared": "Wysyłane przez {account} i zapisywane w jego folderze Wysłane.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Zastąp",
@@ -2681,7 +2682,8 @@
       "manage": "Zarządzaj regułami",
       "senders_count": "{count, plural, one {# nadawcy} few {# nadawców} many {# nadawców} other {# nadawcy}}",
       "cross_account": "Wybierz wiadomości z jednego konta",
-      "opaque_hint": "Twoje filtry zostały edytowane ręcznie. Otwórz ustawienia filtrów",
+      "opaque_hint": "Twoje filtry zostały edytowane ręcznie. Otwórz ustawienia filtrów"
+,
       "loading": "Wczytywanie reguł…",
       "load_failed": "Nie udało się wczytać reguł",
       "none": "Brak reguł",

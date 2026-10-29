@@ -743,7 +743,8 @@
     "catch_all": {
       "pending": "{address} es desarà com a identitat nova en enviar.",
       "create_failed": "El servidor no ha acceptat {address} com a remitent: {reason}",
-      "via_shared": "S'envia a través de {account} i es desa als seus enviats."
+      "via_shared": "S'envia a través de {account} i es desa als seus enviats.",
+      "removed_unused": "Made room for the new identity: {address} had gone unused the longest and was removed. Sending from it again creates it anew."
     },
     "from_override": {
       "toggle_off": "Sobreescriu",
@@ -2681,7 +2682,8 @@
       "manage": "Gestiona les regles",
       "senders_count": "{count, plural, one {# remitent} other {# remitents}}",
       "cross_account": "Selecciona missatges d'un sol compte",
-      "opaque_hint": "Els teus filtres s'han editat a mà. Obre la configuració dels filtres",
+      "opaque_hint": "Els teus filtres s'han editat a mà. Obre la configuració dels filtres"
+,
       "loading": "S'estan carregant les regles…",
       "load_failed": "No s'han pogut carregar les regles",
       "none": "Encara no hi ha regles",
