@@ -45,8 +45,13 @@ describe('isEmbeddedInBody', () => {
     expect(isEmbeddedInBody({ cid: '<logoImage>', type: 'application/octet-stream' }, body)).toBe(true);
   });
 
-  it('keeps the legacy rule: declared inline images hide even without a reference', () => {
-    expect(isEmbeddedInBody({ cid: 'unreferenced', type: 'image/png', disposition: 'inline' }, body)).toBe(true);
+  it('hides a declared inline image the body references', () => {
+    expect(isEmbeddedInBody({ cid: 'logoImage', type: 'image/png', disposition: 'inline' }, body)).toBe(true);
+  });
+
+  it('keeps a declared inline image the body never shows - the chip is the only place to see it', () => {
+    expect(isEmbeddedInBody({ cid: 'unreferenced', type: 'image/png', disposition: 'inline' }, body)).toBe(false);
+    expect(isEmbeddedInBody({ cid: 'logoImage', type: 'image/png', disposition: 'inline' }, collectReferencedCids(null))).toBe(false);
   });
 
   it('keeps an explicit attachment visible even when the body references it', () => {

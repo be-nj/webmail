@@ -5,7 +5,7 @@ import { Email, ContactCard, Mailbox } from "@/lib/jmap/types";
 import { emailExportFilename, attachmentDownloadFilename, attachmentsBundleFilename, DEFAULT_EMAIL_TEMPLATE, DEFAULT_ATTACHMENT_TEMPLATE } from "@/lib/download-filename";
 import { EML_IMPORT_ACCEPT, expandImportableEmails } from "@/lib/eml-import";
 import { TRANSPARENT_BLOCKED_PIXEL, applyNewTabToAnchor, emailIframeCsp, escapeHtml, isExternalResourceUrl, isOpenableLinkHref, plainTextToSafeHtml, sanitizeEmailBodyForIframe, sanitizeEmailHtml, sanitizePlainTextRenderedHtml } from "@/lib/email-sanitization";
-import { getRenderableHtmlBody } from "@/lib/email-body-selection";
+import { getCidImageSources, getReaderHtmlBody } from "@/lib/email-body-selection";
 import { collectReferencedCids, isEmbeddedInBody, normalizeCid, rewriteCidReferences } from "@/lib/attachment-visibility";
 import { collapsePlainTextQuotes, setupQuoteCollapse } from "@/lib/quote-collapse";
 import { DARK_PENDING_CLASS, applyEmailDarkMode, emailColorScheme, emailDarkModeCss, emailHasNativeDarkMode as htmlHasNativeDarkMode, resolveColorSchemeMedia } from "@/lib/email-dark-mode";
@@ -140,7 +140,7 @@ import { parseTnef, isTnefAttachment } from "@/lib/tnef";
 import { debug } from "@/lib/debug";
 import { findVerificationCode, verificationCodeBodyText } from "@/lib/verification-code";
 import { VerificationCodeChip } from "./verification-code-chip";
-import { ConversationEmailBody, type ConversationAttachmentHandler, useConversationExternalContent, useMarkReadWhenShown } from "./thread-conversation-view";
+import { ConversationEmailBody, type ConversationAttachmentHandler, type RenderedConversationBody, useConversationExternalContent, useMarkReadWhenShown } from "./thread-conversation-view";
 import type { TnefAttachment } from "@/lib/tnef";
 import { PluginSlot } from "@/components/plugins/plugin-slot";
 import { PluginActions } from "@/components/plugins/plugin-actions";
@@ -214,6 +214,8 @@ interface EmailViewerProps {
   onMarkConversationEmailRead?: (email: Email) => void;
   /** Mountain View: reply to one message of the conversation. */
   onReplyConversationEmail?: (email: Email) => void;
+  /** The ⋮ actions of another message of the conversation that the mail view carries out. */
+  onConversationEmailAction?: (email: Email, action: 'replyAll' | 'forward' | 'forwardAsAttachment' | 'markUnread') => void;
   /** Mountain View: a reply being written in place, shown under the conversation instead of the reply buttons. */
   mvInlineComposer?: React.ReactNode;
   onShowShortcuts?: () => void;
@@ -804,6 +806,86 @@ function MvConversationDetails({ email, timeFormat, className }: { email: Email;
   );
 }
 
+/** What the ⋮ menu of an unfolded conversation message can do with it. */
+export type MvConversationMessageAction =
+  | 'replyAll' | 'forward' | 'forwardAsAttachment' | 'markUnread' | 'print' | 'viewSource' | 'export';
+
+const MV_CONVERSATION_MENU: { action: MvConversationMessageAction; label: string; icon: typeof Reply; needsBody?: boolean; separatorBefore?: boolean }[] = [
+  { action: 'replyAll', label: 'reply_all', icon: ReplyAll },
+  { action: 'forward', label: 'forward', icon: Forward },
+  { action: 'forwardAsAttachment', label: 'forward_as_attachment', icon: Paperclip },
+  { action: 'markUnread', label: 'mark_unread', icon: Mail, separatorBefore: true },
+  { action: 'print', label: 'print', icon: Printer, needsBody: true, separatorBefore: true },
+  { action: 'viewSource', label: 'view_source', icon: Code, needsBody: true },
+  { action: 'export', label: 'export_email', icon: Download },
+];
+
+/**
+ * The ⋮ next to Reply on an unfolded conversation message: the open message's
+ * actions for this one message. Print and View source wait for its body.
+ */
+function MvConversationMessageMenu({ hasBody, onAction }: { hasBody: boolean; onAction: (action: MvConversationMessageAction) => void }) {
+  const t = useTranslations('email_viewer');
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const close = useCallback(() => setOpen(false), []);
+  const { menuRef, onKeyDown } = useMenuNavigation<HTMLDivElement>({ open, onClose: close, triggerRef });
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative flex-shrink-0" data-mv-conversation-menu="">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="grid place-items-center w-10 h-10 -my-2 -me-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        title={t('more_actions')}
+        aria-label={t('more_actions')}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+      >
+        <MoreVertical className="w-5 h-5" />
+      </button>
+      {open && (
+        <div
+          ref={menuRef}
+          id={menuId}
+          role="menu"
+          aria-label={t('more_actions')}
+          onKeyDown={onKeyDown}
+          className="absolute end-0 top-full mt-1 w-56 bg-background rounded-md shadow-lg border border-border z-20 py-1"
+        >
+          {MV_CONVERSATION_MENU.map(({ action, label, icon: Icon, needsBody, separatorBefore }) => (
+            <Fragment key={action}>
+              {separatorBefore && <div className="h-px bg-border my-1" />}
+              <button
+                type="button"
+                role="menuitem"
+                disabled={needsBody && !hasBody}
+                onClick={() => { setOpen(false); onAction(action); }}
+                className="w-full px-3 py-1.5 text-sm text-start hover:bg-muted text-foreground flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                <Icon className="w-4 h-4" />
+                {t(label)}
+              </button>
+            </Fragment>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
  * A message of a Mountain View conversation unfolded in place: its sender line,
  * which folds it again when clicked, and its body. The list fetch carries no
@@ -816,6 +898,7 @@ export function MvExpandedConversationCard({
   onLoadBody,
   onMarkRead,
   onReply,
+  onAction,
   onDownloadAttachment,
   blobSource,
   compact,
@@ -827,6 +910,8 @@ export function MvExpandedConversationCard({
   onLoadBody?: (email: Email) => void;
   onMarkRead?: (email: Email) => void;
   onReply?: (email: Email) => void;
+  /** An entry of the message's ⋮ menu; Print brings the body as shown. */
+  onAction?: (email: Email, action: MvConversationMessageAction, body: RenderedConversationBody | null) => void;
   onDownloadAttachment?: ConversationAttachmentHandler;
   blobSource?: EmailBlobContext;
 }) {
@@ -835,6 +920,7 @@ export function MvExpandedConversationCard({
   const sender = email.from?.[0];
   const hasBody = !!email.bodyValues;
   const [showDetails, setShowDetails] = useState(false);
+  const renderedBodyRef = useRef<RenderedConversationBody | null>(null);
   const loadRequested = useRef(false);
   useEffect(() => {
     if (hasBody || loadRequested.current || !onLoadBody) return;
@@ -895,12 +981,15 @@ export function MvExpandedConversationCard({
           <button
             type="button"
             onClick={() => onReply(email)}
-            className="grid place-items-center w-10 h-10 -my-2 -me-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex-shrink-0"
+            className={cn("grid place-items-center w-10 h-10 -my-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex-shrink-0", !onAction && "-me-2")}
             title={t('tooltips.reply')}
             aria-label={t('tooltips.reply')}
           >
             <Reply className="w-5 h-5" />
           </button>
+        )}
+        {onAction && (
+          <MvConversationMessageMenu hasBody={hasBody} onAction={(action) => onAction(email, action, renderedBodyRef.current)} />
         )}
       </div>
       {showDetails && <MvConversationDetails email={email} timeFormat={timeFormat} className={compact ? "px-4" : "ps-[80px] pe-6"} />}
@@ -912,6 +1001,7 @@ export function MvExpandedConversationCard({
           onTrustSender={externalContent.trustSender(email)}
           onDownloadAttachment={onDownloadAttachment}
           blobSource={blobSource}
+          renderedBodyRef={renderedBodyRef}
           className={cn("pb-4", compact ? "px-4" : "ps-[80px] pe-6")}
           bodyStyle={{ paddingBlock: '0.25rem 0.5rem' }}
         />
@@ -1076,6 +1166,7 @@ export function EmailViewer({
   onLoadConversationEmail,
   onMarkConversationEmailRead,
   onReplyConversationEmail,
+  onConversationEmailAction,
   mvInlineComposer,
   onShowShortcuts,
   onEditDraft,
@@ -1244,6 +1335,30 @@ export function EmailViewer({
   // none). Hold the message back instead of drawing it alone and then pushing
   // it down under the earlier messages.
   const mvAwaitingConversation = !!mvConversationPending && (mvViewer || mvMobileViewer) && mvOpenIndex < 0;
+  const mvTargetSource = (target: Email) => target.sourceClientAccountId || target.sourceAccountId
+    ? resolveEmailBlobContext(target, client)
+    : blobSource ?? resolveEmailBlobContext(target, client);
+  const handleMvConversationAction = (target: Email, action: MvConversationMessageAction, body: RenderedConversationBody | null) => {
+    switch (action) {
+      case 'print':
+        if (body) handlePrint(target, body);
+        return;
+      case 'viewSource':
+        setConversationSourceEmail(target);
+        return;
+      case 'export':
+        // The after-export action (archive, trash) is for the open message.
+        void exportEmailFile(target, mvTargetSource(target));
+        return;
+      case 'markUnread':
+        // Folded, or showing it would read it again right away.
+        if (mvExpandedIdsRef.current.has(target.id)) toggleMvExpanded(target);
+        onConversationEmailAction?.(target, action);
+        return;
+      default:
+        onConversationEmailAction?.(target, action);
+    }
+  };
   const renderMvExpanded = (target: Email) => (
     <MvExpandedConversationCard
       email={target}
@@ -1252,9 +1367,8 @@ export function EmailViewer({
       onLoadBody={onLoadConversationEmail}
       onMarkRead={onMarkConversationEmailRead}
       onReply={onReplyConversationEmail}
-      blobSource={target.sourceClientAccountId || target.sourceAccountId
-        ? resolveEmailBlobContext(target, client)
-        : blobSource ?? resolveEmailBlobContext(target, client)}
+      onAction={onConversationEmailAction ? handleMvConversationAction : undefined}
+      blobSource={mvTargetSource(target)}
       onDownloadAttachment={(blobId, name, type, source) => onDownloadAttachment?.(blobId, name, type, false, source)}
       compact={mvMobileViewer}
     />
@@ -1406,6 +1520,10 @@ export function EmailViewer({
     }
   };
   const [showSourceModal, setShowSourceModal] = useState(false);
+  // "View source" of another message of the conversation.
+  const [conversationSourceEmail, setConversationSourceEmail] = useState<Email | null>(null);
+  const sourceEmail = conversationSourceEmail ?? (showSourceModal ? email : null);
+  const closeSourceModal = () => { setShowSourceModal(false); setConversationSourceEmail(null); };
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   // The mobile More panel sits off-canvas with a slide transition. Until
   // the user opens it once, that transition must stay off: on the first
@@ -1995,6 +2113,7 @@ export function EmailViewer({
     setQuickReplyText("");
     setIsQuickReplyFocused(false);
     setShowSourceModal(false);
+    setConversationSourceEmail(null);
     setEmailViewDarkOverride(null);
     setPluginRenderedHtml(null);
     setPluginRenderedText(null);
@@ -2300,12 +2419,12 @@ export function EmailViewer({
       };
     }
 
-    if (!blobClient || !email?.attachments) {
+    if (!blobClient || !email) {
       setCidBlobUrls({});
       return;
     }
 
-    const cidAttachments = email.attachments.filter(att => att.cid && att.blobId);
+    const cidAttachments = getCidImageSources(email);
     if (cidAttachments.length === 0) {
       setCidBlobUrls({});
       return;
@@ -2314,7 +2433,7 @@ export function EmailViewer({
     async function fetchCidBlobs() {
       const urls: Record<string, string> = {};
       await Promise.all(cidAttachments.map(async (att) => {
-        const cidValue = normalizeCid(att.cid!);
+        const cidValue = att.cid;
         try {
           // The download URL echoes the sender-declared Content-Type back as
           // the Blob type; re-type anything that could execute as our origin
@@ -2348,7 +2467,9 @@ export function EmailViewer({
         cidBlobParts.delete(url);
       });
     };
-  }, [client, blobClient, blobAccountId, email?.id, pluginRenderedAttachments, email?.attachments]);
+    // The parts it fetches, not every new email object (a keyword change).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, blobClient, blobAccountId, email?.id, pluginRenderedAttachments, email?.attachments, email?.htmlBody]);
 
   const effectiveAttachments = useMemo<EffectiveAttachment[]>(() => {
     if (pluginRenderedAttachments.length > 0) {
@@ -2376,7 +2497,7 @@ export function EmailViewer({
     // renders as plain text: nothing embedded, nothing hidden), so a part only
     // recognisable by its reference - octet-stream, no disposition, no name -
     // is caught as well (see lib/attachment-visibility.ts).
-    const bodyCids = collectReferencedCids(hideInlineImageAttachments && email ? getRenderableHtmlBody(email) : null);
+    const bodyCids = collectReferencedCids(hideInlineImageAttachments && email ? getReaderHtmlBody(email) : null);
     const jmapAttachments = (email?.attachments ?? [])
       // Hide winmail.dat when we have successfully extracted TNEF content or attachments
       .filter(att => !(tnefHtml || tnefText || tnefAttachments.length > 0) || !isTnefAttachment(att.name, att.type))
@@ -2468,10 +2589,10 @@ export function EmailViewer({
 
   // Generate email source for viewing
   const copySourceToClipboard = async () => {
-    if (!email) return;
+    if (!sourceEmail) return;
 
     try {
-      const source = generateEmailSource(email);
+      const source = generateEmailSource(sourceEmail);
       await navigator.clipboard.writeText(source);
       // Could add a toast notification here
       console.log(tNotifications('source_copied'));
@@ -2514,14 +2635,12 @@ export function EmailViewer({
     // Check if we have body values
     if (email.bodyValues) {
       // Rich HTML, or just a plain-text wrapper the server dressed up as HTML?
-      let htmlContent = getRenderableHtmlBody(email);
+      let htmlContent = getReaderHtmlBody(email);
 
       if (htmlContent) {
         // Replace cid: references with authenticated blob URLs (fetched via useEffect)
         // This prevents browser auth dialogs that occur when loading raw JMAP download URLs
-        if (email.attachments) {
-          htmlContent = rewriteCidReferences(htmlContent, cidBlobUrls, TRANSPARENT_BLOCKED_PIXEL);
-        }
+        htmlContent = rewriteCidReferences(htmlContent, cidBlobUrls, TRANSPARENT_BLOCKED_PIXEL);
 
         // Sanitize (no dark mode color transforms - emails render true-to-life
         // in the iframe) and enforce the external-content policy.
@@ -3394,16 +3513,20 @@ export function EmailViewer({
     router.push(buildCalendarPath({ view: 'week', date: null, eventId: null }));
   };
 
-  const handleExportEmail = async () => {
-    const exportClient = blobSource ? blobSource.client : client;
-    const exportAccountId = blobSource?.accountId;
-    if (!email?.blobId || !exportClient) return;
+  const exportEmailFile = async (target: Email, source: EmailBlobContext | undefined): Promise<boolean> => {
+    const exportClient = source ? source.client : client;
+    if (!target.blobId || !exportClient) return false;
     try {
-      await exportClient.downloadBlob(email.blobId, emailExportFilename(email, emailFilenameOptions), 'message/rfc822', exportAccountId);
+      await exportClient.downloadBlob(target.blobId, emailExportFilename(target, emailFilenameOptions), 'message/rfc822', source?.accountId);
+      return true;
     } catch {
       toast.error(tNotifications('export_email_error'));
-      return;
+      return false;
     }
+  };
+
+  const handleExportEmail = async () => {
+    if (!email || !(await exportEmailFile(email, blobSource))) return;
     const action = useSettingsStore.getState().postExportAction;
     // With the Archive action off a stored 'archive' keeps the message.
     if (action === 'archive' && archiveActionEnabled) onArchive?.();
@@ -3458,25 +3581,26 @@ export function EmailViewer({
     input.click();
   };
 
-  // Print only the email content in a new window
-  const handlePrint = () => {
-    if (!email) return;
-    const printSender = email.from?.[0];
-    const date = formatDateTime(emailDisplayDate(email), timeFormat, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+  // Print only the email content in a new window. Another message of the
+  // conversation brings the body its card shows.
+  const handlePrint = (target: Email | null = email, body: RenderedConversationBody = effectiveEmailContent) => {
+    if (!target) return;
+    const printSender = target.from?.[0];
+    const date = formatDateTime(emailDisplayDate(target), timeFormat, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
     const formatRecipient = (r: { name?: string | null; email: string }) =>
       r.name ? `${escapeHtml(r.name)} &lt;${escapeHtml(r.email)}&gt;` : escapeHtml(r.email);
-    const toList = email.to?.map(formatRecipient).join(', ') || '';
-    const ccList = email.cc?.map(formatRecipient).join(', ') || '';
-    const subjectText = email.subject || t('no_subject');
+    const toList = target.to?.map(formatRecipient).join(', ') || '';
+    const ccList = target.cc?.map(formatRecipient).join(', ') || '';
+    const subjectText = target.subject || t('no_subject');
     const senderText = printSender?.name
       ? `${printSender.name} <${printSender.email}>`
       : printSender?.email || t('unknown_sender');
     // The body was sanitized with EMAIL_IFRAME_SANITIZE_CONFIG which permits
     // <style>. The print window has no iframe isolation, so re-sanitize with
     // the stricter config that forbids <style> before injecting into the DOM.
-    const printableBody = effectiveEmailContent.isHtml
-      ? sanitizeEmailHtml(effectiveEmailContent.html)
-      : effectiveEmailContent.html;
+    const printableBody = body.isHtml
+      ? sanitizeEmailHtml(body.html)
+      : body.html;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -3491,7 +3615,7 @@ export function EmailViewer({
     // inherited one.
     printWindow.document.write(`<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="${emailIframeCsp(effectiveEmailContent.externalBlocked)}">
+<meta http-equiv="Content-Security-Policy" content="${emailIframeCsp(body.externalBlocked)}">
 <meta name="referrer" content="no-referrer">
 <title>${escapeHtml(subjectText)}</title>
 <style>
@@ -4197,7 +4321,7 @@ export function EmailViewer({
         <Button
           variant="ghost"
           size="sm"
-          onClick={handlePrint}
+          onClick={() => handlePrint()}
           data-overflow-item
           data-overflow-priority="9"
           className="hidden sm:inline-flex h-8 gap-1.5"
@@ -4999,7 +5123,7 @@ export function EmailViewer({
               <div className="hidden lg:flex items-center flex-shrink-0 -me-2" data-mv-subject-actions="">
                 <button
                   type="button"
-                  onClick={handlePrint}
+                  onClick={() => handlePrint()}
                   className="grid place-items-center w-10 h-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   title={t('print')}
                   aria-label={t('print')}
@@ -6694,13 +6818,13 @@ export function EmailViewer({
 
       {/* Email Source Modal - pane-scoped inside a Pro pane so it never
           covers the neighbouring split pane. */}
-      {showSourceModal && email && (
+      {sourceEmail && (
         <div
           className={cn(
             "bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
             isPaneScoped ? "absolute inset-0" : "fixed inset-0",
           )}
-          onClick={() => setShowSourceModal(false)}
+          onClick={closeSourceModal}
         >
           <div
             className="bg-background rounded-lg shadow-2xl border border-border w-full max-w-4xl max-h-[90vh] flex flex-col"
@@ -6725,7 +6849,7 @@ export function EmailViewer({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowSourceModal(false)}
+                  onClick={closeSourceModal}
                   className="h-10 w-10 lg:h-8 lg:w-8"
                 >
                   <X className="w-4 h-4" />
@@ -6736,7 +6860,7 @@ export function EmailViewer({
             {/* Modal Content */}
             <div className="flex-1 overflow-auto p-4 bg-muted/30">
               <pre className="text-xs font-mono text-foreground whitespace-pre-wrap break-words bg-background border border-border rounded-lg p-4">
-                {generateEmailSource(email)}
+                {generateEmailSource(sourceEmail)}
               </pre>
             </div>
           </div>

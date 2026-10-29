@@ -67,13 +67,16 @@ export interface AttachmentPartLike {
  * True when the part is embedded in the rendered body and should stay out of
  * the attachment list while "hide inline images" is on.
  *
- * - Declared inline images hide as before, referenced or not.
  * - An explicit `attachment` disposition always keeps its chip - the sender
  *   asked for a download, even if the body also references the part.
  * - Otherwise a part hides only when the body actually references it AND it
  *   is an image or generically typed (`application/octet-stream`, no type):
  *   a referenced part with a real non-image type keeps its chip, because that
  *   chip is its only download.
+ *
+ * A declared inline image the body never references hides no more: the body
+ * does not show it either (a message rendered as plain text, an HTML part
+ * that leaves it out), and the chip is the only place it can be seen.
  */
 export function isEmbeddedInBody(
   att: AttachmentPartLike,
@@ -82,7 +85,6 @@ export function isEmbeddedInBody(
   if (!att.cid) return false;
   const type = (att.type || '').toLowerCase();
   const isImage = type.startsWith('image/');
-  if (att.disposition === 'inline' && isImage) return true;
   if (att.disposition === 'attachment') return false;
   const genericType = !type || type === 'application/octet-stream';
   if (!isImage && !genericType) return false;

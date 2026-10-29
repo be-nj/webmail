@@ -4141,31 +4141,32 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     return full;
   };
 
-  // Reading an unfolded message marks it read. Older messages of the thread
-  // are often not in the loaded list (another folder, an older page), where
-  // the store's markAsRead has nothing to update, so those go to the server
-  // directly. (#1222)
-  const handleMarkConversationEmailRead = async (target: Email) => {
-    if (!client || target.keywords?.$seen) return;
+  // Reading an unfolded message marks it read, and its ⋮ menu can mark it
+  // unread again. Older messages of the thread are often not in the loaded
+  // list (another folder, an older page), where the store's markAsRead has
+  // nothing to update, so those go to the server directly. (#1222)
+  const handleMarkConversationEmailRead = async (target: Email, read = true) => {
+    if (!client || !!target.keywords?.$seen === read) return;
     try {
       if (useEmailStore.getState().emails.some((e) => e.id === target.id)) {
-        await markAsRead(client, target.id, true, emailKeyFor(target));
-        // Still unread: a plugin stopped it, so the copy here stays unread too.
-        if (!useEmailStore.getState().emails.find((e) => emailKeyFor(e) === emailKeyFor(target))?.keywords?.$seen) return;
+        await markAsRead(client, target.id, read, emailKeyFor(target));
+        // Unchanged: a plugin stopped it, so the copy here stays as it was too.
+        if (!!useEmailStore.getState().emails.find((e) => emailKeyFor(e) === emailKeyFor(target))?.keywords?.$seen !== read) return;
       } else {
         // Not in the store's list, so the store action can't ask plugins.
         if (emailHooks.onBeforeEmailReadStateChange.size > 0
-          && !(await emailHooks.onBeforeEmailReadStateChange.intercept({ emailIds: [target.id], read: true }))) {
+          && !(await emailHooks.onBeforeEmailReadStateChange.intercept({ emailIds: [target.id], read }))) {
           return;
         }
         const { threadClient, accountId } = mvConversationRoute(target, client);
         if (!threadClient) return;
-        await threadClient.markAsRead(target.id, true, accountId);
-        void emailHooks.onEmailReadStateChange.emit({ emailIds: [target.id], read: true });
+        await threadClient.markAsRead(target.id, read, accountId);
+        void emailHooks.onEmailReadStateChange.emit({ emailIds: [target.id], read });
       }
-      patchMvConversation(target.id, (e) => ({ ...e, keywords: { ...e.keywords, $seen: true } }));
+      patchMvConversation(target.id, (e) => ({ ...e, keywords: { ...e.keywords, $seen: read } }));
     } catch (error) {
-      console.error('Failed to mark conversation message read:', error);
+      console.error(`Failed to mark conversation message ${read ? 'read' : 'unread'}:`, error);
+      if (!read) toastUpdateFailure(error);
     }
   };
 
@@ -5500,6 +5501,13 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                       // The reply quotes the message, so it needs the body.
                       const full = e.bodyValues ? e : await handleLoadConversationEmail(e);
                       await handleConversationReply(full ?? e);
+                    } : undefined}
+                    onConversationEmailAction={mvConversationView ? async (e, action) => {
+                      if (action === 'markUnread') return void handleMarkConversationEmailRead(e, false);
+                      if (action === 'forwardAsAttachment') return void handleForwardAsAttachment(e);
+                      // Reply all and Forward quote the message, so they need the body.
+                      const full = e.bodyValues ? e : await handleLoadConversationEmail(e);
+                      await (action === 'replyAll' ? handleConversationReplyAll : handleConversationForward)(full ?? e);
                     } : undefined}
                     mvInlineComposer={mvInlineReply ? <MvComposeInline onPopOut={handleMvPopOut}>{composerNode}</MvComposeInline> : undefined}
                     onToggleFullscreen={!isEmbedded && !isMobile ? () => setFullscreenReading((v) => !v) : undefined}
