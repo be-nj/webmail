@@ -1262,13 +1262,26 @@ export const useCalendarStore = create<CalendarStore>()(
             if (target.isOccurrence || target.isBrowserOccurrence) {
               throw new Error("A single occurrence can't move to a calendar of another account; change the whole series.");
             }
+            // The rest of the edit first, as an ordinary update where the event
+            // is (participants hear of it as usual): if that fails, nothing moved.
+            const { calendarIds: destCalendarIds, ...otherChanges } = cleanUpdates;
+            if (Object.keys(otherChanges).length > 0) {
+              await updateBaseEvent(client, realId, otherChanges, sendSchedulingMessages, targetAccountId);
+            }
             const original = await client.getCalendarEvent(realId, targetAccountId);
             if (!original) throw new Error("Event not found");
+            // Then the move itself, quietly: same uid, so for participants it
+            // is the same event, and no cancellation goes out.
             const created = await client.createCalendarEvent(
-              eventCopyForAccount(original, cleanUpdates), sendSchedulingMessages, accountMove.accountId,
+              eventCopyForAccount(original, { calendarIds: destCalendarIds }), false, accountMove.accountId,
             );
-            // Same uid in the new place: no cancellation to the participants.
-            await client.deleteCalendarEvent(realId, false, targetAccountId);
+            try {
+              await client.deleteCalendarEvent(realId, false, targetAccountId);
+            } catch (error) {
+              // Never leave the event in two calendars.
+              await client.deleteCalendarEvent(created.id, false, accountMove.accountId).catch(() => {});
+              throw error;
+            }
             const moved = mapServerEventToStoreEvent(created, get().calendars, accountMove.accountId);
             set((state) => ({
               events: [...state.events.filter((e) => e.id !== id && baseEventStoreId(e) !== id), moved],

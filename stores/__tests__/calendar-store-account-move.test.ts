@@ -59,25 +59,41 @@ beforeEach(() => {
 });
 
 describe('moving an event to a calendar of another account', () => {
-  it('creates it in the group account with the edit and deletes the original quietly', async () => {
+  it('saves the rest of the edit where it is, then moves it quietly into the group account', async () => {
     useCalendarStore.setState({ events: [event()] });
     const client = fakeClient();
 
     const ok = await useCalendarStore.getState().updateEvent(client, 'e1', { calendarIds: { 'd:fam': true }, title: 'Family dinner' }, true);
 
     expect(ok).toBe(true);
-    expect(client.getCalendarEvent).toHaveBeenCalledWith('e1', 'c');
-    const [data, send, accountId] = client.createCalendarEvent.mock.calls[0];
-    expect(accountId).toBe('d');
+    // The edit as an ordinary update, with the scheduling the user chose.
+    const [updatedId, patch, send] = client.updateCalendarEvent.mock.calls[0];
+    expect(updatedId).toBe('e1');
+    expect(patch).toMatchObject({ title: 'Family dinner' });
+    expect(patch).not.toHaveProperty('calendarIds');
     expect(send).toBe(true);
-    expect(data).toMatchObject({ uid: 'dinner@example.com', title: 'Family dinner', calendarIds: { fam: true } });
+    expect(client.getCalendarEvent).toHaveBeenCalledWith('e1', 'c');
+    const [data, quiet, accountId] = client.createCalendarEvent.mock.calls[0];
+    expect(accountId).toBe('d');
+    expect(quiet).toBe(false);
+    expect(data).toMatchObject({ uid: 'dinner@example.com', calendarIds: { fam: true } });
     for (const key of ['id', 'created', 'updated', 'sequence', 'utcStart', 'utcEnd']) expect(data).not.toHaveProperty(key);
     expect(client.deleteCalendarEvent).toHaveBeenCalledWith('e1', false, 'c');
-    expect(client.updateCalendarEvent).not.toHaveBeenCalled();
 
     const events = useCalendarStore.getState().events;
     expect(events.map((e) => e.id)).toEqual(['d:new1']);
     expect(events[0].calendarIds).toEqual({ 'd:fam': true });
+  });
+
+  it('takes the copy back when the original cannot be removed', async () => {
+    useCalendarStore.setState({ events: [event()] });
+    const client = fakeClient();
+    client.deleteCalendarEvent.mockRejectedValueOnce(new Error('forbidden')).mockResolvedValue(undefined);
+
+    await expect(useCalendarStore.getState().updateEvent(client, 'e1', { calendarIds: { 'd:fam': true } })).rejects.toThrow();
+
+    expect(client.deleteCalendarEvent).toHaveBeenLastCalledWith('new1', false, 'd');
+    expect(useCalendarStore.getState().events.map((e) => e.id)).toEqual(['e1']);
   });
 
   it('moves a group event back into an own calendar', async () => {
