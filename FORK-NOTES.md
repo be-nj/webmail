@@ -101,6 +101,7 @@ Hashes mit derselben Betreffzeile.
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
 | (1.18.0) | Mountain View: jede aufgeklappte Mail einer Konversation hat neben „Antworten“ ein ⋮ mit Allen antworten, Weiterleiten, Als Anhang weiterleiten, Als ungelesen markieren, Drucken, Quelltext anzeigen und Als .eml exportieren. Löschen fehlt, weil der Store nur Mails aus der geladenen Liste löschen kann. Export und Quelltext kommen seit 1.19.0 von upstream; das Menü selbst könnte noch auf upstreams `ReaderMoreMenu` umziehen |
 | (1.18.0) | Fotos zwischen Textteilen (Apple Mail/iPhone, `multipart/mixed`) erscheinen im Text: RFC 8621 listet sie nur in `htmlBody`, nicht in `attachments`, upstream zeigt nur `htmlBody[0]`. Inline-Bilder, auf die der Text nicht verweist, bleiben als Anhang sichtbar statt ganz zu verschwinden |
+| (1.19.0) | Kalender: Termin in einen Kalender eines anderen Kontos verschieben (z. B. in den Familienkalender des Gruppenkontos). Upstream patcht nur `calendarIds` im Konto des Termins, das den fremden Kalender nicht kennt; die Änderung kam nie an. Jetzt: übrige Änderungen normal speichern, dann leise Kopie mit derselben UID im Zielkonto, Original löschen, bei Fehler Kopie zurücknehmen (wie Larus, wie upstream für Aufgaben #1204). Ein einzelnes Vorkommen kann nicht allein umziehen |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
 dort sind Markenlogo und Schalter ausgeblendet, wie upstream es mit dem Favicon
