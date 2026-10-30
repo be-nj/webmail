@@ -1,6 +1,6 @@
 # Fork-Notizen
 
-Stand: 29.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
+Stand: 30.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
 upstream (`bulwarkmail/webmail`). Sie beantwortet: *Was ist in diesem Fork
 eigen?* und *Was ist noch offen?*
 
@@ -12,11 +12,37 @@ Begründung für „Logos nur aus geprüften Marken, kein Favicon“ in
 
 ## 1. Stand
 
-Arbeitszweig: **`benj/on-1.18.0`** = Upstream `1.18.0` plus die Commits
+Arbeitszweig: **`benj/on-1.19.0`** = Upstream `1.19.0` plus die Commits
 unten. Live auf `webmail.beckm4nn.de` (Komodo-Stack `stalwart`, Dienst
-`bulwark`), Image-Tag = kurzer Commit-Hash.
+`bulwark`), sobald er Default-Branch auf git.beckm4nn.net ist; Image-Tag =
+kurzer Commit-Hash.
 
-Vorgänger `benj/on-1.17.1`, `benj/on-1.14.2`, `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
+Vorgänger `benj/on-1.18.0-lean`, `benj/on-1.18.0`, `benj/on-1.17.1`, `benj/on-1.14.2`, `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
+
+Beim Rebase auf 1.19.0 (30.10.2026):
+
+- **Schon upstream, entfallen:** die vorgezogenen Upstream-Commits
+  (Platzhalter-Warnung, Thai, #1374, #1375, #1377, #1385, #1387, Aufgaben und
+  endgültiges Löschen über Konten).
+- **Authentication-Results in der Liste** holt upstream jetzt selbst
+  (`header:Authentication-Results:all`, #1439). Die eigene Listen-Property
+  des BIMI-Commits ist weg, der Fork nutzt upstreams Feld.
+- **Warnschild statt Absenderbild** bei gescheiterter Absenderprüfung
+  (`senderWarning`, #1439) ist upstream. Es steht neben Markenlogo und
+  Trust-Badge des Forks; ein Avatar mit Warnschild zeigt kein Logo.
+- **`NO_THIRD_PARTY_TRAFFIC`** (#903) schaltet auch die Markenlogos ab:
+  Avatar, Einstellung und `/api/bimi` selbst.
+- **Reader-⋮** ist upstreams `ReaderMoreMenu` aus `message-actions.ts`.
+  „Termin erstellen“ hängt dort als Eintrag `extra:create_event`.
+- **⋮ pro Nachricht in der Konversation** bleibt eigene Komponente, nutzt
+  aber upstreams Export (`useEmailExport`) und upstreams Quelltext-Dialog,
+  der die echte Nachricht vom Server lädt. „Quelltext anzeigen“ braucht
+  deshalb keinen geladenen Text mehr.
+- **Zeilenausrichtung in Mountain View** hat upstream selbst gelöst, fest auf
+  40 px (`h-10`, `pinToFirstLine`). Der Fork ersetzt nur diese Höhe durch
+  `--list-item-height`, damit die Dichte-Einstellung weiter gilt.
+- **Trusted-Senders-Dialog** ist upstream jetzt ein `Dialog`; die Liste
+  „Vertraute Absender“ (`list="marks"`) sitzt darauf.
 Beim Rebase auf 1.12.0 entfiel der eigene DMARC-Parser (`038059c4`): upstream
 1.11.1 liest DMARC ebenfalls nur aus dem obersten Authentication-Results und
 zusätzlich nur am Anfang eines Eintrags, was auch den `dmarc=pass` im
@@ -73,7 +99,7 @@ Hashes mit derselben Betreffzeile.
 | (1.14.2) | Mountain View: Absender-Avatar in den Listenzeilen (zwischen Stern und Name), damit BIMI-Logo und Vertrauens-Badge auch in der Liste stehen; Lese-Buttons der Auswahl nur aktiv, wenn sie etwas ändern |
 | (1.14.2) | Mountain View: mit geteiltem Postfach bekommt das eigene Konto eine eigene Zeile, gleichrangig mit den geteilten (beide einklappbar, ohne Überschrift „Geteilt“); jedes Konto hat sein eigenes „Mehr“ für die übrigen Systemordner, eigene Ordner eines geteilten Kontos bleiben sichtbar |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
-| (1.18.0) | Mountain View: jede aufgeklappte Mail einer Konversation hat neben „Antworten“ ein ⋮ mit Allen antworten, Weiterleiten, Als Anhang weiterleiten, Als ungelesen markieren, Drucken, Quelltext anzeigen und Als .eml exportieren. Löschen fehlt, weil der Store nur Mails aus der geladenen Liste löschen kann. Bei einem Rebase auf upstreams `message-actions.ts` (`f60ddf3f`) umstellen |
+| (1.18.0) | Mountain View: jede aufgeklappte Mail einer Konversation hat neben „Antworten“ ein ⋮ mit Allen antworten, Weiterleiten, Als Anhang weiterleiten, Als ungelesen markieren, Drucken, Quelltext anzeigen und Als .eml exportieren. Löschen fehlt, weil der Store nur Mails aus der geladenen Liste löschen kann. Export und Quelltext kommen seit 1.19.0 von upstream; das Menü selbst könnte noch auf upstreams `ReaderMoreMenu` umziehen |
 | (1.18.0) | Fotos zwischen Textteilen (Apple Mail/iPhone, `multipart/mixed`) erscheinen im Text: RFC 8621 listet sie nur in `htmlBody`, nicht in `attachments`, upstream zeigt nur `htmlBody[0]`. Inline-Bilder, auf die der Text nicht verweist, bleiben als Anhang sichtbar statt ganz zu verschwinden |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
