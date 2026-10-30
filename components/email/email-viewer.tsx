@@ -6440,7 +6440,7 @@ export function EmailViewer({
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {effectiveAttachments.map((attachment) => {
-                    const FileIcon = getFileIcon(attachment.name || undefined, attachment.type);
+                    const { icon: FileIcon, className: fileIconClass } = attachmentIcon(attachment.type, attachment.name);
                     const isPreviewable = isAttachmentPreviewable(attachment);
                     const opensPreview = isPreviewable && mailAttachmentAction === 'preview';
                     const thumbUrl = imageThumbUrls[attachment.id];
@@ -6462,10 +6462,10 @@ export function EmailViewer({
                         <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden bg-background/40">
                           {thumbUrl
                             ? <img src={thumbUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-                            : <FileIcon className="w-10 h-10 text-muted-foreground/70" />}
+                            : <FileIcon className={cn("w-10 h-10", fileIconClass)} />}
                         </div>
                         <div className="flex items-center gap-1.5 h-10 px-2.5 border-t border-border bg-background">
-                          <FileIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <FileIcon className={cn("w-4 h-4 flex-shrink-0", fileIconClass)} />
                           <span className="text-xs text-foreground truncate flex-1 min-w-0">{displayName}</span>
                         </div>
                         {/* Hover: name, size and actions over the preview, like Gmail's card overlay. */}
