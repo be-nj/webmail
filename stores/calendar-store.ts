@@ -7,6 +7,7 @@ import { getEventStartDate, normalizeAllDayDuration } from '@/lib/calendar-utils
 import { displayNow } from '@/lib/timezone';
 import { parseDuration } from '@/components/calendar/event-card';
 import { sanitizeOutgoingCalendarEventData } from '@/lib/calendar-event-normalization';
+import { accountMoveFor, eventCopyForAccount } from '@/lib/calendar-account-move';
 import { feedChanged, feedFields } from '@/lib/calendar-feed-diff';
 import { expandRecurringEvents } from '@/lib/recurrence-expansion';
 import { SchedulingDeniedError } from '@/lib/jmap/scheduling-error';
@@ -1253,6 +1254,28 @@ export const useCalendarStore = create<CalendarStore>()(
               remapped[cal?.originalId || calId] = v;
             }
             cleanUpdates.calendarIds = remapped;
+          }
+          // Fork: a calendar of another account (a shared or group calendar)
+          // takes a copy of the event, and the original goes.
+          const accountMove = accountMoveFor(get().calendars, storeEvent, updates.calendarIds);
+          if (accountMove) {
+            if (target.isOccurrence || target.isBrowserOccurrence) {
+              throw new Error("A single occurrence can't move to a calendar of another account; change the whole series.");
+            }
+            const original = await client.getCalendarEvent(realId, targetAccountId);
+            if (!original) throw new Error("Event not found");
+            const created = await client.createCalendarEvent(
+              eventCopyForAccount(original, cleanUpdates), sendSchedulingMessages, accountMove.accountId,
+            );
+            // Same uid in the new place: no cancellation to the participants.
+            await client.deleteCalendarEvent(realId, false, targetAccountId);
+            const moved = mapServerEventToStoreEvent(created, get().calendars, accountMove.accountId);
+            set((state) => ({
+              events: [...state.events.filter((e) => e.id !== id && baseEventStoreId(e) !== id), moved],
+            }));
+            if (calendarHooks.onAfterEventUpdate.size > 0) void calendarHooks.onAfterEventUpdate.emit(eventToView(moved));
+            await refetchAfterOccurrenceMutation();
+            return true;
           }
           // An occurrence's alerts that turn the calendar's defaults off.
           const stopsDefaultAlerts = cleanUpdates.useDefaultAlerts === false && 'alerts' in cleanUpdates;
