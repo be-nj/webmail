@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { JMAPClient } from '../jmap/client';
 
-const AUTH = 'header:Authentication-Results:asText:all';
+const AUTH = 'header:Authentication-Results:all';
 
 function makeSession() {
   return {

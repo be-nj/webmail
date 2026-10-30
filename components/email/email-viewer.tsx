@@ -5763,7 +5763,7 @@ export function EmailViewer({
                             : <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-red-700 dark:text-red-400" />}
                           <span className="font-medium text-foreground">{t('sender_trust.label')}</span>
                           <span className={cn(
-                            "text-[10px] uppercase tracking-wider",
+                            "text-[0.625rem] uppercase tracking-wider",
                             trustSignal === 'trusted' ? "text-primary" : "text-red-700 dark:text-red-400",
                           )}>
                             {translateAuthResult(trustSignal === 'trusted' ? 'pass' : 'fail')}
@@ -6619,7 +6619,7 @@ export function EmailViewer({
                         <div className="absolute inset-x-0 top-0 bottom-10 flex flex-col justify-between p-2 bg-black/60 text-white opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity">
                           <div className="min-w-0">
                             <div className="text-xs font-medium line-clamp-2 break-all">{displayName}</div>
-                            <div className="text-[11px] text-white/80">{formatFileSize(attachment.size)}</div>
+                            <div className="text-[0.6875rem] text-white/80">{formatFileSize(attachment.size)}</div>
                           </div>
                           <div className="flex items-center gap-1">
                             <button

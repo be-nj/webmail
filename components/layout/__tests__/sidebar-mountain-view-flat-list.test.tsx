@@ -176,7 +176,7 @@ describe('Sidebar under Mountain View', () => {
       const sharedRow = container.querySelector('[data-folder-name="mb@beck.ma"]')!;
       expect(own).not.toBeNull();
       expect(screen.queryByText('shared')).toBeNull();
-      const indent = (el: Element) => (el.firstElementChild as HTMLElement).style.paddingLeft;
+      const indent = (el: Element) => (el.firstElementChild as HTMLElement).style.paddingInlineStart;
       expect(indent(own)).toBe(indent(sharedRow));
       // Your folders sit one level under your account row.
       expect(indent(row(container, 'inbox')!)).not.toBe(indent(own));

@@ -2592,7 +2592,7 @@
         "fix_description": "When a view looks stale or wrong, or you want to start over."
       },
       "sender_bimi_logos": {
-        "label": "Sender Brand Logos (BIMI)",
+        "label": "Sender brand logos (BIMI)",
         "description": "Show the logo of brands whose mark is certified for the sender domain (BIMI with a verified mark certificate), only on messages that passed sender verification. Never for freemail providers."
       }
     },

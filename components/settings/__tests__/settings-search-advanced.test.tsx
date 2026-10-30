@@ -58,7 +58,7 @@ async function openResult(query: string, label: string) {
 
 describe('settings search and the Advanced switch', () => {
   it('leaves Advanced off for a row that is not an advanced one', async () => {
-    await openResult('favicons', 'Sender favicons');
+    await openResult('brand logos', 'Sender brand logos (BIMI)');
     expect(useSettingsStore.getState().showAdvancedSettings).toBe(false);
   });
 

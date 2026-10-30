@@ -47,13 +47,14 @@ beforeEach(() => {
 afterEach(() => setNoThirdPartyTraffic(false));
 
 describe('Settings > Message list', () => {
-  it('offers sender favicons only while third-party traffic is allowed', () => {
+  // Fork: no favicons; the brand logos (BIMI) are the outside lookup here.
+  it('offers sender brand logos only while third-party traffic is allowed', () => {
     const { unmount } = render(<MessageListSettings />);
-    expect(screen.getByText('sender_favicons.label')).toBeInTheDocument();
+    expect(screen.getByText('sender_bimi_logos.label')).toBeInTheDocument();
     unmount();
     setNoThirdPartyTraffic(true);
     render(<MessageListSettings />);
-    expect(screen.queryByText('sender_favicons.label')).toBeNull();
+    expect(screen.queryByText('sender_bimi_logos.label')).toBeNull();
   });
 });
 

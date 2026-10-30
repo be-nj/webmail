@@ -37,7 +37,7 @@ describe('settings search index (English messages)', () => {
     expect(labelsFor('calendar')).toContain('Free scrolling');
     expect(labelsFor('calendar')).toContain('Show week numbers');
     expect(labelsFor('notifications')).toContain('Unread count on the tab and app icon');
-    expect(labelsFor('message_list')).toContain('Sender favicons');
+    expect(labelsFor('message_list')).toContain('Sender brand logos (BIMI)');
     expect(labelsFor('message_list')).toContain('Clear search when switching folders');
     expect(labelsFor('reading')).toContain('Always load images from');
     expect(labelsFor('composing')).toContain('Undo send / send delay');
@@ -49,7 +49,7 @@ describe('settings search index (English messages)', () => {
   // the row (Sender Favicons under Backup & reset, Phone under Contacts,
   // Default Mail Program under Composing) or showed "Level {n} criterion".
   it('does not list settings a page does not draw', () => {
-    expect(labelsFor('backup')).not.toContain('Sender favicons');
+    expect(labelsFor('backup')).not.toContain('Sender brand logos (BIMI)');
     expect(labelsFor('backup')).not.toContain('Keyboard shortcuts');
     expect(labelsFor('contacts')).not.toContain('Phone');
     expect(labelsFor('composing')).not.toContain('Default Mail Program');
@@ -80,7 +80,7 @@ describe('settings search index (English messages)', () => {
   it('marks the rows the Advanced switch hides', () => {
     const advanced = settingsSubResults(en, 'message_list', 'Bulwark').filter((r) => r.advanced).map((r) => r.label);
     expect(advanced).toContain('Emails per page');
-    expect(advanced).not.toContain('Sender favicons');
+    expect(advanced).not.toContain('Sender brand logos (BIMI)');
   });
 });
 
