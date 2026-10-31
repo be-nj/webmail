@@ -192,6 +192,7 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   // corrupt bytes) falls through to the next source instead of an empty circle.
   const [failedContactPhoto, setFailedContactPhoto] = useState<string | null>(null);
   const senderFavicons = useSettingsStore((s) => s.senderFavicons);
+  const senderBimiLogos = useSettingsStore((s) => s.senderBimiLogos);
   const faviconRefreshedAt = useFaviconRefreshStore((s) => s.refreshedAt);
   const contacts = useContactStore((s) => s.contacts);
   const { devMode } = useConfig();
@@ -284,11 +285,11 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   const customAvatar = devMode && email && sampleAvatarsAllowed() ? CUSTOM_AVATARS[email.toLowerCase()] : null;
   // Gravatar and the like are outside hosts: initials instead in the no-third-party mode.
   const pluginAvatar = pluginAvatarFailed || !avatarUrlAllowed(pluginAvatarUrl) ? null : pluginAvatarUrl;
-  // BIMI logos come from /api/bimi under the same switches as favicons, and
+  // BIMI logos come from /api/bimi under the favicon proxy switches and their own setting, and
   // only for the address shown: a thread row may show another participant
   // than the message whose DMARC pass named the domain.
   const showBrand =
-    !IS_LITE && senderFaviconsAllowed() && senderFavicons && !!brandDomain && domain === brandDomain && brandDomain !== failedBrand && !failedBrandDomains.has(brandDomain);
+    !IS_LITE && senderFaviconsAllowed() && senderBimiLogos && !!brandDomain && domain === brandDomain && brandDomain !== failedBrand && !failedBrandDomains.has(brandDomain);
   const brandSrc = showBrand ? withBasePath(`/api/bimi?domain=${encodeURIComponent(brandDomain!)}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`) : null;
   const photoSrc = resolvedContactPhoto || brandSrc || pluginAvatar || customAvatar || profilePic || null;
   const faviconSrc = !imgError && !domainFailed && showFavicon ? withBasePath(`/api/favicon?domain=${encodeURIComponent(faviconDomain!)}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`) : null;

@@ -482,3 +482,20 @@ describe('getSenderVerification', () => {
     expect(getSenderVerification(phish, undefined)).toBeNull();
   });
 });
+
+describe('DMARC parsing for BIMI', () => {
+  it('reads header.from past a comment', () => {
+    const result = parseAuthenticationResults('mx.example; dmarc=pass (p=REJECT sp=REJECT) header.from=brand.example policy.dmarc=reject');
+    expect(result.dmarc).toEqual({ result: 'pass', domain: 'brand.example', policy: 'reject' });
+  });
+
+  it('keeps the first (topmost) DMARC result when several headers are joined', () => {
+    const joined = 'mx.example; dmarc=fail header.from=brand.example; forged.example; dmarc=pass header.from=brand.example';
+    expect(parseAuthenticationResults(joined).dmarc?.result).toBe('fail');
+  });
+
+  it('does not take header.from from a later result', () => {
+    const result = parseAuthenticationResults('dmarc=pass; dkim=pass header.d=x.example header.from=brand.example');
+    expect(result.dmarc?.domain).toBeUndefined();
+  });
+});

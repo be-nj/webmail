@@ -38,9 +38,9 @@ function fetchInfo(domain: string): Promise<BimiInfo> {
  */
 export function BrandVerifiedBadge({ domain, className }: { domain?: string; className?: string }) {
   const t = useTranslations('email_viewer.brand_logo');
-  const senderFavicons = useSettingsStore((s) => s.senderFavicons);
+  const senderBimiLogos = useSettingsStore((s) => s.senderBimiLogos);
   useNoThirdPartyTraffic();
-  const enabled = !!domain && !IS_LITE && senderFavicons && senderFaviconsAllowed();
+  const enabled = !!domain && !IS_LITE && senderBimiLogos && senderFaviconsAllowed();
   const [info, setInfo] = useState<{ domain: string; info: BimiInfo } | null>(null);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLSpanElement>(null);
