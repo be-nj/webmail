@@ -178,7 +178,7 @@ export function SettingsPage() {
 
         <SettingsSection id="bimi" title="Brand logos">
           <ConfigNote>
-            Senders that publish a BIMI record and enforce DMARC get their logo as the sender icon, but only a logo a Verified Mark or Common Mark Certificate backs: a lookalike domain can point its record at someone else&apos;s logo. This build always requires the certificate, so there is no switch for it (docs/adr/0001).
+            Senders that publish a BIMI record and enforce DMARC get their logo as the sender icon, but only a logo a Verified Mark or Common Mark Certificate backs: a lookalike domain can point its record at someone else&apos;s logo. A logo only the DNS record backs shows just for the reader&apos;s Trusted Senders. This build always works that way, so there is no switch for it (docs/adr/0001).
           </ConfigNote>
         </SettingsSection>
 

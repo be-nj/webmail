@@ -274,6 +274,19 @@ describe('Avatar', () => {
       expect(container.querySelector('[data-testid="trusted-mark"]')).toBeNull();
     });
 
+    it("asks for the record's own picture only for a trusted sender", () => {
+      const { container } = render(<Avatar name="Shop" email="noreply@shop.org" brandDomain="shop.org" />);
+      const img = container.querySelector('img')!;
+      expect(img.getAttribute('src')).toBe('/api/bimi?domain=shop.org');
+      // No certificate: /api/bimi answers the placeholder.
+      Object.defineProperty(img, 'naturalWidth', { value: 1 });
+      fireEvent.load(img);
+      expect(container.querySelector('img')).toBeNull();
+      // A trusted sender of the same domain still asks, for the record's picture.
+      const { container: trusted } = render(<Avatar name="Shop" email="noreply@shop.org" brandDomain="shop.org" senderTrust="trusted" />);
+      expect(trusted.querySelector('img')?.getAttribute('src')).toBe('/api/bimi?domain=shop.org&trusted=1');
+    });
+
     it('asks for no logo without a DMARC pass', () => {
       const { container } = render(<Avatar name="Brand" email="news@brand.org" />);
       expect(container.querySelector('img')).toBeNull();

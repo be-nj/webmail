@@ -72,6 +72,11 @@ describe('/api/bimi', () => {
     expect((await get('domain=brand.org')).headers.get('x-bulwark-bimi')).toBe('verified');
   });
 
+  it("answers the record's own picture for a trusted sender", async () => {
+    resolve.mockResolvedValue(selfAsserted);
+    expect((await get('domain=brand.org&trusted=1')).headers.get('x-bulwark-bimi')).toBe('self-asserted');
+  });
+
   it('describes what backs the logo in JSON', async () => {
     resolve.mockResolvedValue(verified);
     expect(await (await get('domain=brand.org&format=json')).json()).toEqual({

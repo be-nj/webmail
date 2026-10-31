@@ -301,15 +301,21 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   const customAvatar = devMode && email && sampleAvatarsAllowed() ? CUSTOM_AVATARS[email.toLowerCase()] : null;
   // Gravatar and the like are outside hosts: initials instead in the no-third-party mode.
   const pluginAvatar = pluginAvatarFailed || !avatarUrlAllowed(pluginAvatarUrl) ? null : pluginAvatarUrl;
-  // Brand Logos (CONTEXT.md) come from /api/bimi, which answers only a logo
-  // a verified mark certificate backs, under the outgoing-host switches and
-  // their own setting. Only for the address shown: a thread row may show
-  // another participant than the message whose DMARC pass named the domain.
-  // Never for a freemail domain.
+  // Brand Logos (CONTEXT.md) come from /api/bimi under the outgoing-host
+  // switches and their own setting: a logo a verified mark certificate backs,
+  // or for a Trusted Sender the picture the domain's BIMI record points at.
+  // Only for the address shown: a thread row may show another participant
+  // than the message whose DMARC pass named the domain. Never for a freemail
+  // domain. A domain without a logo for others may still have one for a
+  // Trusted Sender, so their failures are remembered apart.
+  const trustedBrand = senderTrust === "trusted";
+  const brandKey = brandDomain ? `${brandDomain}${trustedBrand ? "#trusted" : ""}` : undefined;
   const showBrand =
-    !IS_LITE && senderFaviconsAllowed() && senderBimiLogos && !disableFavicon && !!brandDomain && domain === brandDomain &&
-    !!rootDomain && !FREEMAIL_DOMAINS.has(rootDomain) && brandDomain !== failedBrand && !failedBrandDomains.has(brandDomain);
-  const brandSrc = showBrand ? withBasePath(`/api/bimi?domain=${encodeURIComponent(brandDomain!)}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`) : null;
+    !IS_LITE && senderFaviconsAllowed() && senderBimiLogos && !disableFavicon && !!brandKey && domain === brandDomain &&
+    !!rootDomain && !FREEMAIL_DOMAINS.has(rootDomain) && brandKey !== failedBrand && !failedBrandDomains.has(brandKey);
+  const brandSrc = showBrand
+    ? withBasePath(`/api/bimi?domain=${encodeURIComponent(brandDomain!)}${trustedBrand ? "&trusted=1" : ""}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`)
+    : null;
   const photoSrc = resolvedContactPhoto || brandSrc || pluginAvatar || customAvatar || profilePic || null;
   const imgSrc = disableImages ? null : photoSrc;
   const isBrand = imgSrc !== null && imgSrc === brandSrc;
@@ -321,16 +327,16 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
       setFailedContactPhoto(resolvedContactPhoto);
       return;
     }
-    if (brandSrc && brandDomain && imgSrc === brandSrc) {
-      failedBrandDomains.add(brandDomain);
-      setFailedBrand(brandDomain);
+    if (brandSrc && brandKey && imgSrc === brandSrc) {
+      failedBrandDomains.add(brandKey);
+      setFailedBrand(brandKey);
       return;
     }
     // If the plugin avatar just failed, mark it and fall through to the next source
     if (pluginAvatar && imgSrc === pluginAvatar) {
       setPluginAvatarFailed(true);
     }
-  }, [imgSrc, pluginAvatar, resolvedContactPhoto, brandSrc, brandDomain]);
+  }, [imgSrc, pluginAvatar, resolvedContactPhoto, brandSrc, brandKey]);
 
   const initialsBackground = fallbackColor ?? getBackgroundColor();
 

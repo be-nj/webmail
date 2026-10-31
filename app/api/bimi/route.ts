@@ -13,9 +13,11 @@ import type { BimiInfo } from '@/lib/bimi/types';
  * brandIndicatorDomain in lib/email-headers.ts): the logo says who the domain
  * is, not that a given message came from it.
  *
- * Fork: only a logo a mark certificate backs is answered. The picture a BIMI
- * record merely points at is whatever the domain chooses, so paypa1.de can
- * publish PayPal's logo and pass DMARC for its own name (docs/adr/0001).
+ * Fork: a logo a mark certificate backs is answered to anyone. The picture
+ * a BIMI record merely points at is whatever the domain chooses, so paypa1.de
+ * can publish PayPal's logo and pass DMARC for its own name: that one only
+ * with &trusted=1, which the avatar sends for a Trusted Sender, whose exact
+ * address passed DMARC for its own domain (docs/adr/0001).
  */
 
 const TRANSPARENT_PNG = Buffer.from(
@@ -45,12 +47,13 @@ export async function GET(request: NextRequest) {
 
   const domain = normalizeBimiDomain(request.nextUrl.searchParams.get('domain'));
   const asJson = request.nextUrl.searchParams.get('format') === 'json';
+  const trusted = request.nextUrl.searchParams.get('trusted') === '1';
   if (!domain) {
     return new NextResponse(null, { status: 400, headers: { 'Cache-Control': 'public, max-age=86400' } });
   }
 
   let indicator = await bimiResolver().resolve(domain);
-  if (indicator && indicator.status !== 'verified') indicator = null;
+  if (indicator && indicator.status !== 'verified' && !trusted) indicator = null;
 
   if (asJson) {
     return NextResponse.json(info(indicator), {

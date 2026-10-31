@@ -21,8 +21,8 @@ A certificate (VMC) in which a mark authority ties a brand's logo to a domain; i
 _Avoid_: "verified sender", blue check
 
 **Brand Logo**:
-The logo carried inside a domain's **Verified Mark Certificate**, used as the avatar for a message that passed its **Sender Check**, never for a **Freemail Domain**; its presence alone is the statement, it carries no badge.
-_Avoid_: Verified logo, BIMI logo (a BIMI record without a certificate yields no **Brand Logo**), favicon
+A domain's logo used as the avatar for a message that passed its **Sender Check**, never for a **Freemail Domain** and never with a badge: the logo inside its **Verified Mark Certificate** for any sender, or the picture its BIMI record points at only when the sender is a **Trusted Sender**.
+_Avoid_: Verified logo, favicon
 
 ### Sender Trust
 
@@ -41,7 +41,8 @@ _Avoid_: Spoof alert, phishing warning (unqualified)
 ## Relationships
 
 - **Domain Trust** and **Sender Trust** are independent: a **Brand Logo** says nothing about the person, a **Trusted Mark** nothing about the brand
-- A **Brand Logo** requires a passed **Sender Check**, a valid **Verified Mark Certificate** naming the domain, and a domain that is not a **Freemail Domain**
+- A **Brand Logo** requires a passed **Sender Check** and a domain that is not a **Freemail Domain**, plus either a valid **Verified Mark Certificate** naming the domain or a **Trusted Sender** in From
+- A BIMI record's own picture is someone else's logo as easily as its owner's; only a **Verified Mark Certificate** or the reader's own trust in the exact address makes it a **Brand Logo**
 - A **Brand Logo** is shared by every address on its domain
 - A **Trusted Sender** on a given message shows exactly one of: the **Trusted Mark** (check passed), the **Impersonation Warning** (check failed), or neither (no verdict)
 - A message without any Authentication-Results has no verdict: it can still load external content for a **Trusted Sender**, but never shows the **Trusted Mark**
@@ -53,8 +54,10 @@ _Avoid_: Spoof alert, phishing warning (unqualified)
 > **Domain expert:** "Neither. web.de is a **Freemail Domain**, so no **Brand Logo**, and only the exact address `Max.Musterl@web.de` is a **Trusted Sender** — trust doesn't carry over to a look-alike."
 > **Dev:** "And `paypa1.de` publishing a BIMI record with PayPal's logo?"
 > **Domain expert:** "No **Verified Mark Certificate** names paypa1.de, so no **Brand Logo**. Only the certificate ties a logo to the real owner."
+> **Dev:** "Kleinanzeigen publishes BIMI without a certificate."
+> **Domain expert:** "Then `noreply@mail.kleinanzeigen.de` shows the logo only if the reader made it a **Trusted Sender** — the address that passed DMARC is then one they chose to believe. Any other Kleinanzeigen address gets initials."
 
 ## Flagged ambiguities
 
 - The check badge first meant "the domain's **Verified Mark Certificate** checked out". Resolved: that is a statement about the domain and read as "this person is verified"; the badge is now the **Trusted Mark**, drawn as a handshake so it can't read as platform verification, and the **Brand Logo** carries no badge.
-- "Logo" covered the favicon, a BIMI logo fetched from the record's URL, and the certificate's logo. Resolved: only the certificate's logo is a **Brand Logo**; the other two prove nothing about the domain and are not shown.
+- "Logo" covered the favicon, a BIMI logo fetched from the record's URL, and the certificate's logo. Resolved: the favicon is never shown; the record's picture only for a **Trusted Sender**; the certificate's logo for anyone who passed the **Sender Check**.
