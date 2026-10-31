@@ -216,31 +216,21 @@ describe('Avatar', () => {
     });
   });
 
-  // #960: a refresh must reach past the browser's two-week cache of the old
-  // icon and retry domains whose favicon failed before.
-  it('requests the sender favicon again after a refresh', () => {
-    useFaviconRefreshStore.setState({ refreshedAt: 0 });
+  // Fork (docs/adr/0001): a favicon proves nothing about the sender.
+  it('never shows the sender favicon', () => {
     const { container } = render(<Avatar name="Jan" email="jan@example.cz" />);
-    const img = () => container.querySelector('img');
-    expect(img()?.getAttribute('src')).toBe('/api/favicon?domain=example.cz');
-
-    fireEvent.error(img()!);
-    expect(img()).toBeNull();
-
-    act(() => useFaviconRefreshStore.getState().refresh());
-    const stamp = useFaviconRefreshStore.getState().refreshedAt;
-    expect(stamp).toBeGreaterThan(0);
-    expect(img()?.getAttribute('src')).toBe(`/api/favicon?domain=example.cz&v=${stamp}`);
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.textContent).toBe('JA');
   });
 
-  // #903: no sender icons, and so no /api/favicon request, while third-party traffic is off.
-  it('shows initials instead of the sender favicon in the no-third-party mode', () => {
+  // #903: no brand logo, and so no /api/bimi request, while third-party traffic is off.
+  it('shows initials instead of the brand logo in the no-third-party mode', () => {
     useFaviconRefreshStore.setState({ refreshedAt: 0 });
     setNoThirdPartyTraffic(true);
     try {
-      const { container } = render(<Avatar name="Jan" email="jan@example.cz" />);
+      const { container } = render(<Avatar name="Brand" email="news@brand.org" brandDomain="brand.org" />);
       expect(container.querySelector('img')).toBeNull();
-      expect(container.textContent).toBe('JA');
+      expect(container.textContent).toBe('BR');
     } finally {
       setNoThirdPartyTraffic(false);
     }
@@ -278,31 +268,42 @@ describe('Avatar', () => {
       useFaviconRefreshStore.setState({ refreshedAt: 0 });
     });
 
-    it('shows the logo of a domain the message passed DMARC for, before the favicon', () => {
+    it('shows the logo of a domain the message passed DMARC for, without a badge', () => {
       const { container } = render(<Avatar name="Brand" email="news@brand.org" brandDomain="brand.org" />);
       expect(container.querySelector('img')?.getAttribute('src')).toBe('/api/bimi?domain=brand.org');
+      expect(container.querySelector('[data-testid="trusted-mark"]')).toBeNull();
     });
 
     it('asks for no logo without a DMARC pass', () => {
       const { container } = render(<Avatar name="Brand" email="news@brand.org" />);
-      expect(container.querySelector('img')?.getAttribute('src')).toBe('/api/favicon?domain=brand.org');
+      expect(container.querySelector('img')).toBeNull();
     });
 
     it('asks for no logo when the avatar shows someone from another domain', () => {
       const { container } = render(<Avatar name="Ann" email="ann@other.org" brandDomain="brand.org" />);
-      expect(container.querySelector('img')?.getAttribute('src')).toBe('/api/favicon?domain=other.org');
+      expect(container.querySelector('img')).toBeNull();
     });
 
-    it('falls through to the favicon when the domain has no logo', () => {
+    it.each(['someone@gmail.com', 'max.musterl@web.de', 'a@mail.gmx.net', 'x@t-online.de'])(
+      'never asks for a freemail domain (%s)',
+      (address) => {
+        const domain = address.split('@')[1];
+        const { container } = render(<Avatar name="Someone" email={address} brandDomain={domain} />);
+        expect(container.querySelector('img')).toBeNull();
+      },
+    );
+
+    it('falls back to initials when the domain has no logo', () => {
       const { container } = render(<Avatar name="Brand" email="news@brand.org" brandDomain="brand.org" />);
       const img = container.querySelector('img')!;
       // /api/bimi answers a 1x1 placeholder when there is no logo.
       Object.defineProperty(img, 'naturalWidth', { value: 1 });
       fireEvent.load(img);
-      expect(container.querySelector('img')?.getAttribute('src')).toBe('/api/favicon?domain=brand.org');
+      expect(container.querySelector('img')).toBeNull();
+      expect(container.textContent).toBe('BR');
       // Other avatars of the domain don't ask again.
       const { container: second } = render(<Avatar name="Brand" email="news@brand.org" brandDomain="brand.org" />);
-      expect(second.querySelector('img')?.getAttribute('src')).toBe('/api/favicon?domain=brand.org');
+      expect(second.querySelector('img')).toBeNull();
     });
 
     it('keeps a contact photo first', async () => {
@@ -321,14 +322,33 @@ describe('Avatar', () => {
       }
     });
 
-    it('asks for no logo while sender icons are off', () => {
-      useSettingsStore.setState({ senderFavicons: false });
+    it('asks for no logo while brand logos are off', () => {
+      useSettingsStore.setState({ senderBimiLogos: false });
       try {
         const { container } = render(<Avatar name="Brand" email="news@brand.org" brandDomain="brand.org" />);
         expect(container.querySelector('img')).toBeNull();
       } finally {
-        useSettingsStore.setState({ senderFavicons: true });
+        useSettingsStore.setState({ senderBimiLogos: true });
       }
     });
+  });
+});
+
+describe('Avatar sender trust badges', () => {
+  it('shows the Trusted Mark for a trusted sender', () => {
+    const { container } = render(<Avatar name="Max" email="max.musterl@web.de" senderTrust="trusted" />);
+    expect(container.querySelector('[data-testid="trusted-mark"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="impersonation-mark"]')).toBeNull();
+  });
+
+  it('shows the warning mark for an impersonated trusted sender', () => {
+    const { container } = render(<Avatar name="Max" email="max.musterl@web.de" senderTrust="impersonated" />);
+    expect(container.querySelector('[data-testid="impersonation-mark"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="trusted-mark"]')).toBeNull();
+  });
+
+  it('shows nothing without a signal', () => {
+    const { container } = render(<Avatar name="Max" email="max.musterl@web.de" />);
+    expect(container.querySelector('svg')).toBeNull();
   });
 });

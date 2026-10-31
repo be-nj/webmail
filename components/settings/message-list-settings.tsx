@@ -9,15 +9,13 @@ import type { ArchiveMode, HoverAction, MvInboxType, SwipeAction } from '@/store
 import { ALL_HOVER_ACTIONS } from '@/stores/settings-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useEmailStore } from '@/stores/email-store';
-import { useFaviconRefreshStore } from '@/stores/favicon-refresh-store';
-import { toast } from '@/stores/toast-store';
 import { cn } from '@/lib/utils';
 import { IS_LITE } from '@/lib/lite';
 import { useNoThirdPartyTraffic } from '@/hooks/use-third-party-mode';
 import { SettingsSection, SettingItem, Select, ToggleSwitch } from './settings-section';
 import { MessageListOrderSettings } from './message-list-order-settings';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, FolderSync, Loader2, RefreshCw } from '@/components/icons';
+import { AlertTriangle, FolderSync, Loader2 } from '@/components/icons';
 import { usePolicyStore } from '@/stores/policy-store';
 import { allowEmailMove, createMailboxWithHooks, emitEmailMove } from '@/lib/plugin-mail-hooks';
 import type { Mailbox } from '@/lib/jmap/types';
@@ -29,8 +27,8 @@ import type { Mailbox } from '@/lib/jmap/types';
  */
 export function MessageListSettings() {
   const t = useTranslations('settings.email_behavior');
-  // Sender icons come from an outside service: no setting for them in the mode (#903).
-  const faviconsAllowed = !useNoThirdPartyTraffic();
+  // Brand logos come from outside hosts: no setting for them in the mode (#903).
+  const brandLogosAllowed = !useNoThirdPartyTraffic();
   const tPage = useTranslations('settings.message_list');
   const tAppearance = useTranslations('settings.appearance');
   const tAdvanced = useTranslations('settings.advanced');
@@ -38,7 +36,6 @@ export function MessageListSettings() {
   const [reorganizeResult, setReorganizeResult] = useState<string | null>(null);
   const { isSettingLocked, isSettingHidden, isFeatureEnabled } = usePolicyStore();
   const archiveActionEnabled = isFeatureEnabled('archiveActionEnabled');
-  const refreshFavicons = useFaviconRefreshStore((s) => s.refresh);
   // Swipes exist on touch screens only; a mouse user never sees these rows.
   const touchDevice = useMediaQuery('(pointer: coarse)');
   // With the Archive action off, a stored 'archive' swipe does nothing (the row
@@ -73,7 +70,6 @@ export function MessageListSettings() {
     interfaceLayout,
     mvInboxType,
     tintListRowsByTag,
-    senderFavicons,
     senderBimiLogos,
     showAvatarsInJunk,
     updateSetting,
@@ -218,29 +214,9 @@ export function MessageListSettings() {
         </SettingItem>
       </SettingsSection>
 
-      {/* Sender favicons come from the /api/favicon proxy, absent in the static Lite build (components/ui/avatar.tsx). */}
+      {/* Brand logos come from the /api/bimi route, absent in the static Lite build (components/ui/avatar.tsx). */}
       <SettingsSection id="senders" title={tPage('sections.senders')}>
-        {!IS_LITE && faviconsAllowed && (
-          <SettingItem label={tAdvanced('sender_favicons.label')} description={tAdvanced('sender_favicons.description')}>
-            <ToggleSwitch checked={senderFavicons} onChange={(checked) => updateSetting('senderFavicons', checked)} />
-          </SettingItem>
-        )}
-
-        {!IS_LITE && faviconsAllowed && senderFavicons && (
-          <SettingItem nested label={tAdvanced('sender_favicons.refresh_label')} description={tAdvanced('sender_favicons.refresh_description')}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => { refreshFavicons(); toast.success(tAdvanced('sender_favicons.refresh_done')); }}
-              className="text-xs h-7"
-            >
-              <RefreshCw className="w-3.5 h-3.5 me-1" />
-              {tAdvanced('sender_favicons.refresh_button')}
-            </Button>
-          </SettingItem>
-        )}
-
-        {!IS_LITE && (
+        {!IS_LITE && brandLogosAllowed && (
           <SettingItem label={tAdvanced('sender_bimi_logos.label')} description={tAdvanced('sender_bimi_logos.description')}>
             <ToggleSwitch checked={senderBimiLogos} onChange={(checked) => updateSetting('senderBimiLogos', checked)} />
           </SettingItem>

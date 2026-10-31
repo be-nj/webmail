@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pauză",
     "read_aloud_resume": "Reluați",
     "read_aloud_stop": "Opriți citirea",
-    "reader_view": "Vizualizare pentru citire"
+    "reader_view": "Vizualizare pentru citire",
+    "impersonation_warning": {
+      "title": "Nu este de la expeditorul tău de încredere",
+      "description": "Acest mesaj pretinde că vine de la {address}, unul dintre expeditorii tăi de încredere, dar nu a trecut verificarea expeditorului. Cel mai probabil nu a fost trimis de acesta."
+    }
   },
   "external_mail": {
     "sender_label": "Extern",

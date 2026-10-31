@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pause",
     "read_aloud_resume": "Fortsæt",
     "read_aloud_stop": "Stop oplæsning",
-    "reader_view": "Læsevisning"
+    "reader_view": "Læsevisning",
+    "impersonation_warning": {
+      "title": "Ikke fra din betroede afsender",
+      "description": "Denne besked foregiver at komme fra {address}, en af dine betroede afsendere, men bestod ikke afsenderbekræftelsen. Den er højst sandsynligt ikke sendt af dem."
+    }
   },
   "external_mail": {
     "sender_label": "Ekstern",

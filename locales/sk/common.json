@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pozastaviť",
     "read_aloud_resume": "Pokračovať",
     "read_aloud_stop": "Zastaviť čítanie",
-    "reader_view": "Zobrazenie na čítanie"
+    "reader_view": "Zobrazenie na čítanie",
+    "impersonation_warning": {
+      "title": "Nie je od vášho dôveryhodného odosielateľa",
+      "description": "Táto správa tvrdí, že pochádza od {address}, jedného z vašich dôveryhodných odosielateľov, ale neprešla overením odosielateľa. S najväčšou pravdepodobnosťou ju neodoslal."
+    }
   },
   "external_mail": {
     "sender_label": "Externé",

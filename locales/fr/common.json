@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pause",
     "read_aloud_resume": "Reprendre",
     "read_aloud_stop": "Arrêter la lecture",
-    "reader_view": "Mode lecture"
+    "reader_view": "Mode lecture",
+    "impersonation_warning": {
+      "title": "Ne vient pas de votre expéditeur de confiance",
+      "description": "Ce message prétend venir de {address}, l'un de vos expéditeurs de confiance, mais a échoué à la vérification de l'expéditeur. Il n'a très probablement pas été envoyé par lui."
+    }
   },
   "external_mail": {
     "sender_label": "Externe",

@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pausa",
     "read_aloud_resume": "Reprèn",
     "read_aloud_stop": "Atura la lectura",
-    "reader_view": "Vista de lectura"
+    "reader_view": "Vista de lectura",
+    "impersonation_warning": {
+      "title": "No és del teu remitent de confiança",
+      "description": "Aquest missatge diu que ve de {address}, un dels teus remitents de confiança, però no ha superat la verificació del remitent. Molt probablement no l'ha enviat."
+    }
   },
   "external_mail": {
     "sender_label": "Extern",

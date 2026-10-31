@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pausar",
     "read_aloud_resume": "Reanudar",
     "read_aloud_stop": "Detener la lectura",
-    "reader_view": "Vista de lectura"
+    "reader_view": "Vista de lectura",
+    "impersonation_warning": {
+      "title": "No es de tu remitente de confianza",
+      "description": "Este mensaje dice venir de {address}, uno de tus remitentes de confianza, pero no superó la verificación del remitente. Lo más probable es que no lo haya enviado."
+    }
   },
   "external_mail": {
     "sender_label": "Externo",

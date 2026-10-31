@@ -866,7 +866,11 @@
     "read_aloud_pause": "Duraklat",
     "read_aloud_resume": "Devam et",
     "read_aloud_stop": "Okumayı durdur",
-    "reader_view": "Okuma görünümü"
+    "reader_view": "Okuma görünümü",
+    "impersonation_warning": {
+      "title": "Güvenilir göndericinizden değil",
+      "description": "Bu ileti, güvenilir göndericilerinizden {address} tarafından geldiğini iddia ediyor ancak gönderen doğrulamasını geçemedi. Büyük olasılıkla onlar tarafından gönderilmedi."
+    }
   },
   "external_mail": {
     "sender_label": "Harici",

@@ -831,7 +831,11 @@
     "read_aloud_pause": "השהיה",
     "read_aloud_resume": "המשך",
     "read_aloud_stop": "עצירת ההקראה",
-    "reader_view": "תצוגת קריאה"
+    "reader_view": "תצוגת קריאה",
+    "impersonation_warning": {
+      "title": "לא מהשולח המהימן שלך",
+      "description": "הודעה זו טוענת שהיא מ-{address}, אחד השולחים המהימנים שלך, אך נכשלה באימות השולח. ככל הנראה היא לא נשלחה על ידו."
+    }
   },
   "external_mail": {
     "sender_label": "חיצוני",

@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pause",
     "read_aloud_resume": "Fortsett",
     "read_aloud_stop": "Stopp opplesning",
-    "reader_view": "Lesevisning"
+    "reader_view": "Lesevisning",
+    "impersonation_warning": {
+      "title": "Ikke fra din betrodde avsender",
+      "description": "Denne meldingen utgir seg for å komme fra {address}, en av dine betrodde avsendere, men besto ikke avsenderbekreftelsen. Den er sannsynligvis ikke sendt av dem."
+    }
   },
   "external_mail": {
     "sender_label": "Ekstern",

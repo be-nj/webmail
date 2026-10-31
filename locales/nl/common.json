@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pauzeren",
     "read_aloud_resume": "Hervatten",
     "read_aloud_stop": "Voorlezen stoppen",
-    "reader_view": "Leesweergave"
+    "reader_view": "Leesweergave",
+    "impersonation_warning": {
+      "title": "Niet van je vertrouwde afzender",
+      "description": "Dit bericht beweert afkomstig te zijn van {address}, een van je vertrouwde afzenders, maar heeft de afzendercontrole niet doorstaan. Het is waarschijnlijk niet door hen verstuurd."
+    }
   },
   "external_mail": {
     "sender_label": "Extern",

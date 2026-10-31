@@ -866,7 +866,11 @@
     "read_aloud_pause": "一時停止",
     "read_aloud_resume": "再開",
     "read_aloud_stop": "読み上げを停止",
-    "reader_view": "リーダー表示"
+    "reader_view": "リーダー表示",
+    "impersonation_warning": {
+      "title": "信頼済み送信者からではありません",
+      "description": "このメッセージは信頼済み送信者の {address} からと称していますが、送信者認証に失敗しました。本人が送信したものではない可能性が高いです。"
+    }
   },
   "external_mail": {
     "sender_label": "外部",

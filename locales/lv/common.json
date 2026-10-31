@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pauzēt",
     "read_aloud_resume": "Turpināt",
     "read_aloud_stop": "Beigt nolasīšanu",
-    "reader_view": "Lasīšanas skats"
+    "reader_view": "Lasīšanas skats",
+    "impersonation_warning": {
+      "title": "Nav no jūsu uzticamā sūtītāja",
+      "description": "Šis ziņojums apgalvo, ka ir no {address}, viena no jūsu uzticamajiem sūtītājiem, taču nav izturējis sūtītāja pārbaudi. Visticamāk, to nav sūtījis viņš."
+    }
   },
   "external_mail": {
     "sender_label": "Ārējs",

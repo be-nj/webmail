@@ -866,7 +866,11 @@
     "read_aloud_pause": "Wstrzymaj",
     "read_aloud_resume": "Wznów",
     "read_aloud_stop": "Zakończ czytanie",
-    "reader_view": "Widok do czytania"
+    "reader_view": "Widok do czytania",
+    "impersonation_warning": {
+      "title": "Nie od zaufanego nadawcy",
+      "description": "Ta wiadomość podaje się za wysłaną przez {address}, jednego z Twoich zaufanych nadawców, ale nie przeszła weryfikacji nadawcy. Najprawdopodobniej nie została przez niego wysłana."
+    }
   },
   "external_mail": {
     "sender_label": "Zewnętrzny",

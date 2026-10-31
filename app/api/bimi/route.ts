@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { configManager } from '@/lib/admin/config-manager';
 import { isNoThirdPartyTrafficOn, thirdPartyRefusal } from '@/lib/admin/third-party-mode';
 import { bimiResolver, normalizeBimiDomain, type BimiIndicator } from '@/lib/bimi/lookup';
 import type { BimiInfo } from '@/lib/bimi/types';
@@ -13,6 +12,10 @@ import type { BimiInfo } from '@/lib/bimi/types';
  * Ask only for messages that passed DMARC for that domain (see
  * brandIndicatorDomain in lib/email-headers.ts): the logo says who the domain
  * is, not that a given message came from it.
+ *
+ * Fork: only a logo a mark certificate backs is answered. The picture a BIMI
+ * record merely points at is whatever the domain chooses, so paypa1.de can
+ * publish PayPal's logo and pass DMARC for its own name (docs/adr/0001).
  */
 
 const TRANSPARENT_PNG = Buffer.from(
@@ -26,15 +29,9 @@ const IMAGE_HEADERS = {
   'Content-Security-Policy': "default-src 'none'; sandbox",
 };
 
-// Short enough that switching "Require a mark certificate" reaches browsers
-// the same day.
+// A domain that gives up its logo must not keep it for long.
 const LOGO_MAX_AGE = 6 * 60 * 60;
 const MISSING_MAX_AGE = 60 * 60;
-
-async function requireCertificate(): Promise<boolean> {
-  await configManager.ensureLoaded();
-  return configManager.get<boolean>('bimiRequireCertificate', false) === true;
-}
 
 function info(indicator: BimiIndicator | null): BimiInfo {
   if (!indicator) return { status: 'none' };
@@ -53,7 +50,7 @@ export async function GET(request: NextRequest) {
   }
 
   let indicator = await bimiResolver().resolve(domain);
-  if (indicator && indicator.status !== 'verified' && await requireCertificate()) indicator = null;
+  if (indicator && indicator.status !== 'verified') indicator = null;
 
   if (asJson) {
     return NextResponse.json(info(indicator), {

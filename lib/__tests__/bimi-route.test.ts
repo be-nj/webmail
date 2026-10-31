@@ -43,10 +43,10 @@ beforeEach(async () => {
 
 describe('/api/bimi', () => {
   it('answers the logo as a PNG that cannot run anything', async () => {
-    resolve.mockResolvedValue(selfAsserted);
+    resolve.mockResolvedValue(verified);
     const res = await get('domain=brand.org');
     expect(res.headers.get('content-type')).toBe('image/png');
-    expect(res.headers.get('x-bulwark-bimi')).toBe('self-asserted');
+    expect(res.headers.get('x-bulwark-bimi')).toBe('verified');
     expect(res.headers.get('content-security-policy')).toContain('sandbox');
     expect(Buffer.from(await res.arrayBuffer())).toEqual(PNG);
     expect(resolve).toHaveBeenCalledWith('brand.org');
@@ -62,8 +62,8 @@ describe('/api/bimi', () => {
     expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([1, 1]);
   });
 
-  it('drops self-published logos when the admin requires a mark certificate', async () => {
-    await setConfig({ bimiRequireCertificate: true });
+  // Fork (docs/adr/0001): any domain can point its record at someone else's logo.
+  it('drops self-published logos', async () => {
     resolve.mockResolvedValue(selfAsserted);
     expect((await get('domain=brand.org')).headers.get('x-bulwark-bimi')).toBe('missing');
     expect(await (await get('domain=brand.org&format=json')).json()).toEqual({ status: 'none' });

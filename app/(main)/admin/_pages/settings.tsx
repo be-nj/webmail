@@ -177,7 +177,9 @@ export function SettingsPage() {
         </SettingsSection>
 
         <SettingsSection id="bimi" title="Brand logos">
-          <ConfigToggleItem label="Require a mark certificate" description="Senders that publish a BIMI record and enforce DMARC get their logo as the sender icon. Off shows a logo that only the sender's DNS record backs, as Yahoo does. On shows only logos backed by a Verified Mark or Common Mark Certificate, as Gmail and Apple Mail do, so a lookalike domain can't put up someone else's logo." configKey="bimiRequireCertificate" value={currentValue('bimiRequireCertificate') as boolean} source={config.bimiRequireCertificate?.source} onChange={handleChange} onRevert={handleRevert} />
+          <ConfigNote>
+            Senders that publish a BIMI record and enforce DMARC get their logo as the sender icon, but only a logo a Verified Mark or Common Mark Certificate backs: a lookalike domain can point its record at someone else&apos;s logo. This build always requires the certificate, so there is no switch for it (docs/adr/0001).
+          </ConfigNote>
         </SettingsSection>
 
         <SettingsSection id="logging" title="Logging">

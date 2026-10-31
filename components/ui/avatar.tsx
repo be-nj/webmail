@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { ShieldAlert } from "@/components/icons";
+import { AlertTriangle, BadgeCheck, ShieldAlert } from "@/components/icons";
 import { getLuminance, parseColor } from "@/lib/color-transform";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useContactStore, getContactPhotoIndex, type ContactPhotoRef } from "@/stores/contact-store";
@@ -13,7 +13,8 @@ import { withBasePath } from "@/lib/browser-navigation";
 import { IS_LITE } from "@/lib/lite";
 import { avatarUrlAllowed, sampleAvatarsAllowed, senderFaviconsAllowed } from "@/lib/outgoing-hosts";
 import { useNoThirdPartyTraffic } from "@/hooks/use-third-party-mode";
-import { useFaviconRefreshStore, failedFaviconDomains, failedBrandDomains } from "@/stores/favicon-refresh-store";
+import { useFaviconRefreshStore, failedBrandDomains } from "@/stores/favicon-refresh-store";
+import type { SenderTrustSignal } from "@/lib/sender-trust";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -77,6 +78,19 @@ const PERSONAL_DOMAINS = new Set([
   "proton.me", "protonmail.com", "pm.me", "tutanota.com", "tuta.com",
   "zoho.com", "yandex.com", "yandex.ru", "gmx.com", "gmx.net",
   "fastmail.com", "hey.com", "posteo.de", "mailbox.org",
+  "example.com", "example.org",
+]);
+
+// Freemail domains: anyone can hold an address there, so the domain says
+// nothing about the sender and never gets a Brand Logo.
+const FREEMAIL_DOMAINS = new Set([
+  "gmail.com", "googlemail.com", "outlook.com", "outlook.de", "hotmail.com", "hotmail.de",
+  "live.com", "live.de", "msn.com", "yahoo.com", "yahoo.de", "yahoo.fr", "yahoo.co.uk", "yahoo.co.jp",
+  "aol.com", "aol.de", "icloud.com", "me.com", "mac.com", "mail.com", "email.de",
+  "proton.me", "protonmail.com", "pm.me", "tutanota.com", "tutanota.de", "tuta.com", "tuta.io",
+  "zoho.com", "yandex.com", "yandex.ru", "gmx.com", "gmx.net", "gmx.de", "gmx.at", "gmx.ch",
+  "web.de", "t-online.de", "freenet.de", "arcor.de", "online.de", "1und1.de", "vodafonemail.de",
+  "fastmail.com", "hey.com", "posteo.de", "posteo.net", "mailbox.org", "magenta.de",
   "example.com", "example.org",
 ]);
 
@@ -150,9 +164,9 @@ interface AvatarProps {
   contactPhoto?: ContactPhotoRef | null;
   size?: "sm" | "md" | "lg";
   className?: string;
-  /** When true, suppress all image sources (favicons, plugin avatars, profile pics, contact photos) and render initials only. */
+  /** When true, suppress all image sources (brand logos, plugin avatars, profile pics, contact photos) and render initials only. */
   disableImages?: boolean;
-  /** When true, do not fall through to the sender's domain favicon. Use for the user's own account avatar where the mail-provider logo is not meaningful. */
+  /** When true, never show the domain's Brand Logo. Use for the user's own account avatar where the mail-provider logo is not meaningful. */
   disableFavicon?: boolean;
   /** Background color used when no image source resolves. Overrides the hash-based default. */
   fallbackColor?: string;
@@ -168,6 +182,12 @@ interface AvatarProps {
    * every source but a contact photo.
    */
   brandDomain?: string;
+  /**
+   * What the message says about the sender as a Trusted Sender (see
+   * `senderTrustSignal`): a check badge for `trusted`, a red warning badge for
+   * `impersonated`.
+   */
+  senderTrust?: SenderTrustSignal;
 }
 
 /**
@@ -182,8 +202,7 @@ function initialsColor(background: string): string {
   return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? '#ffffff' : '#000000';
 }
 
-export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain }: AvatarProps) {
-  const [imgError, setImgError] = useState(false);
+export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain, senderTrust = null }: AvatarProps) {
   // The BIMI logo of this domain answered with no logo (or didn't load).
   const [failedBrand, setFailedBrand] = useState<string | null>(null);
   const [pluginAvatarUrl, setPluginAvatarUrl] = useState<string | null>(null);
@@ -191,7 +210,6 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   // A contact photo that downloaded but would not render (an SVG made inert,
   // corrupt bytes) falls through to the next source instead of an empty circle.
   const [failedContactPhoto, setFailedContactPhoto] = useState<string | null>(null);
-  const senderFavicons = useSettingsStore((s) => s.senderFavicons);
   const senderBimiLogos = useSettingsStore((s) => s.senderBimiLogos);
   const faviconRefreshedAt = useFaviconRefreshStore((s) => s.refreshedAt);
   const contacts = useContactStore((s) => s.contacts);
@@ -222,16 +240,14 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   const { src: contactPhotoSrc, observe } = useContactPhotoSrc(photoRef);
   const resolvedContactPhoto = contactPhotoSrc && contactPhotoSrc !== failedContactPhoto && avatarUrlAllowed(contactPhotoSrc) ? contactPhotoSrc : undefined;
 
-  // A refresh of the sender icons gives a failed favicon another chance.
+  // A refresh of the sender icons gives a failed logo another chance.
   useEffect(() => {
-    setImgError(false);
     setFailedBrand(null);
   }, [faviconRefreshedAt]);
 
   const domain = email?.split("@")[1]?.toLowerCase();
-  // Use root domain for favicon lookups (e.g. newsletter.example.com → example.com)
-  const faviconDomain = domain ? getRootDomain(domain) : undefined;
-  const domainFailed = faviconDomain ? failedFaviconDomains.has(faviconDomain) : false;
+  // The registrable domain decides freemail (mail.gmx.net is still gmx.net).
+  const rootDomain = domain ? getRootDomain(domain) : undefined;
 
   const getInitials = () => {
     if (name) {
@@ -276,26 +292,27 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   };
 
   const profilePic = email && domain ? getProfilePictureUrl(email, domain, devMode, name) : null;
-  // Sender favicons come from the /api/favicon proxy, absent in the static
-  // build and off while third-party traffic is (#903).
-  const showFavicon =
-    !IS_LITE && senderFaviconsAllowed() && !disableFavicon && senderFavicons && faviconDomain && !PERSONAL_DOMAINS.has(faviconDomain) && !imgError && !domainFailed;
 
-  // Priority: contact photo > BIMI logo > plugin avatar (e.g. Gravatar) > custom avatar > profile picture > company favicon > initials
+  // Priority: contact photo > Brand Logo > plugin avatar (e.g. Gravatar) > custom avatar > profile picture > initials.
+  // There is no favicon fallback: an image the sender's own website serves
+  // proves nothing about the sender (docs/adr/0001).
   const customAvatar = devMode && email && sampleAvatarsAllowed() ? CUSTOM_AVATARS[email.toLowerCase()] : null;
   // Gravatar and the like are outside hosts: initials instead in the no-third-party mode.
   const pluginAvatar = pluginAvatarFailed || !avatarUrlAllowed(pluginAvatarUrl) ? null : pluginAvatarUrl;
-  // BIMI logos come from /api/bimi under the favicon proxy switches and their own setting, and
-  // only for the address shown: a thread row may show another participant
-  // than the message whose DMARC pass named the domain.
+  // Brand Logos (CONTEXT.md) come from /api/bimi, which answers only a logo
+  // a verified mark certificate backs, under the outgoing-host switches and
+  // their own setting. Only for the address shown: a thread row may show
+  // another participant than the message whose DMARC pass named the domain.
+  // Never for a freemail domain.
   const showBrand =
-    !IS_LITE && senderFaviconsAllowed() && senderBimiLogos && !!brandDomain && domain === brandDomain && brandDomain !== failedBrand && !failedBrandDomains.has(brandDomain);
+    !IS_LITE && senderFaviconsAllowed() && senderBimiLogos && !disableFavicon && !!brandDomain && domain === brandDomain &&
+    !!rootDomain && !FREEMAIL_DOMAINS.has(rootDomain) && brandDomain !== failedBrand && !failedBrandDomains.has(brandDomain);
   const brandSrc = showBrand ? withBasePath(`/api/bimi?domain=${encodeURIComponent(brandDomain!)}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`) : null;
   const photoSrc = resolvedContactPhoto || brandSrc || pluginAvatar || customAvatar || profilePic || null;
-  const faviconSrc = !imgError && !domainFailed && showFavicon ? withBasePath(`/api/favicon?domain=${encodeURIComponent(faviconDomain!)}${faviconRefreshedAt ? `&v=${faviconRefreshedAt}` : ""}`) : null;
-  const imgSrc = disableImages ? null : (photoSrc || faviconSrc);
-  const isFavicon = imgSrc !== null && imgSrc === faviconSrc;
+  const imgSrc = disableImages ? null : photoSrc;
   const isBrand = imgSrc !== null && imgSrc === brandSrc;
+  // Badges sit on the edge, so the circle must not clip them; the image clips itself.
+  const badge = senderTrust === "impersonated" || senderTrust === "trusted" ? senderTrust : null;
 
   const handleImgError = useCallback(() => {
     if (resolvedContactPhoto && imgSrc === resolvedContactPhoto) {
@@ -310,14 +327,8 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
     // If the plugin avatar just failed, mark it and fall through to the next source
     if (pluginAvatar && imgSrc === pluginAvatar) {
       setPluginAvatarFailed(true);
-      return;
     }
-    setImgError(true);
-    // If this was a favicon URL (not a contact photo, plugin avatar, custom avatar or profile pic), remember the domain
-    if (faviconDomain && !resolvedContactPhoto && !pluginAvatar && !customAvatar && !profilePic) {
-      failedFaviconDomains.add(faviconDomain);
-    }
-  }, [imgSrc, pluginAvatar, faviconDomain, resolvedContactPhoto, brandSrc, brandDomain, customAvatar, profilePic]);
+  }, [imgSrc, pluginAvatar, resolvedContactPhoto, brandSrc, brandDomain]);
 
   const initialsBackground = fallbackColor ?? getBackgroundColor();
 
@@ -341,12 +352,14 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
     <div
       ref={observe}
       className={cn(
-        "rounded-full flex items-center justify-center font-semibold text-white overflow-hidden",
+        "relative rounded-full flex items-center justify-center font-semibold text-white",
+        !badge && "overflow-hidden",
+        badge === "impersonated" && "ring-2 ring-red-600 dark:ring-red-500",
         sizeClasses[size],
         className
       )}
       style={{
-        backgroundColor: imgSrc ? (isFavicon || isBrand ? "#ffffff" : "transparent") : initialsBackground,
+        backgroundColor: imgSrc ? (isBrand ? "#ffffff" : "transparent") : initialsBackground,
         color: imgSrc ? undefined : initialsColor(initialsBackground),
       }}
       title={name || email}
@@ -355,20 +368,39 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
         <img
           src={imgSrc}
           alt=""
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-full"
           onError={handleImgError}
-          // /api/favicon and /api/bimi return a 1x1 transparent PNG (HTTP 200)
+          // /api/bimi returns a 1x1 transparent PNG (HTTP 200)
           // when there is no icon, to avoid spamming the DevTools console with
           // 404s. Detect that sentinel by naturalWidth and fall through.
           onLoad={(e) => {
             const img = e.currentTarget;
-            if ((isFavicon || isBrand) && img.naturalWidth <= 1) {
+            if (isBrand && img.naturalWidth <= 1) {
               handleImgError();
             }
           }}
         />
       ) : (
         getInitials()
+      )}
+      {badge === "trusted" && (
+        // Trusted Mark: the reader trusts this exact address and the message
+        // passed its sender check. Says nothing about the brand or domain.
+        <BadgeCheck
+          aria-hidden
+          data-testid="trusted-mark"
+          className="absolute -bottom-0.5 -end-0.5 w-[42%] h-[42%] text-primary-foreground fill-primary"
+          strokeWidth={2.5}
+        />
+      )}
+      {badge === "impersonated" && (
+        // A trusted address in From, but the message failed its sender check.
+        <AlertTriangle
+          aria-hidden
+          data-testid="impersonation-mark"
+          className="absolute -bottom-0.5 -end-0.5 w-[42%] h-[42%] text-white fill-red-600"
+          strokeWidth={2.5}
+        />
       )}
     </div>
   );

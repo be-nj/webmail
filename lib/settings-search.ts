@@ -194,8 +194,6 @@ export const tabSearchEntries: Record<Tab, SettingsSearchEntry[]> = {
     { label: 'settings.appearance.tint_list_rows.label' },
     { label: 'settings.email_behavior.show_verification_codes.label' },
     { label: 'settings.message_list.sections.senders' },
-    { label: 'settings.advanced.sender_favicons.label' },
-    { label: 'settings.advanced.sender_favicons.refresh_label' },
     { label: 'settings.advanced.sender_bimi_logos.label' },
     { label: 'settings.advanced.show_avatars_in_junk.label', advanced: true },
     { label: 'settings.message_list.sections.actions' },

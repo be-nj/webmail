@@ -866,7 +866,11 @@
     "read_aloud_pause": "Pausa",
     "read_aloud_resume": "Riprendi",
     "read_aloud_stop": "Interrompi la lettura",
-    "reader_view": "Modalità lettura"
+    "reader_view": "Modalità lettura",
+    "impersonation_warning": {
+      "title": "Non proviene dal tuo mittente attendibile",
+      "description": "Questo messaggio afferma di provenire da {address}, uno dei tuoi mittenti attendibili, ma non ha superato la verifica del mittente. Molto probabilmente non è stato inviato da lui."
+    }
   },
   "external_mail": {
     "sender_label": "Esterno",

@@ -866,7 +866,11 @@
     "read_aloud_pause": "إيقاف مؤقت",
     "read_aloud_resume": "استئناف",
     "read_aloud_stop": "إيقاف القراءة",
-    "reader_view": "عرض القراءة"
+    "reader_view": "عرض القراءة",
+    "impersonation_warning": {
+      "title": "ليست من مرسلك الموثوق",
+      "description": "تدّعي هذه الرسالة أنها من {address}، أحد المرسلين الموثوقين لديك، لكنها فشلت في التحقق من المرسل. على الأرجح لم يرسلها."
+    }
   },
   "external_mail": {
     "sender_label": "خارجي",
