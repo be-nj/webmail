@@ -310,6 +310,11 @@ describe('Avatar', () => {
       expect(trusted.querySelector('img')?.getAttribute('src')).toBe('/api/bimi?domain=shop.org&trusted=1');
     });
 
+    it('asks for the domain after the last "@", the one DMARC passed', () => {
+      const { container } = render(<Avatar name="PayPal" email="x@paypal.example@evil.example" brandDomain="evil.example" />);
+      expect(container.querySelector('img')?.getAttribute('src')).toBe('/api/bimi?domain=evil.example');
+    });
+
     it('asks for no logo without a DMARC pass', () => {
       const { container } = render(<Avatar name="Brand" email="news@brand.org" />);
       expect(container.querySelector('img')).toBeNull();

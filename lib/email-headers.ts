@@ -82,7 +82,13 @@ export function hasAlignedAuthenticationPass(auth: AuthenticationResults | undef
   return auth.dmarc?.result === 'pass' || hasAlignedSpfPass(auth, domain) || hasAlignedDkimPass(auth, domain);
 }
 
-function domainOf(address: string): string | undefined {
+/**
+ * The domain of an address: the text after its last `@`, as DMARC reads it
+ * (and as Stalwart does). "x@paypal.com@evil.com" is evil.com. Everything
+ * that ties a domain to a DMARC verdict must read it this way, or a pass
+ * for one domain can lend its standing to another.
+ */
+export function domainOf(address: string): string | undefined {
   const domain = address.slice(address.lastIndexOf('@') + 1).trim().toLowerCase().replace(/\.$/, '');
   return /^[^\s<>@]+\.[^\s<>@]+$/.test(domain) ? domain : undefined;
 }

@@ -509,6 +509,12 @@ describe('envelope and forged-header tricks against the BIMI gate', () => {
     expect(brandIndicatorDomain({ from: [{ email: 'service@paypal.de' }], authenticationResults: auth })).toBeUndefined();
   });
 
+  it('reads the From domain after the last "@", as DMARC does', () => {
+    const from = [{ email: 'x@paypal.example@evil.example' }];
+    expect(brandIndicatorDomain({ from, authenticationResults: { dmarc: { result: 'pass', domain: 'evil.example' } } })).toBe('evil.example');
+    expect(brandIndicatorDomain({ from, authenticationResults: { dmarc: { result: 'pass', domain: 'paypal.example' } } })).toBeUndefined();
+  });
+
   it('does not let a lower header supply DMARC when ours has none', () => {
     const auth = parseAuthenticationResults(['mx.example; spf=none smtp.mailfrom=bank.example', 'spoofer.example; dmarc=pass header.from=bank.example']);
     expect(brandIndicatorDomain({ from: [{ email: 'a@bank.example' }], authenticationResults: auth })).toBeUndefined();

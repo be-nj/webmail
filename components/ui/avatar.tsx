@@ -15,6 +15,7 @@ import { avatarUrlAllowed, sampleAvatarsAllowed, senderFaviconsAllowed } from "@
 import { useNoThirdPartyTraffic } from "@/hooks/use-third-party-mode";
 import { useFaviconRefreshStore, failedBrandDomains } from "@/stores/favicon-refresh-store";
 import type { SenderTrustSignal } from "@/lib/sender-trust";
+import { domainOf } from "@/lib/email-headers";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -251,7 +252,9 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
     setFailedBrand(null);
   }, [faviconRefreshedAt]);
 
-  const domain = email?.split("@")[1]?.toLowerCase();
+  // Read the domain the way the DMARC check does (after the last "@"), so
+  // "x@paypal.com@evil.com" passing DMARC for evil.com is evil.com throughout.
+  const domain = email ? domainOf(email) : undefined;
   // The registrable domain decides freemail (mail.gmx.net is still gmx.net).
   const rootDomain = domain ? getRootDomain(domain) : undefined;
 
