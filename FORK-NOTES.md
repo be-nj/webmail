@@ -1,6 +1,6 @@
 # Fork-Notizen
 
-Stand: 30.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
+Stand: 31.10.2026. Diese Datei gehört zum Fork `be-nj/webmail` und nicht nach
 upstream (`bulwarkmail/webmail`). Sie beantwortet: *Was ist in diesem Fork
 eigen?* und *Was ist noch offen?*
 
@@ -12,12 +12,40 @@ Begründung für „Logos nur aus geprüften Marken, kein Favicon“ in
 
 ## 1. Stand
 
-Arbeitszweig: **`benj/on-1.19.0`** = Upstream `1.19.0` plus die Commits
+Arbeitszweig: **`benj/on-1.19.1`** = Upstream `1.19.1` plus die Commits
 unten. Live auf `webmail.beckm4nn.de` (Komodo-Stack `stalwart`, Dienst
 `bulwark`), sobald er Default-Branch auf git.beckm4nn.net ist; Image-Tag =
 kurzer Commit-Hash.
 
-Vorgänger `benj/on-1.18.0-lean`, `benj/on-1.18.0`, `benj/on-1.17.1`, `benj/on-1.14.2`, `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
+Vorgänger `benj/on-1.19.0`, `benj/on-1.18.0-lean`, `benj/on-1.18.0`, `benj/on-1.17.1`, `benj/on-1.14.2`, `benj/on-1.12.0` und `benj/on-1.10.0` bleiben als Referenz liegen.
+
+Beim Rebase auf 1.19.1 (31.10.2026):
+
+- **BIMI kommt von upstream** (`cf0eb03c`): `/api/bimi` und `lib/bimi/`
+  (DMARC-Richtlinie quarantine/reject mit pct=100, VMC/CMC gegen DigiCert,
+  GlobalSign und SSL.com, Widerruf per CRL, SVG-Tiny-PS-Prüfung, PNG). Die
+  eigene Route, `lib/bimi.ts`, `lib/vmc.ts`, `lib/der.ts`, `lib/vmc-roots.ts`
+  und `lib/sender-domain.ts` (jetzt upstreams `lib/root-domain.ts`) sind weg,
+  ebenso die Commits für Cache-Format, Drittanbieter-Modus und
+  VMC-Prüfung, die upstream selbst abdeckt.
+- **Fork-Regeln darüber:** `/api/bimi` antwortet ein Logo ohne Zertifikat nur
+  mit `&trusted=1`, das der Avatar für Trusted Senders schickt (upstreams
+  Admin-Schalter „Require a mark certificate“ ist dafür ein Hinweis). Kein
+  Favicon, kein Logo für Freemail-Domains, kein Haken neben dem Namen
+  (`BrandVerifiedBadge` wird nicht eingebunden). Eigener Schalter
+  `senderBimiLogos` statt upstreams Favicon-Schalter.
+- **DMARC-Pass für die From-Domain** prüft upstreams `brandIndicatorDomain`;
+  der Trusted-Mark verlangt zusätzlich `header.from=` (`passedDmarcForFrom`).
+  `domainOf` ist exportiert, damit der Avatar die Domain nach dem letzten `@`
+  liest.
+- **Nicht übernommen:** das Limit für frische Lookups pro Client (300 je
+  10 Minuten). Upstream begrenzt nur gleichzeitige Lookups (`MAX_IN_FLIGHT`).
+- **„Allen antworten“ an jeder Nachricht der Konversation** ist upstream
+  (#1404) als eigener Knopf; das ⋮ des Forks hat den Eintrag nicht mehr.
+- **Nach Archivieren zurück zur Liste** ist upstream (#1458) und folgt der
+  Einstellung „Zurück zur Liste nach Löschen, Archivieren oder Als ungelesen
+  markieren“. Der eigene Commit dafür (`b405f30e`, Flag
+  `advanceAfterRemoval` im Store) ist weg; er überging die Einstellung.
 
 Beim Rebase auf 1.19.0 (30.10.2026):
 
@@ -84,12 +112,11 @@ Hashes mit derselben Betreffzeile.
 | `cc12c782` | Trusted Senders laden externe Inhalte nur, wenn die Nachricht nicht als gefälscht erkannt ist |
 | (1.14.2) | dieselbe Regel für Bilder im zitierten Original beim Antworten (neu in upstream 1.13) |
 | (1.14.2) | Trusted Sender ohne SPF- und DKIM-Pass gilt als nicht vertraut und bekommt die Warnung |
-| `087cfb41`, `98a4e553`, `4ce27dfe` | BIMI: Route `/api/bimi`, Auth-Header in Listenabfragen, Tests gegen gefälschte DMARC-Ergebnisse, VMC/CMC-Prüfung gegen DigiCert/GlobalSign |
+| `087cfb41`, `98a4e553` | BIMI: eigener Schalter „Absender-Markenlogos (BIMI)“, Tests gegen gefälschte DMARC-Ergebnisse (Route und Prüfung seit 1.19.1 von upstream) |
 | `da8f2f66` | Logos nur aus geprüften Marken, nie für Freemail, **kein Favicon**; Trusted-Sender-Badge und Warnung bei gefälschter vertrauter Adresse |
 | `04b5c487` | Pfad-Präfix-Bug: eine Ordner-ID wie `de` in `/mail/folder/de` galt als Mount-Präfix |
 | `4ec28465` | Handschlag-im-Herz statt Haken für Trusted Senders (Tabler hat keinen schlichten Handschlag), Tooltip, Chip im Authentifizierungs-Block |
 | `fcc54961` | BIMI-Logo ohne Zertifikat nur für Trusted Senders |
-| `4c9a0a4f` | Versionsparameter gegen alte Browser-Cache-Antworten; vorübergehende VMC-Fehler nicht als „ungeprüft“ cachen |
 | (1.14.2) | BIMI-Logo und Trust-Badge auch auf den eingeklappten Nachrichten in Mountain View |
 | (1.14.2) | Mountain View: Zeilen mit Anhang-Chips (Checkbox/Stern/Hover-Aktionen auf Zeile 1, Chips unter dem Betreff), Suchfeld bündig mit der Inhaltskarte, Handy-Avatar oben, keine Büroklammer neben den Chips (bei Threads nur, wenn allein ältere Nachrichten Anhänge haben) |
 | (1.14.2) | Roboto als App-Schrift (selbst gehostet über `next/font`), statt System-Stack |
@@ -99,7 +126,7 @@ Hashes mit derselben Betreffzeile.
 | (1.14.2) | Mountain View: Absender-Avatar in den Listenzeilen (zwischen Stern und Name), damit BIMI-Logo und Vertrauens-Badge auch in der Liste stehen; Lese-Buttons der Auswahl nur aktiv, wenn sie etwas ändern |
 | (1.14.2) | Mountain View: mit geteiltem Postfach bekommt das eigene Konto eine eigene Zeile, gleichrangig mit den geteilten (beide einklappbar, ohne Überschrift „Geteilt“); jedes Konto hat sein eigenes „Mehr“ für die übrigen Systemordner, eigene Ordner eines geteilten Kontos bleiben sichtbar |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
-| (1.18.0) | Mountain View: jede aufgeklappte Mail einer Konversation hat neben „Antworten“ ein ⋮ mit Allen antworten, Weiterleiten, Als Anhang weiterleiten, Als ungelesen markieren, Drucken, Quelltext anzeigen und Als .eml exportieren. Löschen fehlt, weil der Store nur Mails aus der geladenen Liste löschen kann. Export und Quelltext kommen seit 1.19.0 von upstream; das Menü selbst könnte noch auf upstreams `ReaderMoreMenu` umziehen |
+| (1.18.0) | Mountain View: jede aufgeklappte Mail einer Konversation hat neben „Antworten“ und „Allen antworten“ (upstream seit 1.19.1) ein ⋮ mit Weiterleiten, Als Anhang weiterleiten, Als ungelesen markieren, Drucken, Quelltext anzeigen und Als .eml exportieren. Löschen fehlt, weil der Store nur Mails aus der geladenen Liste löschen kann. Export und Quelltext kommen seit 1.19.0 von upstream; das Menü selbst könnte noch auf upstreams `ReaderMoreMenu` umziehen |
 | (1.18.0) | Fotos zwischen Textteilen (Apple Mail/iPhone, `multipart/mixed`) erscheinen im Text: RFC 8621 listet sie nur in `htmlBody`, nicht in `attachments`, upstream zeigt nur `htmlBody[0]`. Inline-Bilder, auf die der Text nicht verweist, bleiben als Anhang sichtbar statt ganz zu verschwinden |
 | (1.19.0) | Kalender: Termin in einen Kalender eines anderen Kontos verschieben (z. B. in den Familienkalender des Gruppenkontos). Upstream patcht nur `calendarIds` im Konto des Termins, das den fremden Kalender nicht kennt; die Änderung kam nie an. Jetzt: übrige Änderungen normal speichern, dann leise Kopie mit derselben UID im Zielkonto, Original löschen, bei Fehler Kopie zurücknehmen (wie Larus, wie upstream für Aufgaben #1204). Ein einzelnes Vorkommen kann nicht allein umziehen |
 
@@ -139,8 +166,6 @@ macht.
    - Trusted-Senders-Fix als **private** Meldung an dev@bulwarkmail.org
      (CONTRIBUTING.md verlangt das für Sicherheitsthemen).
    - Pfad-Präfix-Bug als kleiner, eigener PR.
-   - BIMI (#732) als PR, ohne die fork-eigenen Teile (Favicon-Entfernung,
-     Trusted-Sender-Logo, Handschlag). Braucht Screenshots.
 3. **Stalwart:** fehlende Unterstützung für Termin-Anhänge per `blobId` melden.
 4. **Stalwart: fremde Authentication-Results bei angemeldeter Einlieferung.**
    Eine Mail, die ein Konto dieses Servers per Submission an ein anderes
@@ -152,3 +177,8 @@ macht.
    Ein Abgleich der authserv-id im Client hilft nicht. Abhilfe nur im
    Stalwart: auch bei Submission einen eigenen Header setzen oder fremde
    entfernen.
+5. **`/api/bimi` ohne Limit pro Client:** Die Route antwortet ohne Sitzung,
+   jeder kann also DNS-Lookups und Abrufe auslösen und echte Einträge aus dem
+   Cache drängen. Upstream begrenzt nur gleichzeitige Lookups. Das eigene
+   Limit (bis 1.19.0) bräuchte in `lib/bimi/lookup.ts` eine Abfrage, ob eine
+   Domain im Cache liegt.
