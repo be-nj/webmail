@@ -62,6 +62,8 @@ Hashes mit derselben Betreffzeile.
 | (1.14.2) | Mountain View: Absender-Avatar in den Listenzeilen (zwischen Stern und Name), damit BIMI-Logo und Vertrauens-Badge auch in der Liste stehen; Lese-Buttons der Auswahl nur aktiv, wenn sie etwas ändern |
 | (1.14.2) | Mountain View: mit geteiltem Postfach bekommt das eigene Konto eine eigene Zeile, gleichrangig mit den geteilten (beide einklappbar, ohne Überschrift „Geteilt“); jedes Konto hat sein eigenes „Mehr“ für die übrigen Systemordner, eigene Ordner eines geteilten Kontos bleiben sichtbar |
 | `07061e0d`, `9e1e569f` | Termin aus Mail erstellen; Anhänge und Links eines Termins anzeigen |
+| (1.18.0) | Mountain View: jede aufgeklappte Mail einer Konversation hat neben „Antworten“ ein ⋮ mit Allen antworten, Weiterleiten, Als Anhang weiterleiten, Als ungelesen markieren, Drucken, Quelltext anzeigen und Als .eml exportieren. Löschen fehlt, weil der Store nur Mails aus der geladenen Liste löschen kann. Bei einem Rebase auf upstreams `message-actions.ts` (`f60ddf3f`) umstellen |
+| (1.18.0) | Fotos zwischen Textteilen (Apple Mail/iPhone, `multipart/mixed`) erscheinen im Text: RFC 8621 listet sie nur in `htmlBody`, nicht in `attachments`, upstream zeigt nur `htmlBody[0]`. Inline-Bilder, auf die der Text nicht verweist, bleiben als Anhang sichtbar statt ganz zu verschwinden |
 
 In **Bulwark Lite** (statischer Build ohne Server) gibt es `/api/bimi` nicht:
 dort sind Markenlogo und Schalter ausgeblendet, wie upstream es mit dem Favicon

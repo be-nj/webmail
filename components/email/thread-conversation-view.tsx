@@ -8,7 +8,7 @@ import { resolveExternalLink } from "@/lib/plugin-hook-result";
 import { stripBidiControls } from "@/lib/bidi";
 import { requestInternalMailto } from "@/lib/protocol-handlers/mailto";
 import { emailDisplayDate } from "@/lib/email-date";
-import { getRenderableHtmlBody } from "@/lib/email-body-selection";
+import { getCidImageSources, getReaderHtmlBody } from "@/lib/email-body-selection";
 import { findVerificationCode, verificationCodeBodyText } from "@/lib/verification-code";
 import { VerificationCodeChip } from "./verification-code-chip";
 import { StructuredMailCards } from "./structured-mail/structured-mail-cards";
@@ -16,7 +16,7 @@ import { BookingCalendarActions } from "./structured-mail/booking-calendar-actio
 import { useStructuredMail } from "./structured-mail/use-structured-mail";
 import { attachmentIcon } from "./attachment-chips";
 import { ExternalSenderChip } from "./external-sender-chip";
-import { collectReferencedCids, isEmbeddedInBody, isReportPart, normalizeCid, rewriteCidReferences } from "@/lib/attachment-visibility";
+import { collectReferencedCids, isEmbeddedInBody, isReportPart, rewriteCidReferences } from "@/lib/attachment-visibility";
 import { collapsePlainTextQuotes, setupQuoteCollapse } from "@/lib/quote-collapse";
 import { fitEmailBodyWidth } from "@/lib/email-fit-width";
 import { mailLanguage } from "@/lib/mail-language";
@@ -536,6 +536,15 @@ interface ConversationEmailBodyProps {
   /** Padding around the body; the phone card's density padding by default. */
   bodyStyle?: React.CSSProperties;
   className?: string;
+  /** Receives the body as rendered (sanitized, cid: parts resolved), for printing it. */
+  renderedBodyRef?: React.MutableRefObject<RenderedConversationBody | null>;
+}
+
+/** A conversation message's body as it is on screen. */
+export interface RenderedConversationBody {
+  html: string;
+  isHtml: boolean;
+  externalBlocked: boolean;
 }
 
 /**
@@ -552,6 +561,7 @@ export function ConversationEmailBody({
   blobSource,
   bodyStyle,
   className,
+  renderedBodyRef,
 }: ConversationEmailBodyProps) {
   const remoteBlockedByOrg = useNoThirdPartyTraffic();
   const t = useTranslations();
@@ -584,8 +594,9 @@ export function ConversationEmailBody({
   const structuredCards = useStructuredMail(email, source);
   // Local CID URLs belong to a particular client/owner/message/part list.
   // Hide the previous set during render, before the new fetch's effect runs.
-  const cidRequest = useMemo(() => ({ blobClient, accountId, emailId: email.id, attachments: email.attachments }),
-    [blobClient, accountId, email.id, email.attachments]);
+  const cidRequest = useMemo(() => ({ blobClient, accountId, emailId: email.id, sources: getCidImageSources(email) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the parts, not every new email object
+    [blobClient, accountId, email.id, email.attachments, email.htmlBody]);
   const [cidResult, setCidResult] = useState<{ request: typeof cidRequest; urls: Record<string, string> } | null>(null);
   const cidBlobUrls = useMemo(() => cidResult?.request === cidRequest ? cidResult.urls : {}, [cidResult, cidRequest]);
   // A crypto plugin's decrypted body (PGP, S/MIME) replaces the message's own.
@@ -602,12 +613,12 @@ export function ConversationEmailBody({
 
   // Fetch inline CID images with authentication to prevent browser auth dialogs
   useEffect(() => {
-    if (!blobClient || !cidRequest.attachments) {
+    if (!blobClient) {
       setCidResult(null);
       return;
     }
 
-    const cidAttachments = cidRequest.attachments.filter(att => att.cid && att.blobId);
+    const cidAttachments = cidRequest.sources;
     if (cidAttachments.length === 0) {
       setCidResult(null);
       return;
@@ -619,7 +630,7 @@ export function ConversationEmailBody({
     async function fetchCidBlobs() {
       const urls: Record<string, string> = {};
       await Promise.all(cidAttachments.map(async (att) => {
-        const cidValue = normalizeCid(att.cid!);
+        const cidValue = att.cid;
         try {
           // Re-type sender-declared script-bearing parts before they become a
           // blob: URL in our origin (GHSA-xvjh-v9c6-qcvc).
@@ -673,14 +684,12 @@ export function ConversationEmailBody({
     }
 
     if (email.bodyValues) {
-      let htmlContent = getRenderableHtmlBody(email);
+      let htmlContent = getReaderHtmlBody(email);
 
       if (htmlContent) {
         // Replace cid: references with authenticated blob URLs (fetched via useEffect)
         // This prevents browser auth dialogs that occur when loading raw JMAP download URLs
-        if (email.attachments) {
-          htmlContent = rewriteCidReferences(htmlContent, cidBlobUrls, TRANSPARENT_BLOCKED_PIXEL);
-        }
+        htmlContent = rewriteCidReferences(htmlContent, cidBlobUrls, TRANSPARENT_BLOCKED_PIXEL);
 
         let blockedExternalContent = false;
 
@@ -763,6 +772,10 @@ export function ConversationEmailBody({
       isHtml: false,
     };
   }, [mailViewMode, formattedContent, pluginBody.html, email, t]);
+  useEffect(() => {
+    if (!renderedBodyRef) return;
+    renderedBodyRef.current = { ...emailContent, externalBlocked: hasBlockedContent && !allowExternal };
+  }, [renderedBodyRef, emailContent, hasBlockedContent, allowExternal]);
 
   // Parts the body embeds via cid: stay out of the attachment row while the
   // user hides inline images - the desktop viewer's rule, shared through
@@ -771,7 +784,7 @@ export function ConversationEmailBody({
   const visibleAttachments = useMemo(() => {
     const attachments = (email.attachments ?? []).filter(att => !isReportPart(att.type));
     if (!hideInlineImageAttachments) return attachments;
-    const bodyCids = collectReferencedCids(getRenderableHtmlBody(email));
+    const bodyCids = collectReferencedCids(getReaderHtmlBody(email));
     return attachments.filter(att => !isEmbeddedInBody(att, bodyCids));
   }, [email, hideInlineImageAttachments]);
 
@@ -782,7 +795,7 @@ export function ConversationEmailBody({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   // The body's language for screen readers (see mailLanguage), and a frame
   // title that tells this message from the others in the conversation.
-  const bodyLanguage = useMemo(() => mailLanguage(email, getRenderableHtmlBody(email)), [email]);
+  const bodyLanguage = useMemo(() => mailLanguage(email, getReaderHtmlBody(email)), [email]);
   const frameSender = email.from?.[0];
   const frameTitle = email.subject
     ? t('email_viewer.frame_title', { subject: email.subject })

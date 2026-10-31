@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getRenderableHtmlBody, getDraftTextBody } from '@/lib/email-body-selection';
+import { getRenderableHtmlBody, getDraftTextBody, getReaderHtmlBody, getCidImageSources } from '@/lib/email-body-selection';
 
 type PartialEmail = Parameters<typeof getRenderableHtmlBody>[0];
 
@@ -145,5 +145,68 @@ describe('getDraftTextBody', () => {
 
   it('survives a part whose value the server did not return', () => {
     expect(getDraftTextBody(draft([{ partId: '1' }, { partId: '9' }], { '1': 'one' }))).toBe('one');
+  });
+});
+
+// Apple Mail and the iPhone put a photo between two text parts of a
+// multipart/mixed body. RFC 8621 lists it in htmlBody and textBody only, not
+// in attachments, and no text part references it.
+describe('getReaderHtmlBody', () => {
+  const value = (v: string) => ({ value: v, isEncodingProblem: false, isTruncated: false });
+  const photo = { partId: '3', blobId: 'blob-photo', size: 9, type: 'image/jpeg', name: 'IMG_0001.jpeg' };
+
+  it('renders the HTML parts around a photo in order, the photo as a cid: reference', () => {
+    const email = {
+      htmlBody: [
+        { partId: '2', blobId: 'b2', size: 1, type: 'text/html' },
+        { ...photo, cid: '<photo@apple>' },
+        { partId: '5', blobId: 'b5', size: 1, type: 'text/html' },
+      ],
+      textBody: [],
+      bodyValues: { '2': value('<p>Look:</p>'), '5': value('<p>Nice, right?</p>') },
+    } as PartialEmail;
+    const html = getReaderHtmlBody(email)!;
+    expect(html.indexOf('Look:')).toBeLessThan(html.indexOf('cid:photo@apple'));
+    expect(html.indexOf('cid:photo@apple')).toBeLessThan(html.indexOf('Nice, right?'));
+  });
+
+  it('turns a plain-text body with a photo into HTML and keeps its text escaped', () => {
+    const email = {
+      htmlBody: [
+        { partId: '1', blobId: 'b1', size: 1, type: 'text/plain' },
+        photo,
+      ],
+      textBody: [],
+      bodyValues: { '1': value('Hi <you>\nphoto below') },
+    } as PartialEmail;
+    const html = getReaderHtmlBody(email)!;
+    expect(html).toContain('Hi &lt;you&gt;');
+    expect(html).toContain('white-space: pre-wrap');
+    expect(html).toContain('src="cid:bulwark-body-part-3"');
+  });
+
+  it('leaves every other message to getRenderableHtmlBody', () => {
+    const email = makeEmail({
+      html: { partId: '1', type: 'text/plain' },
+      text: { partId: '1', type: 'text/plain' },
+      values: { '1': 'just text' },
+    });
+    expect(getReaderHtmlBody(email)).toBeNull();
+  });
+});
+
+describe('getCidImageSources', () => {
+  it('lists cid attachments and body photos once each, under the cid the body uses', () => {
+    const sources = getCidImageSources({
+      attachments: [
+        { partId: '4', blobId: 'logo', size: 1, type: 'image/png', cid: '<logo@x>' },
+        { partId: '6', blobId: 'pdf', size: 1, type: 'application/pdf' },
+      ],
+      htmlBody: [
+        { partId: '1', blobId: 'b1', size: 1, type: 'text/html' },
+        { partId: '3', blobId: 'photo', size: 1, type: 'image/jpeg' },
+      ],
+    } as Parameters<typeof getCidImageSources>[0]);
+    expect(sources.map((s) => [s.cid, s.blobId])).toEqual([['logo@x', 'logo'], ['bulwark-body-part-3', 'photo']]);
   });
 });
