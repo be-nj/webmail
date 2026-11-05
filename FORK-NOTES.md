@@ -103,3 +103,5 @@ upstream blendet dort Markenlogo und Favicon aus.
    Ein Abgleich der authserv-id im Client hilft nicht. Abhilfe nur im
    Stalwart: auch bei Submission einen eigenen Header setzen oder fremde
    entfernen.
+
+Deployed from `benj/on-1.20.0` (default branch on Forgejo).
