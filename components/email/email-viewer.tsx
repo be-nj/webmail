@@ -5466,7 +5466,7 @@ ${printWatermark ? printWatermark.html : ''}
                         const address = sender?.email?.trim().toLowerCase();
                         if (!address) return null;
                         const marked = isTrustedSender(address);
-                        if (!marked && !hasAlignedDmarcPass(email)) return null;
+                        if (!marked && !brandIndicatorDomain(email)) return null;
                         return (
                           <button
                             type="button"
