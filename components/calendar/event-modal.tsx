@@ -1036,8 +1036,11 @@ export function EventModal({
   const titleRef = useRef<HTMLInputElement>(null);
   const primaryRef = useRef<HTMLButtonElement>(null);
   const initialFocusTarget = useCallback(
-    (): HTMLElement | null => (mode === "edit" ? titleRef.current : primaryRef.current),
-    [mode],
+    (): HTMLElement | null => (mode === "edit"
+      // A draft from a message lacks only the date, so that is where the cursor belongs.
+      ? (datesUnset ? startDateRef.current ?? titleRef.current : titleRef.current)
+      : primaryRef.current),
+    [mode, datesUnset],
   );
   // Full screen on the phone: a modal that holds the focus.
   const modalRef = useFocusTrap({ isActive: !!isMobile, initialFocus: initialFocusTarget });

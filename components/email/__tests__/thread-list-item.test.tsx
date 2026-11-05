@@ -23,7 +23,8 @@ vi.mock('@/stores/auth-store', () => {
 
 const ACCOUNT_TEAL = { id: 'acct-teal', avatarColor: '#0d9488', label: 'Teal account' };
 const accountState = {
-  accounts: [ACCOUNT_TEAL],
+  // The account dot only shows with two or more accounts.
+  accounts: [ACCOUNT_TEAL, { id: 'acct-other', avatarColor: '#9333ea', label: 'Other account' }],
   getAccountById: (id: string) => (id === ACCOUNT_TEAL.id ? ACCOUNT_TEAL : undefined),
 };
 vi.mock('@/stores/account-store', () => ({

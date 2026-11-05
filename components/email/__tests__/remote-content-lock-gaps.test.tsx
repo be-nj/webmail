@@ -126,7 +126,7 @@ describe('trusted senders settings', () => {
     render(<ReadingSettings />);
     const toggle = screen.getByText('trusted_senders.use_address_book_label').closest('[class]')!.parentElement!;
     expect(toggle.querySelector('[inert]')).toBeNull();
-    fireEvent.click(screen.getByText('trusted_senders.count_zero'));
+    fireEvent.click(screen.getAllByText('trusted_senders.count_zero')[0]);
     expect(await screen.findAllByText('add_manually')).not.toHaveLength(0);
   });
 
@@ -136,7 +136,7 @@ describe('trusted senders settings', () => {
     expect(screen.getAllByText('trusted_senders_note').length).toBeGreaterThan(0);
     const switchRow = screen.getByText('trusted_senders.use_address_book_label').closest('div')!.parentElement!.parentElement!;
     expect(switchRow.querySelector('[inert]')).not.toBeNull();
-    fireEvent.click(screen.getByText('trusted_senders.count_zero'));
+    fireEvent.click(screen.getAllByText('trusted_senders.count_zero')[0]);
     await act(async () => { await new Promise((r) => setTimeout(r, 10)); });
     expect(screen.queryByText('add_manually')).toBeNull();
     expect(screen.getAllByText('org_locked').length).toBeGreaterThan(0);
@@ -146,7 +146,7 @@ describe('trusted senders settings', () => {
     restrict({ locked: true, value: 'block' });
     useSettingsStore.setState({ trustedSenders: ['news@shop.example'], trustedSendersAddressBook: false });
     render(<ReadingSettings />);
-    fireEvent.click(screen.getByText('trusted_senders.count_one'));
+    fireEvent.click(screen.getAllByText('trusted_senders.count_one')[0]);
     await act(async () => { await new Promise((r) => setTimeout(r, 10)); });
     fireEvent.click(screen.getByTitle('remove'));
     await act(async () => { await new Promise((r) => setTimeout(r, 10)); });

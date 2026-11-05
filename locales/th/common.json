@@ -1017,6 +1017,13 @@
       "updating": "กำลังอัปเดต..."
     },
     "sub_address": {
+      "tab_tag": "Tag",
+      "tab_catch_all": "Other address",
+      "catch_all_title": "Send from another address",
+      "local_part_placeholder": "Address, e.g. company",
+      "domain_label": "Domain",
+      "recent_addresses": "Recently used",
+      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity.",
       "button_tooltip": "ใช้ที่อยู่ย่อย (Sub-address)",
       "popover_title": "เพิ่มแท็กที่อยู่ย่อย",
       "tag_input_placeholder": "ระบุแท็ก (เช่น shopping)",
@@ -1028,6 +1035,9 @@
       "tag_too_long": "แท็กต้องมีความยาวไม่เกิน 30 ตัวอักษร",
       "help_text": "อีเมลที่ส่งไปยัง user{delimiter}tag@domain.com จะส่งตรงมายังกล่องข้อความของคุณ",
       "validation": {
+        "local_part_empty": "Address must not be empty",
+        "local_part_too_long": "The part before the @ may be at most {max} characters",
+        "local_part_invalid": "The address contains characters that are not allowed",
         "empty": "แท็กต้องไม่ว่างเปล่า",
         "too_long": "แท็กต้องมีความยาวไม่เกิน {max} ตัวอักษร",
         "invalid_chars": "แท็กต้องมีเฉพาะตัวอักษร ตัวเลข และขีดกลางเท่านั้น"
@@ -1208,6 +1218,11 @@
     "view_label": "มุมมอง"
   },
   "email_composer": {
+    "catch_all": {
+      "pending": "{address} will be saved as a new identity when you send.",
+      "create_failed": "The server did not accept {address} as a sender: {reason}",
+      "via_shared": "Sent through {account} and filed in its Sent folder."
+    },
     "select_from_directory": "เลือกจากสมุดรายชื่อองค์กร",
     "minimize": "ย่อหน้าต่าง",
     "maximize": "เต็มหน้าจอ",
@@ -1494,6 +1509,22 @@
     }
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Not from your trusted sender",
+      "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."
+    },
+    "sender_trust": {
+      "unmark": "Remove trust mark",
+      "mark": "Mark as trusted",
+      "label": "Trusted sender",
+      "trusted": "Trusted sender – sender verification passed",
+      "impersonated": "Claims to be a trusted sender – sender verification failed"
+    },
+    "create_event": {
+      "action": "Create event",
+      "open_message": "Open message",
+      "from_message": "From the message from {sender}, {date}"
+    },
     "read_receipt": {
       "prompt": "ผู้ส่งขอรับใบตอบรับการอ่านเมื่อคุณเปิดข้อความนี้",
       "send": "ส่งใบตอบรับ",
@@ -3508,6 +3539,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    },
     "print": {
       "calendars": "ปฏิทิน: {names}",
       "time_zone": "เขตเวลา: {zone}",
@@ -4147,6 +4183,12 @@
       "mail": "อีเมล"
     },
     "appearance": {
+      "mv_row_lines": {
+        "label": "List rows",
+        "description": "Mountain View: subject and preview on one line like Gmail, or the preview on its own line",
+        "two": "Two lines",
+        "one": "One line"
+      },
       "message_list_order": {
         "label": "ลำดับรายการข้อความ",
         "description": "การเรียงลำดับข้อความในรายการ เซิร์ฟเวอร์จะเป็นผู้เรียงลำดับ จึงครอบคลุมทั้งโฟลเดอร์ ไม่ใช่เฉพาะข้อความที่โหลดแล้ว",
@@ -4515,6 +4557,13 @@
       }
     },
     "email_behavior": {
+      "marked_senders": {
+        "label": "Trusted senders",
+        "description": "Senders you marked yourself. Their messages show a handshake when the sender check passes.",
+        "modal_title": "Trusted senders",
+        "empty_title": "No trusted senders yet",
+        "empty_description": "Open a message from the sender and click \"Mark as trusted\" in its details."
+      },
       "inbox_type": {
         "label": "ประเภทกล่องข้อความ",
         "description": "ยังไม่ได้อ่านก่อน จะแสดงข้อความที่ยังไม่ได้อ่านใหม่ล่าสุด 25 ฉบับในส่วนด้านบนเหนือกล่องข้อความที่เหลือ",

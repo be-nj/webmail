@@ -222,6 +222,7 @@ export const tabSearchEntries: Record<Tab, SettingsSearchEntry[]> = {
     { label: 'settings.reading_page.sections.images' },
     { label: 'settings.email_behavior.external_content.label' },
     { label: 'settings.email_behavior.trusted_senders.label' },
+    { label: 'settings.email_behavior.marked_senders.label' },
     { label: 'settings.email_behavior.trusted_senders.use_address_book_label' },
     { label: 'settings.reading_page.sections.attachments' },
     { label: 'settings.email_behavior.attachment_position.label' },

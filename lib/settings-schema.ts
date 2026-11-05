@@ -415,7 +415,9 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSchemaEntry>> = Obj
  */
 export const DENIED_SETTINGS: readonly string[] = [
   // Privacy: loads remote content, or says who may.
-  'externalContentPolicy', 'trustedSenders', 'trustedSendersAddressBook',
+  'externalContentPolicy', 'trustedSenders', 'trustedSendersAddressBook', 'markedTrustedSenders',
+  // Fork: per-account catch-all sender use, keyed by server ids.
+  'catchAllSenders',
   // Free text that ends up in file names or in every sent mail.
   'emailDownloadTemplate', 'attachmentDownloadTemplate', 'bundleDownloadTemplate', 'signatureDetails',
   // Never read by the app (defaultReplyMode), or on the account page (the delimiter).
@@ -452,7 +454,7 @@ export const DENIED_SETTINGS: readonly string[] = [
  */
 export const NOT_YET_SETTINGS: readonly string[] = [
   'messageListOrder', 'filesSettings', 'activeThemeId', 'birthdayCalendarColor', 'vacationBlockCalendar',
-  'writingLanguage',
+  'writingLanguage', 'mvRowLines',
 ];
 
 /** Line breaks, tabs and other control characters. */

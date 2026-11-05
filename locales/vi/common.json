@@ -418,6 +418,22 @@
     "save_pending": "Chưa được lưu. Bulwark thử lại khi máy chủ trả lời."
   },
   "email_viewer": {
+    "impersonation_warning": {
+      "title": "Not from your trusted sender",
+      "description": "This message claims to come from {address}, one of your trusted senders, but failed sender verification. It was most likely not sent by them."
+    },
+    "sender_trust": {
+      "unmark": "Remove trust mark",
+      "mark": "Mark as trusted",
+      "label": "Trusted sender",
+      "trusted": "Trusted sender – sender verification passed",
+      "impersonated": "Claims to be a trusted sender – sender verification failed"
+    },
+    "create_event": {
+      "action": "Create event",
+      "open_message": "Open message",
+      "from_message": "From the message from {sender}, {date}"
+    },
     "read_receipt": {
       "prompt": "Người gửi yêu cầu được thông báo khi bạn mở thư này.",
       "send": "Gửi xác nhận",
@@ -913,6 +929,11 @@
     "received_hint": "Do chương trình thư của người gửi đặt. Ai cũng có thể đặt phân loại, nên nó không chứng minh được gì."
   },
   "email_composer": {
+    "catch_all": {
+      "pending": "{address} will be saved as a new identity when you send.",
+      "create_failed": "The server did not accept {address} as a sender: {reason}",
+      "via_shared": "Sent through {account} and filed in its Sent folder."
+    },
     "select_from_directory": "Chọn từ danh bạ",
     "minimize": "Thu nhỏ",
     "maximize": "Toàn màn hình",
@@ -1474,6 +1495,12 @@
       "mail": "Thư"
     },
     "appearance": {
+      "mv_row_lines": {
+        "label": "List rows",
+        "description": "Mountain View: subject and preview on one line like Gmail, or the preview on its own line",
+        "two": "Two lines",
+        "one": "One line"
+      },
       "message_list_order": {
         "label": "Thứ tự danh sách thư",
         "description": "Cách sắp xếp thư trong danh sách. Máy chủ sắp xếp toàn bộ thư mục, không chỉ những thư đã tải.",
@@ -1842,6 +1869,13 @@
       }
     },
     "email_behavior": {
+      "marked_senders": {
+        "label": "Trusted senders",
+        "description": "Senders you marked yourself. Their messages show a handshake when the sender check passes.",
+        "modal_title": "Trusted senders",
+        "empty_title": "No trusted senders yet",
+        "empty_description": "Open a message from the sender and click \"Mark as trusted\" in its details."
+      },
       "inbox_type": {
         "label": "Kiểu Hộp thư đến",
         "description": "Chưa đọc trước sẽ hiển thị 25 thư chưa đọc mới nhất trong một mục phía trên các thư còn lại.",
@@ -3792,6 +3826,13 @@
       "updating": "Đang cập nhật..."
     },
     "sub_address": {
+      "tab_tag": "Tag",
+      "tab_catch_all": "Other address",
+      "catch_all_title": "Send from another address",
+      "local_part_placeholder": "Address, e.g. company",
+      "domain_label": "Domain",
+      "recent_addresses": "Recently used",
+      "catch_all_help": "Mail to any address on these domains reaches you, so you can send from any of them. On first send the address is saved as an identity.",
       "button_tooltip": "Sử dụng địa chỉ phụ",
       "popover_title": "Thêm thẻ địa chỉ phụ",
       "tag_input_placeholder": "Nhập thẻ (ví dụ: mua sắm)",
@@ -3803,6 +3844,9 @@
       "tag_too_long": "Thẻ phải có 30 ký tự trở xuống",
       "help_text": "Email gửi tới user{delimiter}tag@domain.com sẽ đến hộp thư đến của bạn",
       "validation": {
+        "local_part_empty": "Address must not be empty",
+        "local_part_too_long": "The part before the @ may be at most {max} characters",
+        "local_part_invalid": "The address contains characters that are not allowed",
         "empty": "Thẻ không thể trống",
         "too_long": "Thẻ phải có {max} ký tự trở xuống",
         "invalid_chars": "Thẻ chỉ được chứa chữ cái, số và dấu gạch ngang"
@@ -4337,6 +4381,11 @@
     }
   },
   "calendar": {
+    "attachments": {
+      "title": "Attachments",
+      "file": "Attachment",
+      "download": "Download {name}"
+    },
     "print": {
       "calendars": "Lịch: {names}",
       "time_zone": "Múi giờ: {zone}",

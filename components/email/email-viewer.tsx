@@ -5451,7 +5451,7 @@ ${printWatermark ? printWatermark.html : ''}
                             : <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-red-700 dark:text-red-400" />}
                           <span className="font-medium text-foreground">{t('sender_trust.label')}</span>
                           <span className={cn(
-                            "text-[10px] uppercase tracking-wider",
+                            "text-[0.625rem] uppercase tracking-wider",
                             trustSignal === 'trusted' ? "text-primary" : "text-red-700 dark:text-red-400",
                           )}>
                             {translateAuthResult(trustSignal === 'trusted' ? 'pass' : 'fail')}

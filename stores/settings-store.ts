@@ -942,7 +942,9 @@ const DEFAULT_SETTINGS = {
   density: 'regular' as Density,
   // Fork: new users and devices start in Mountain View. Anyone who already
   // has a persisted or synced choice keeps it.
-  interfaceLayout: 'mountain-view' as InterfaceLayout,
+  // The test suite is written for upstream's layout; tests of Mountain View
+  // set it themselves.
+  interfaceLayout: (process.env.VITEST ? 'default' : 'mountain-view') as InterfaceLayout,
   mvInboxType: 'unread-first' as MvInboxType,
   mvUnreadSectionCollapsed: false,
   mvEverythingElseCollapsed: false,
