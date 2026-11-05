@@ -3846,6 +3846,8 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   };
 
   const handleClearSearch = async () => {
+    // Fork: clearing the search with a message open shows the list again.
+    showSearchResults();
     setSearchQuery("");
     clearSearchFilters();
     if (!client) return;
